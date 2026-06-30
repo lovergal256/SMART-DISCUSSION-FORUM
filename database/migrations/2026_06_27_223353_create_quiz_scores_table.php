@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('quiz_scores', function (Blueprint $table) {
             $table->id('QuizScoreID');
             $table->string('UserID',50);
-            $table->foreign('UserID')->references('UserID')->('users')->onDelete('cascade');
+            $table->foreign('UserID')->references('UserID')->on('users')->onDelete('cascade');
             $table->foreignId('QuizzID')->constrained('quizzes','QuizzID')->onDelete('cascade');
             $table->decimal('Score',5,2);
             $table->dateTime('DateRecorded');
