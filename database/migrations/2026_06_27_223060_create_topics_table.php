@@ -16,7 +16,7 @@ return new class extends Migration
             $table->foreignId('GroupID')
                   ->constrained('groups','GroupId')
                   ->onDelete('cascade');
-            $table->string('UserID',50);
+            $table->unsignedBigInteger('UserID');
             $table->foreign('UserID')
             ->references('UserID')
             ->on('users')
@@ -37,3 +37,5 @@ return new class extends Migration
         Schema::dropIfExists('topics');
     }
 };
+
+

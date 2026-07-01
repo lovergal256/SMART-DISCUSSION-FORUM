@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('activity_logs', function (Blueprint $table) {
             $table->id('ActivityId');
-            $table->string('UserID',50);
+            $table->unsignedBigInteger('UserID');
             $table->foreign('UserID')->references('UserID')->on('users')->onDelete('cascade');
             $table->string('ActivityType',50);
             $table->dateTime('ActivityDate');
@@ -31,3 +31,5 @@ return new class extends Migration
         Schema::dropIfExists('activity_logs');
     }
 };
+
+

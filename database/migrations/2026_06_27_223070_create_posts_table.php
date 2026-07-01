@@ -16,7 +16,7 @@ return new class extends Migration
             $table->foreignId('TopicID')
                 ->constrained('topics','TopicID')
                 ->onDelete('cascade');
-            $table->string('UserID',50);
+            $table->unsignedBigInteger('UserID');
             $table->foreign('UserID',50)
                   ->references('userID')
                   ->on('users')
@@ -35,3 +35,5 @@ return new class extends Migration
         Schema::dropIfExists('posts');
     }
 };
+
+

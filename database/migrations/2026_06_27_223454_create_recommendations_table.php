@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('recommendations', function (Blueprint $table) {
             $table->id('RecommendationsID');
-            $table->string('UserID',50);
+            $table->unsignedBigInteger('UserID');
             $table->foreign('UserID')->references('UserID')->on('users')->onDelete('cascade');
             $table->foreignId('TopicID',50)->constrained('topics','TopicID')->onDelete('cascade');
             $table->decimal('RecommendationScore',5,2);
@@ -29,3 +29,5 @@ return new class extends Migration
         Schema::dropIfExists('recommendations');
     }
 };
+
+

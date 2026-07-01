@@ -1,3 +1,4 @@
+
 <?php
 
 use Illuminate\Database\Migrations\Migration;
@@ -6,30 +7,21 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
         Schema::create('exclusion_lists', function (Blueprint $table) {
             $table->id('ExclusionID');
-            $table->string('UserID',50);
+            $table->unsignedBigInteger('UserID');
             $table->foreign('UserID')->references('UserID')->on('users')->onDelete('cascade');
-            $table->string('ExcludedUserID',50);
+            $table->unsignedBigInteger('ExcludedUserID');
             $table->foreign('ExcludedUserID')->references('UserID')->on('users')->onDelete('cascade');
-            $table->string('ContentType',30);
+            $table->string('ContentType', 30);
             $table->integer('ContentID');
             $table->dateTime('ExclusionDate');
-                
-                    
-
-          
+            $table->timestamps();
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::dropIfExists('exclusion_lists');

@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('warnings', function (Blueprint $table) {
             $table->id('WarningID');
-            $table->string('UserID',50);
+            $table->unsignedBigInteger('UserID');
             $table->foreign('UserID')->references('UserID')->on('users')->onDelete('cascade');
             $table->integer('WarningNumber');
             $table->dateTime('WarningDate');
@@ -29,3 +29,5 @@ return new class extends Migration
         Schema::dropIfExists('warnings');
     }
 };
+
+
