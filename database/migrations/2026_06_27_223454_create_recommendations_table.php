@@ -15,7 +15,8 @@ return new class extends Migration
             $table->id('RecommendationsID');
             $table->string('UserID',50);
             $table->foreign('UserID')->references('UserID')->on('users')->onDelete('cascade');
-            $table->foreignId('TopicID',50)->constrained('topics','TopicID')->onDelete('cascade');
+            $table->bigInteger('TopicID')->unsigned();
+            $table->foreign('TopicID')->references('TopicID')->on('topics')->onDelete('cascade');
             $table->decimal('RecommendationScore',5,2);
            
         });
