@@ -11,7 +11,7 @@ public $incrementing=false;
 protected $keyType='string';
 public $timestamps=false;
 
-protected $fillable =['TopicID','UserID','Content','DatePosted'];
+protected $fillable =['PostID','TopicID','UserID','Content','DatePosted'];
 
 public function topic()
     {

@@ -5,15 +5,16 @@ namespace App\Models;
 use Illuminate\Foundation\Auth\User as Authenticable;
 use Illuminate\Notifications\Notifiable;
 
-class user extends Authenticable
+class User extends Authenticable
 {
     use Notifiable;
     protected $primaryKey ='UserID';
     public $incrementing ='false';
     protected $keyType ='string';
-    public $timestamps ='false'
+    public $timestamps ='false';
 
-    protected $fillable=['UserID','FullName','Email','Password','DateJoined','LastActiveDate','RoleID,'];
+    protected $fillable=['UserID','FullName','Email','Password','DateJoined','LastActiveDate','RoleID']
+    ;
     protected $hidden =['Password'];
 
     public function getAuthPassword()

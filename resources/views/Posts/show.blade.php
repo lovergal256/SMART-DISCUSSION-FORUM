@@ -1,21 +1,21 @@
 @extends('layouts.app')
 
 @section('content')
-    <h2>{{ $topic->title }}</h2>
+    <h2>{{ $topic->Title }}</h2>
     <div class="card">
-        <p>{{ $post->body }}</p>
-        <small>Posted by {{ $post->user->name ?? 'Unknown' }}</small>
+        <p>{{ $post->content }}</p>
+        <small>Posted by {{ $post->user->FullName ?? 'Unknown' }}</small>
     </div>
 
     <h3>Replies</h3>
 
     @forelse($replies as $reply)
         <div class="card">
-            <p>{{ $reply->body }}</p>
-            <small>By {{ $reply->user->name ?? 'Unknown' }}</small>
+            <p>{{ $reply->Body }}</p>
+            <small style="color: #02367a; font-weight: 600;">By {{ $reply->user->FullName ?? 'Unknown' }}</small>
 
-            @if(auth()->id() == $reply->user_id)
-                <form action="{{ route('topics.posts.replies.destroy', [$topic->id, $post->id, $reply->id]) }}" method="POST" style="display:inline">
+            @if(auth()->id() == $reply->UserID)
+                <form action="{{ route('topics.posts.replies.destroy', [$topic, $post, $reply]) }}" method="POST" style="display:inline">
                     @csrf
                     @method('DELETE')
                     <button type="submit" class="btn btn-red">Delete</button>
@@ -32,7 +32,7 @@
 
     <h3>Add a Reply</h3>
     <div class="card">
-        <form action="{{ route('topics.posts.replies.store', [$topic->id, $post->id]) }}" method="POST">
+        <form action="{{ route('topics.posts.replies.store', [$topic->TopicID, $post->PostID]) }}" method="POST">
             @csrf
             <label>Your Reply</label>
             <textarea name="body" rows="4" placeholder="Write your reply...">{{ old('body') }}</textarea>

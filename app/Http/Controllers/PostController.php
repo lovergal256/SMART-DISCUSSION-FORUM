@@ -23,12 +23,14 @@ class PostController extends Controller
         ]);
 
         Post::create([
-            'body'     => $request->body,
-            'TopicId' => $topic->id,
-            'UserId'  => Auth::id(),
+            'PostID'  => uniqid(),
+            'Content'     => $request->body,
+            'TopicID' => $topic->TopicID,
+            'UserID'  => '1',
+            'DatePosted'=>now(),
         ]);
 
-        return redirect()->route('topics.show', $topic->id)
+        return redirect()->route('topics.show', $topic->TopicID)
                          ->with('success', 'Post added successfully!');
     }
 

@@ -4,7 +4,7 @@
     <h1>Add Post to: {{ $topic->title }}</h1>
 
     <div class="card">
-        <form action="{{ route('topics.posts.store', $topic->id) }}" method="POST">
+        <form action="{{ route('topics.posts.store', $topic->TopicID) }}" method="POST">
             @csrf
 
             <label>Your Post</label>
@@ -14,7 +14,7 @@
             @enderror
 
             <button type="submit" class="btn">Submit Post</button>
-            <a href="{{ route('topics.show', $topic->id) }}" class="btn btn-red">Cancel</a>
+            <a href="{{ route('topics.show', $topic->TopicID) }}" class="btn btn-red">Cancel</a>
         </form>
     </div>
 @endsection
