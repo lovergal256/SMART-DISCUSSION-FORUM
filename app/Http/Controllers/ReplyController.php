@@ -18,12 +18,13 @@ class ReplyController extends Controller
         ]);
 
         Reply::create([
-            'body'    => $request->body,
-            'PostId' => $post->id,
-            'UserId' => Auth::id(),
+        'ReplyID' => uniqid(),
+        'Body'    => $request->body,
+        'PostID'  => $post->PostID,
+        'UserID'  => '1',
         ]);
 
-        return redirect()->route('topics.posts.show', [$topic->id, $post->id])
+        return redirect()->route('topics.posts.show', [$topic->TopicID, $post->PostID])
                          ->with('success', 'Reply added successfully!');
     }
 

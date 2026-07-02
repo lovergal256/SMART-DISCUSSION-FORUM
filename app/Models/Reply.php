@@ -11,7 +11,7 @@ public $incrementing=false;
 protected $keyType='string';
 public $timestamps=false;
 
-protected $fillable =['PostID','UserID','Content','DateCreated'];
+protected $fillable =['PostID','UserID','Body','DateCreated','ReplyID'];
 
 public function post()
     {

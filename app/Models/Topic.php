@@ -16,12 +16,16 @@ class Topic extends Model
     }
     public function user()
     {
-        return $this->belongsTo(User::User,'UserID','UserID');
+        return $this->belongsTo(User::class,'UserID','UserID');
     }
     public function posts()
     {
         return $this->hasMany(Post::class,'TopicID','TopicID');
     }
+     public function repliesCount()
+{
+    return $this->hasManyThrough(Reply::class, Post::class, 'TopicID', 'PostID', 'TopicID', 'PostID')->count();
+}
 
 
     
