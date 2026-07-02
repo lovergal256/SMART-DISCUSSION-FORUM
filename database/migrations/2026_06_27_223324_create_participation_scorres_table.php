@@ -14,13 +14,12 @@ return new class extends Migration
         Schema::create('participation_scorres', function (Blueprint $table) {
            $table->string('ScoreID',50)->primary();
            $table->string('UserID',50);
+           $table->bigInteger('GroupID')->unsigned();
            $table->foreign('UserID')->references('UserID')->on('users')->onDelete('cascade');
-           $table->foreign('GroupID')->constrained('groups','GroupID')->onDelete('cascade');
+           $table->foreign('GroupID')->references('GroupID')->on('groups')->onDelete('cascade');
            $table->integer('PostsCount')->default(0);
            $table->integer('RepliesCount')->default(0);
            $table->decimal('Score',5,2);
-
-            
         });
     }
 

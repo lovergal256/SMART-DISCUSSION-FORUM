@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('blacklists', function (Blueprint $table) {
                 $table->string('BlacklistID',50)->primary();
                 $table->string('UserID',50);
-                $table->foreign('UserID')->references('UserID')->onDelete('cascade');
+                $table->foreign('UserID')->references('UserID')->on('users')->onDelete('cascade');
                 $table->text('Reason');
                 $table->date('StartDate');
                 $table->date('EndDate');

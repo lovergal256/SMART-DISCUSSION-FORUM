@@ -11,9 +11,13 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('lecturers', function (Blueprint $table) {
-            $table->id();
-            $table->timestamps();
+         Schema::create('lecturers', function (Blueprint $table) {
+            $table->string('LecturerID',30)->primary();
+            $table->string('UserID',50);
+            $table->foreign('UserID')->references('UserID')->on('users')->onDelete('cascade');
+            $table->date('DateEmployed');
+            $table->string('Status',20)->default('Active');
+            
         });
     }
 

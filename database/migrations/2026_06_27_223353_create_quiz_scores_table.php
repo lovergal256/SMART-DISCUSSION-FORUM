@@ -15,7 +15,8 @@ return new class extends Migration
             $table->id('QuizScoreID');
             $table->string('UserID',50);
             $table->foreign('UserID')->references('UserID')->on('users')->onDelete('cascade');
-            $table->foreignId('QuizzID')->constrained('quizzes','QuizzID')->onDelete('cascade');
+            $table->bigInteger('QuizID')->unsigned();
+            $table->foreign('QuizID')->references('QuizID')->on('quizzes')->onDelete('cascade');
             $table->decimal('Score',5,2);
             $table->dateTime('DateRecorded');
             
