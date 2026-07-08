@@ -7,7 +7,7 @@
     <title>Register - Smart Discussion Forum</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
-<body class="bg-gray-950 min-h-screen flex items-center justify-center py-10">
+<body class="min-h-screen flex items-center justify-center py-10" style="background: linear-gradient(135deg, #0891b2, #06b6d4, #0e7490);">
 
     <!-- Rules Modal -->
     <div id="rulesModal" class="fixed inset-0 bg-black/80 flex items-center justify-center z-50 hidden">
@@ -50,11 +50,10 @@
     </div>
 
     <!-- Register Form -->
-    <div class="bg-gray-900 p-8 rounded-2xl shadow-xl w-full max-w-md border border-cyan-800">
-
+    <div class="bg-white p-8 rounded-2xl shadow-2xl w-full max-w-lg">
         <div class="text-center mb-8">
-            <h1 class="text-3xl font-bold text-cyan-400">Smart Discussion Forum</h1>
-            <p class="text-gray-400 mt-2">Create your student account</p>
+            <h1 class="text-3xl font-bold text-cyan-600">Smart Discussion Forum</h1>
+<p class="text-gray-500 mt-2">Create your student account</p>
         </div>
 
         @if($errors->any())
@@ -71,40 +70,40 @@
             @csrf
 
             <div class="mb-4">
-                <label class="text-gray-300 block mb-2 text-sm">Full Name</label>
+                <label class="text-gray-600 block mb-2 text-sm">Full Name</label>
                 <input type="text" name="FullName" value="{{ old('FullName') }}"
-                    class="w-full bg-gray-800 text-white rounded-lg px-4 py-3 border border-gray-700 focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500"
+                    class="w-full bg-gray-50 text-gray-800 rounded-lg px-4 py-3 border border-gray-300 focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500"
                     placeholder="Enter your full name" required>
             </div>
 
             <div class="mb-4">
-                <label class="text-gray-300 block mb-2 text-sm">Email Address</label>
+                <label class="text-gray-600 block mb-2 text-sm">Email Address</label>
                 <input type="email" name="Email" value="{{ old('Email') }}"
-                    class="w-full bg-gray-800 text-white rounded-lg px-4 py-3 border border-gray-700 focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500"
+                    class="w-full bg-gray-50 text-gray-800 rounded-lg px-4 py-3 border border-gray-300 focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500"
                     placeholder="Enter your email" required>
             </div>
 
             <div class="mb-4">
-                <label class="text-gray-300 block mb-2 text-sm">Password</label>
+                <labelclass="text-gray-600 block mb-2 text-sm">Password</label>
                 <input type="password" name="Password"
-                    class="w-full bg-gray-800 text-white rounded-lg px-4 py-3 border border-gray-700 focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500"
+                    class="w-full bg-gray-50 text-gray-800 rounded-lg px-4 py-3 border border-gray-300 focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500"
                     placeholder="Minimum 6 characters" required>
             </div>
 
             <div class="mb-4">
-                <label class="text-gray-300 block mb-2 text-sm">Confirm Password</label>
+                <label class="text-gray-600 block mb-2 text-sm">Confirm Password</label>
                 <input type="password" name="Password_confirmation"
-                    class="w-full bg-gray-800 text-white rounded-lg px-4 py-3 border border-gray-700 focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500"
+                    class="w-full bg-gray-50 text-gray-800 rounded-lg px-4 py-3 border border-gray-300 focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500"
                     placeholder="Repeat your password" required>
             </div>
 
             <!-- Terms Checkbox -->
-            <div class="mb-6 bg-gray-800 border border-gray-700 rounded-xl p-4">
+            <div class="mb-6 bg-gray-50 border border-gray-300 rounded-xl p-4">
                 <label class="flex items-start gap-3 cursor-pointer">
                     <input type="checkbox" name="terms" id="terms"
                         class="mt-1 w-4 h-4 accent-cyan-500"
                         {{ old('terms') ? 'checked' : '' }}>
-                    <span class="text-gray-300 text-sm">
+                    <span class="text-gray-600 text-sm">
                         I have read and agree to the
                         <button type="button" onclick="openRules()"
                             class="text-cyan-400 hover:text-cyan-300 underline font-semibold">

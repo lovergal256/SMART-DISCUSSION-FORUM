@@ -7,13 +7,14 @@
     <title>Login - Smart Discussion Forum</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
-<body class="bg-gray-950 min-h-screen flex items-center justify-center">
-    <div class="bg-gray-900 p-8 rounded-2xl shadow-xl w-full max-w-md border border-cyan-800">
+<body class="min-h-screen flex items-center justify-center" style="background: linear-gradient(135deg, #0891b2, #06b6d4, #0e7490);">
+    <div class="bg-white p-8 rounded-2xl shadow-2xl w-full max-w-md">
+
 
         <!-- Logo / Title -->
         <div class="text-center mb-8">
-            <h1 class="text-3xl font-bold text-cyan-400">Smart Discussion Forum</h1>
-            <p class="text-gray-400 mt-2">Sign in to your account</p>
+            <h1 class="text-3xl font-bold text-cyan-600">Smart Discussion Forum</h1>
+<p class="text-gray-500 mt-2">Sign in to your account</p>
         </div>
 
         <!-- Error Message -->
@@ -27,15 +28,15 @@
         <form method="POST" action="{{ route('login.post') }}">
             @csrf
             <div class="mb-4">
-                <label class="text-gray-300 block mb-2 text-sm">Email Address</label>
+                <label class="text-black-300 block mb-2 text-sm">Email Address</label>
                 <input type="email" name="Email" value="{{ old('Email') }}"
-                    class="w-full bg-gray-800 text-white rounded-lg px-4 py-3 border border-gray-700 focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500"
+                    class="w-full bg-white-800 text-black rounded-lg px-4 py-3 border border-gray-700 focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500"
                     placeholder="Enter your email" required>
             </div>
             <div class="mb-6">
-                <label class="text-gray-300 block mb-2 text-sm">Password</label>
+                <label class="text-black-300 block mb-2 text-sm">Password</label>
                 <input type="password" name="Password"
-                    class="w-full bg-gray-800 text-white rounded-lg px-4 py-3 border border-gray-700 focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500"
+                   class="w-full bg-gray-50 text-gray-800 rounded-lg px-4 py-3 border border-gray-700 focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500"
                     placeholder="Enter your password" required>
             </div>
             <button type="submit"
@@ -47,7 +48,7 @@
         <!-- Divider -->
         <div class="flex items-center my-6">
             <div class="flex-1 border-t border-gray-700"></div>
-            <span class="px-4 text-gray-500 text-sm">Students only</span>
+            <span class="px-4 text-black-500 text-sm">Students only</span>
             <div class="flex-1 border-t border-gray-700"></div>
         </div>
 

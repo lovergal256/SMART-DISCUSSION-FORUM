@@ -3,32 +3,19 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
-use App\Http\Controllers\StudentController;
+use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\RecommendationController;
 
 // Public routes
 Route::get('/', function () {
     return redirect()->route('login');
 });
 
-Route::get('/student/dashboard', [StudentController::class, 'dashboard'])
-    ->middleware('auth')
-    ->name('student.dashboard');
-
-Route::post('/logout', [AuthController::class, 'logout'])
-    ->name('logout');
-
 Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
 Route::post('/login', [AuthController::class, 'login'])->name('login.post');
 Route::get('/register', [AuthController::class, 'showRegister'])->name('register');
 Route::post('/register', [AuthController::class, 'register'])->name('register.post');
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
-
-// Student routes (role 1)
-Route::middleware(['auth'])->group(function () {
-    Route::get('/student/dashboard', function () {
-        return view('student.dashboard');
-    })->name('student.dashboard');
-});
 
 // Lecturer routes (role 2)
 Route::middleware(['auth'])->group(function () {
@@ -42,4 +29,45 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/admin/dashboard', function () {
         return view('admin.dashboard');
     })->name('admin.dashboard');
+});
+
+/*
+|--------------------------------------------------------------------------
+| Student routes (role 1) — dashboard + module placeholders
+|--------------------------------------------------------------------------
+*/
+Route::middleware('auth')->group(function () {
+
+    Route::get('/student/dashboard', [DashboardController::class, 'index'])->name('student.dashboard');
+
+    // --- Discussion Management Module ---
+    Route::get('/discussions', fn () => view('discussions.index'))->name('discussions.index');
+    Route::get('/discussions/search', fn () => view('discussions.index'))->name('discussions.search');
+    Route::get('/discussions/{id}', fn ($id) => view('discussions.show', compact('id')))->name('discussions.show');
+
+    // --- Group Management Module ---
+    Route::get('/groups', fn () => view('groups.index'))->name('groups.index');
+    Route::get('/groups/{id}', fn ($id) => view('groups.show', compact('id')))->name('groups.show');
+
+    // --- Quiz Management Module ---
+    Route::get('/quizzes', fn () => view('quizzes.index'))->name('quizzes.index');
+    Route::get('/quizzes/{id}', fn ($id) => view('quizzes.show', compact('id')))->name('quizzes.show');
+
+    // --- Performance Management Module ---
+    Route::get('/performance', fn () => view('performance.index'))->name('performance.index');
+
+    // --- Recommendation Management Module ---
+   Route::get('/recommendations', [App\Http\Controllers\RecommendationController::class, 'index'])->name('recommendations.index');
+
+    // --- Blacklisting and Warning Module (student-facing view) ---
+    Route::get('/warnings', fn () => view('warnings.index'))->name('warnings.index');
+
+    // --- Statistics Management Module ---
+    Route::get('/activity', fn () => view('activity.index'))->name('activity.index');
+
+    // --- Notification Management Module ---
+    Route::get('/notifications', fn () => view('notifications.index'))->name('notifications.index');
+
+    // --- Profile / Account ---
+    Route::get('/profile', fn () => view('profile.show'))->name('profile.show');
 });
