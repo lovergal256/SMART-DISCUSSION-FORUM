@@ -76,8 +76,16 @@ public function destroy(Topic $topic)
     // Show a single topic with its posts
     public function show(Topic $topic)
     {
-     $posts = $topic->posts()->with('user')->paginate(10);
-        return view('topics.show', compact('topic', 'posts'));
+       $excludedPostIDs = \App\Models\ExclusionList::where('ExcludedUserID', '1')
+        ->where('ContentType', 'post')
+        ->pluck('ContentID');
+
+       $posts = $topic->posts()
+        ->with('user')
+        ->whereNotIn('PostID', $excludedPostIDs)
+        ->paginate(10);
+
+       return view('topics.show', compact('topic', 'posts'));
     }
    
 }

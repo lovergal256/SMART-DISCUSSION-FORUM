@@ -9,21 +9,18 @@ return new class extends Migration
     /**
      * Run the migrations.
      */
-    
-      public function up(): void
+    public function up(): void
 {
     Schema::table('replies', function (Blueprint $table) {
-        $table->string('ReplyID', 50)->nullable();
-        $table->string('PostID', 50)->nullable();
-        $table->string('UserID', 50)->nullable();
-        $table->text('Body')->nullable();
+        $table->string('ParentReplyID', 50)->nullable();
     });
 }
 
 public function down(): void
 {
     Schema::table('replies', function (Blueprint $table) {
-        $table->dropColumn(['ReplyID', 'PostID', 'UserID', 'Body']);
+        $table->dropColumn('ParentReplyID');
     });
 }
-};
+    }
+;

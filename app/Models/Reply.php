@@ -9,9 +9,9 @@ class Reply extends Model
 protected $primaryKey='ReplyID';
 public $incrementing=false;
 protected $keyType='string';
-public $timestamps=false;
+public $timestamps=true;
 
-protected $fillable =['PostID','UserID','Body','DateCreated','ReplyID'];
+protected $fillable =['PostID','UserID','Body','DateCreated','ReplyID','ParentReplyID'];
 
 public function post()
     {

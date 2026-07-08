@@ -9,7 +9,7 @@ class Post extends Model
 protected $primaryKey='PostID';
 public $incrementing=false;
 protected $keyType='string';
-public $timestamps=false;
+public $timestamps=true;
 
 protected $fillable =['PostID','TopicID','UserID','Content','DatePosted'];
 

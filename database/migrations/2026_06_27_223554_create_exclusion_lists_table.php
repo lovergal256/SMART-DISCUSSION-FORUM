@@ -21,9 +21,7 @@ return new class extends Migration
             $table->integer('ContentID');
             $table->dateTime('ExclusionDate');
                 
-                    
-
-          
+                
         });
     }
 

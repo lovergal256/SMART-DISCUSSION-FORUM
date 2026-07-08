@@ -22,6 +22,7 @@ class ReplyController extends Controller
         'Body'    => $request->body,
         'PostID'  => $post->PostID,
         'UserID'  => '1',
+        'ParentReplyID' => $request->parent_reply_id ?? null,
         ]);
 
         return redirect()->route('topics.posts.show', [$topic->TopicID, $post->PostID])
@@ -32,13 +33,30 @@ class ReplyController extends Controller
     public function destroy(Topic $topic, Post $post, Reply $reply)
     {
         // Only the reply owner can delete it
-        if ($reply->user_id !== Auth::id()) {
-            return redirect()->back()->with('error', 'Unauthorized action.');
-        }
+       // if ($reply->UserID !== Auth::id()) {
+       //     return redirect()->back()->with('error', 'Unauthorized action.');
+        //}
+     Reply::where('ParentReplyID', $reply->ReplyID)->update(['ParentReplyID' => null]);
 
         $reply->delete();
 
-        return redirect()->route('topics.posts.show', [$topic->id, $post->id])
+        return redirect()->route('topics.posts.show', [$topic, $post])
                          ->with('success', 'Reply deleted successfully!');
     }
+     // Show edit form
+    public function edit(Topic $topic, Post $post, Reply $reply)
+    {
+     return view('Posts.replies.edit', compact('topic', 'post', 'reply'));
+    }
+
+     // Update reply
+    public function update(Request $request, Topic $topic, Post $post, Reply $reply)
+    {
+     $request->validate(['body' => 'required|min:2']);
+    
+     $reply->update(['Body' => $request->body]);
+    
+     return redirect()->route('topics.posts.show', [$topic, $post])
+        ->with('success', 'Reply updated successfully!');
+}  
 }

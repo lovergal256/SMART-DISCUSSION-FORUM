@@ -12,7 +12,14 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('replies', function (Blueprint $table) {
-            $table->id();
+            $table->string('ReplyID',50)->primary();
+            $table->string('PostID',50);
+            $table->foreign('PostID')
+                  ->references('PostID')
+                  ->on('posts')
+                  ->onDelete('cascade');
+            $table->string('UserID',50);
+            $table->foreign('UserId'); 
             $table->timestamps();
         });
     }
