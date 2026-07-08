@@ -2,10 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
-use App\Models\User;
 
 class AuthController extends Controller
 {
@@ -18,23 +18,31 @@ class AuthController extends Controller
     // Handle login
     public function login(Request $request)
     {
+        $email = $request->input('email', $request->input('Email'));
+        $password = $request->input('password', $request->input('Password'));
+
         $request->validate([
-            'Email'    => 'required|email',
-            'Password' => 'required',
+            'Email' => 'nullable|email',
+            'email' => 'nullable|email',
+            'Password' => 'nullable|string',
+            'password' => 'nullable|string',
         ]);
 
-        $user = User::where('Email', $request->Email)->first();
+        if (empty($email) || empty($password)) {
+            return back()->withErrors(['Email' => 'Email and password are required.']);
+        }
 
-        if (!$user || !Hash::check($request->Password, $user->Password)) {
+        $user = User::query()->where('email', $email)->first();
+
+        if (! $user || ! Hash::check($password, $user->password)) {
             return back()->withErrors(['Email' => 'Invalid email or password.']);
         }
 
         Auth::login($user);
 
         // Redirect based on role
-        return match((int) $user->RoleID) {
-            3 => redirect()->route('admin.dashboard'),
-            2 => redirect()->route('lecturer.dashboard'),
+        return match($user->role) {
+            'lecturer' => redirect()->route('lecturer.dashboard'),
             default => redirect()->route('student.dashboard'),
         };
     }
@@ -48,19 +56,38 @@ class AuthController extends Controller
     // Handle student registration
     public function register(Request $request)
     {
+        $fullName = $request->input('name', $request->input('FullName'));
+        $email = $request->input('email', $request->input('Email'));
+        $password = $request->input('password', $request->input('Password'));
+        $passwordConfirmation = $request->input('password_confirmation', $request->input('Password_confirmation'));
+
         $request->validate([
-            'FullName' => 'required|string|max:100',
-            'Email'    => 'required|email|unique:users,Email',
-            'Password' => 'required|min:6|confirmed',
+            'FullName' => 'nullable|string|max:100',
+            'name' => 'nullable|string|max:100',
+            'Email' => 'nullable|email',
+            'email' => 'nullable|email',
+            'Password' => 'nullable|min:6',
+            'password' => 'nullable|min:6|confirmed',
+            'terms' => 'accepted',
         ]);
 
-        $user = User::create([
-            'FullName'       => $request->FullName,
-            'Email'          => $request->Email,
-            'Password'       => Hash::make($request->Password),
-            'DateJoined'     => now(),
-            'LastActiveDate' => now(),
-            'RoleID'         => 1,
+        if (empty($fullName) || empty($email) || empty($password) || $password !== $passwordConfirmation) {
+            return back()->withErrors(['Email' => 'Please complete all required registration fields.'])->withInput();
+        }
+
+        $request->merge([
+            'email' => $email,
+        ]);
+
+        $request->validate([
+            'email' => 'required|email|unique:users,email',
+        ]);
+
+        $user = User::query()->create([
+            'name' => $fullName,
+            'email' => $email,
+            'password' => Hash::make($password),
+            'role' => 'student',
         ]);
 
         Auth::login($user);
