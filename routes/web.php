@@ -91,7 +91,7 @@ Route::get('/discussions/{discussion}/topics/{topic}', [TopicController::class, 
     Route::get('/activity', fn () => view('activity.index'))->name('activity.index');
 
     // --- Notification Management Module ---
-    Route::get('/notifications', fn () => view('notifications.index'))->name('notifications.index');
+    Route::get('/notifications', fn () => view('student.notifications.index'))->name('notifications.index');
 
     // --- Profile / Account ---
     Route::get('/profile', fn () => view('profile.show'))->name('profile.show');
