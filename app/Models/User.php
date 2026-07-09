@@ -43,4 +43,13 @@ class User extends Authenticatable
     {
         return $this->hasMany(Notification::class, 'UserID', 'UserID');
     }
+    public function roleRelation()
+{
+    return $this->belongsTo(Role::class, 'RoleID', 'RoleID');
+}
+
+public function getRoleNameAttribute()
+{
+    return strtolower((string) ($this->roleRelation->RoleName ?? ''));
+}
 }

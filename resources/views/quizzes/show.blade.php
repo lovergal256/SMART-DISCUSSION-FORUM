@@ -17,7 +17,7 @@
 
     <div class="page-head">
         <h1>{{ $quiz->Title }}</h1>
-        <p>{{ $quiz->group->name ?? 'Group' }} · {{ $quiz->duration_minutes }} minutes</p>
+        <p>{{ $quiz->group->GroupName ?? 'Group' }} · {{ $quiz->Duration }} minutes</p>
     </div>
 
     <div class="row-2 b">
@@ -27,7 +27,7 @@
             </div>
             <div class="meta-item"><strong>Starts:</strong> {{ $startTime->format('M d, Y · h:i A') }}</div>
             <div class="meta-item"><strong>Ends:</strong> {{ $endTime->format('M d, Y · h:i A') }}</div>
-            <div class="meta-item"><strong>Duration:</strong> {{ $quiz->duration_minutes }} minutes</div>
+            <div class="meta-item"><strong>Duration:</strong> {{ $quiz->Duration }} minutes</div>
         </div>
 
         <div class="panel">
@@ -46,7 +46,7 @@
                     <strong>Your status:</strong>
                     @if($attempt)
                         Attempted ({{ number_format($attempt->Score, 2) }}%)
-                    @elseif($isActiveWindow)
+                    @elseif($isActive)
                         Available now
                     @elseif(now()->lt($startTime))
                         Not open yet
@@ -61,41 +61,25 @@
 
     <div class="panel">
         <div class="panel-head">
-            <div class="panel-title"><span class="ic">🧠</span> Questions</div>
+            <div class="panel-title"><span class="ic">📝</span> Questions</div>
         </div>
 
-        @if($quiz->questions->isEmpty())
-            <div class="empty-state">
-                <p>📭 No questions have been added yet.</p>
-            </div>
-        @elseif($role === 'lecturer')
-            @foreach($quiz->questions as $index => $question)
-                <section class="question-card">
-                    <h3>Question {{ $index + 1 }} ({{ $question->Marks }} marks)</h3>
-                    <p>{{ $question->QuestionText }}</p>
-                    <div class="option-item">A. {{ $question->OptionA }}</div>
-                    <div class="option-item">B. {{ $question->OptionB }}</div>
-                    @if($question->OptionC)
-                        <div class="option-item">C. {{ $question->OptionC }}</div>
-                    @endif
-                    @if($question->OptionD)
-                        <div class="option-item">D. {{ $question->OptionD }}</div>
-                    @endif
-                    <div class="correct-badge">Correct option: {{ $question->CorrectOption }}</div>
-                </section>
-            @endforeach
-        @elseif($attempt)
-            <div class="empty-state">
-                <p>✅ You already attempted this quiz. Your score is <strong>{{ number_format($attempt->Score, 2) }}%</strong>.</p>
-            </div>
-        @elseif(! $isActiveWindow)
-            <div class="empty-state">
+        @if($isAttempted || $role === 'lecturer')
+            <p class="empty-state">
+                @if($isAttempted)
+                    You have already attempted this quiz.
+                @else
+                    Preview only — lecturers cannot attempt quizzes.
+                @endif
+            </p>
+        @elseif(! $isActive)
+            <div>
                 <p>⏱ This quiz can only be attempted between <strong>{{ $startTime->format('M d, h:i A') }}</strong> and <strong>{{ $endTime->format('M d, h:i A') }}</strong>.</p>
             </div>
         @else
-            <form method="POST" action="{{ route('quizzes.attempts.store', $quiz->id) }}">
+            <form method="POST" action="{{ route('quizzes.attempts.store', $quiz->QuizID) }}">
                 @csrf
-                @foreach($quiz->questions as $index => $question)
+                @foreach($questions as $index => $question)
                     <section class="question-card">
                         <h3>Question {{ $index + 1 }} ({{ $question->Marks }} marks)</h3>
                         <p>{{ $question->QuestionText }}</p>
@@ -131,47 +115,12 @@
 
 @push('styles')
     <style>
-        .question-card {
-            border: 1px solid var(--line);
-            border-radius: 12px;
-            padding: 16px;
-            margin-bottom: 14px;
-        }
-
-        .question-card h3 {
-            margin-bottom: 8px;
-            font-size: 14px;
-        }
-
-        .question-card p {
-            margin-bottom: 12px;
-            font-size: 13px;
-        }
-
-        .option-item {
-            display: flex;
-            gap: 8px;
-            margin-bottom: 8px;
-            align-items: center;
-            font-size: 13px;
-            color: var(--ink);
-        }
-
-        .meta-item {
-            margin-bottom: 8px;
-            font-size: 13px;
-            color: var(--ink-soft);
-        }
-
-        .correct-badge {
-            margin-top: 8px;
-            color: var(--success);
-            font-size: 12px;
-            font-weight: 700;
-        }
-
-        .empty-state {
-            color: var(--ink-soft);
-        }
+        .question-card { border: 1px solid var(--line); border-radius: 12px; padding: 16px; margin-bottom: 14px; }
+        .question-card h3 { margin-bottom: 8px; font-size: 14px; }
+        .question-card p { margin-bottom: 12px; font-size: 13px; }
+        .option-item { display: flex; gap: 8px; margin-bottom: 8px; align-items: center; font-size: 13px; color: var(--ink); }
+        .meta-item { margin-bottom: 8px; font-size: 13px; color: var(--ink-soft); }
+        .correct-badge { margin-top: 8px; color: var(--success); font-size: 12px; font-weight: 700; }
+        .empty-state { color: var(--ink-soft); }
     </style>
 @endpush
