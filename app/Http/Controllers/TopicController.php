@@ -87,5 +87,5 @@ public function destroy(Topic $topic)
 
        return view('topics.show', compact('topic', 'posts'));
     }
-   
+
 }

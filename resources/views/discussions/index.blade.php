@@ -1,30 +1,25 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Discussions - Smart Discussion Forum</title>
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
-</head>
-<body class="min-h-screen py-10" style="background: linear-gradient(135deg, #0891b2, #06b6d4, #0e7490);">
+@extends('layouts.app')
 
+@section('title', 'Recommendations — Smart Discussion Forum')
+
+@section('content')
     <div class="max-w-3xl mx-auto px-4">
 
         <div class="bg-white rounded-2xl shadow-2xl p-8 mb-6">
             <div class="flex items-center justify-between mb-6">
-                <h1 class="text-3xl font-bold text-cyan-600">Discussions</h1>
+                <h1 class="page-head">Discussions</h1>
                 <a href="{{ route('discussions.index') }}"
                     class="text-sm text-cyan-600 hover:text-cyan-500 font-semibold">
                     ← Back to all
                 </a>
             </div>
 
-            <form method="GET" action="{{ route('discussions.search') }}" class="flex gap-2">
+            <form method="GET" action="{{ route('discussions.search') }}" style="display: flex; gap: 0.5rem; margin-bottom: 1rem;">
                 <input type="text" name="q" value="{{ $query ?? '' }}"
-                    placeholder="Search discussions..."
-                    class="flex-1 bg-gray-50 text-gray-800 rounded-lg px-4 py-3 border border-gray-300 focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500">
-                <button type="submit"
-                    class="bg-cyan-600 hover:bg-cyan-500 text-white font-bold px-6 rounded-lg transition">
+                    placeholder="Search discussions..." style="flex: 1; padding: 0.5rem; border: 1px solid #ccc; border-radius: 0.375rem;">
+                <button type="submit" style="background: #0891b2; color: white; padding: 0.5rem 1rem; border-radius: 0.375rem; cursor: pointer; font-weight: bold;"
+                onmouseover="this.style.background='#0e7490'"onmouseout="this.style.background='#0891b2'"
+    >
                     Search
                 </button>
             </form>
@@ -72,5 +67,4 @@
 
     </div>
 
-</body>
-</html>
+@endsection

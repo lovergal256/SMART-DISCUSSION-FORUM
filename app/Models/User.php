@@ -39,32 +39,8 @@ class User extends Authenticatable
         return $this->Password;
     }
 
-    public function getEmailForPasswordReset()
+    public function notifications()
     {
-        return $this->Email;
-    }
-
-    public function getEmailForVerification()
-    {
-        return $this->Email;
-    }
-
-    protected function casts(): array
-    {
-        return [
-            'DateJoined' => 'datetime',
-            'LastActiveDate' => 'datetime',
-        ];
-    }
-
-    public function groups()
-    {
-        return $this->belongsToMany(Group::class, 'group_members', 'UserID', 'GroupID')
-                    ->withPivot('Role', 'JoinedAt');
-    }
-
-    public function role()
-    {
-        return $this->belongsTo(Role::class, 'RoleID', 'RoleID');
+        return $this->hasMany(Notification::class, 'UserID', 'UserID');
     }
 }
