@@ -10,6 +10,10 @@ class DashboardController extends Controller
     public function index(Request $request)
     {
         $user = Auth::user();
+        $discussionsCount = \App\Models\Discussion::count();
+        $postsCount = \App\Models\Post::count();
+
+        
 
         // ---------------------------------------------------------------
         // NOTE: everything below is placeholder data so the view renders
@@ -19,20 +23,34 @@ class DashboardController extends Controller
         // ---------------------------------------------------------------
 
         $stats = [
-            ['icon' => '💬', 'value' => '15',  'label' => 'Discussions Joined', 'change' => '3 this week',  'url' => route('discussions.index')],
+            ['icon' => '💬', 'value' => (string) $discussionsCount,  'label' => 'Discussions Joined', 'change' => '3 this week',  'url' => route('discussions.index')],
             ['icon' => '👥', 'value' => '4',   'label' => 'Groups Joined',      'change' => '1 this week',  'url' => route('groups.index')],
             ['icon' => '📖', 'value' => '84%', 'label' => 'Quiz Average',       'change' => '6% this week', 'url' => route('performance.index')],
-            ['icon' => '📈', 'value' => '38',  'label' => 'Posts Created',      'change' => '5 this week',  'url' => route('activity.index')],
+            ['icon' => '📈', 'value' => (string) $postsCount,  'label' => 'Posts Created',      'change' => '5 this week',  'url' => route('activity.index')],
             ['icon' => '⭐', 'value' => '120', 'label' => 'Points Earned',      'change' => '15 this week', 'url' => route('performance.index')],
         ];
 
-        $discussions = [
-            ['id' => 1, 'category' => 'Database', 'title' => 'Normalization in Relational Databases', 'author' => 'John Doe',        'posted_at' => '2 hours ago', 'replies' => 12],
-            ['id' => 2, 'category' => 'AI',       'title' => 'AI Ethics and Society',                  'author' => 'Mercy Nabukeera', 'posted_at' => '5 hours ago', 'replies' => 8],
-            ['id' => 3, 'category' => 'Web Dev',  'title' => 'Best Practices in Laravel Development',  'author' => 'Brian Kato',      'posted_at' => '1 day ago',   'replies' => 15],
-            ['id' => 4, 'category' => 'Security', 'title' => 'Cyber Security Basics',                  'author' => 'Ivan Ssekanyzi',  'posted_at' => '1 day ago',   'replies' => 6],
-            ['id' => 5, 'category' => 'Cloud',    'title' => 'Introduction to Cloud Computing',        'author' => 'David Mugisha',   'posted_at' => '2 days ago',  'replies' => 9],
+        $discussions = \App\Models\Discussion::with('user')
+           ->latest()
+           ->take(5)
+           ->get()
+           ->map(function ($discussion) {
+           $repliesCount = \App\Models\Reply::whereIn('PostID',
+            \App\Models\Post::whereIn('TopicID',
+                $discussion->topics()->pluck('TopicID')
+            )->pluck('PostID')
+         )->count();
+
+        return [
+            'id' => $discussion->DiscussionID,
+            'category' => 'General',
+            'title' => $discussion->Title,
+            'author' => $discussion->user->FullName ?? 'Unknown',
+            'posted_at' => $discussion->created_at->diffForHumans(),
+            'replies' => $repliesCount,
         ];
+    })
+    ->toArray();
 
         $quizzes = [
             ['id' => 1, 'title' => 'Database Systems Quiz',  'subtitle' => 'Chapters 1 - 4',         'due' => 'Tomorrow, 11:59 PM'],
@@ -54,19 +72,21 @@ class DashboardController extends Controller
             ['id' => 4, 'name' => 'Cyber Security Group',   'members' => 20, 'new_posts' => 1, 'status' => 'Active'],
         ];
 
+        $repliesCount = \App\Models\Reply::where('UserID', $user->UserID)->count();
+
         $activity = [
-            ['icon' => '📝', 'label' => 'Posts Created',       'value' => '14',     'change' => '40%'],
-            ['icon' => '💬', 'label' => 'Replies Posted',      'value' => '26',     'change' => '25%'],
-            ['icon' => '👥', 'label' => 'Discussions Joined',  'value' => '3',      'change' => '50%'],
-            ['icon' => '📋', 'label' => 'Quizzes Taken',       'value' => '2',      'change' => '100%'],
-            ['icon' => '🕒', 'label' => 'Time Spent',          'value' => '8h 45m', 'change' => '15%'],
-        ];
+         ['icon' => '📝', 'label' => 'Posts Created',       'value' => (string) $postsCount,   'change' => '40%'],
+         ['icon' => '💬', 'label' => 'Replies Posted',      'value' => (string) $repliesCount, 'change' => '25%'],
+         ['icon' => '👥', 'label' => 'Discussions Joined',  'value' => (string) $discussionsCount, 'change' => '50%'],
+         ['icon' => '📋', 'label' => 'Quizzes Taken',       'value' => '2',      'change' => '100%'],
+         ['icon' => '🕒', 'label' => 'Time Spent',          'value' => '8h 45m', 'change' => '15%'],
+];
 
         // Mon..Sun points for the sparkline, pre-plotted onto a 0-300 x 0-110 viewBox.
         $activityChartPoints = '10,80 55,55 100,65 145,15 190,50 235,68 280,25';
 
         $unreadNotifications = 3;
-        $initials = $user->name ? collect(explode(' ', $user->name))->map(fn ($w) => $w[0])->take(2)->implode('') : 'ST';
+        $initials = $user->FullName ? collect(explode(' ', $user->FullName))->map(fn ($w) => $w[0])->take(2)->implode('') : 'ST';
 
         return view('dashboard', compact(
             'user',

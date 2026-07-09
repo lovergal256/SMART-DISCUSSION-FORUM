@@ -1,6 +1,8 @@
 @extends('layouts.app')
-
 @section('content')
+    <a href="{{ route('discussions.show', $topic->discussion->DiscussionID) }}" class="btn" style="margin-bottom:15px; display:inline-block;">
+        ← All Topics
+    </a>
     <h2>{{ $topic->Title }}</h2>
     <div class="card">
         <p>{{ $post->content }}</p>

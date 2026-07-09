@@ -16,29 +16,31 @@ class TopicController extends Controller
     }
 
     // Show form to create a topic
-    public function create()
-    {
-        return view('topics.create');
-    }
+    public function create(Request $request)
+{
+    $discussionId = $request->query('discussion');
+    return view('topics.create', compact('discussionId'));
+}
 
     // Save new topic to database
-    public function store(Request $request)
-    {
-        $request->validate([
-            'title' => 'required|min:5|max:255',
-            'body'  => 'required|min:10',
-        ]);
+public function store(Request $request)
+{
+    $request->validate([
+        'title' => 'required|min:5|max:255',
+        'body'  => 'required|min:10',
+        'discussion_id' => 'required|exists:discussions,DiscussionID',
+    ]);
 
-        Topic::create([
-            'Title'   => $request->title,
-            'Description'    => $request->body,
-            'UserID' => 1,
-            'GroupID'=>1,
-        ]);
+    $topic = Topic::create([
+        'Title'       => $request->title,
+        'Description' => $request->body,
+        'UserID'      => auth()->id() ?? 1,
+        'DiscussionID'=> $request->discussion_id,
+    ]);
 
-        return redirect()->route('topics.index')
-                         ->with('success', 'Topic created successfully!');
-    }
+    return redirect()->route('discussions.show', $request->discussion_id)
+                     ->with('success', 'Topic created successfully!');
+}
     // Show edit form
 public function edit(Topic $topic)
 {
@@ -74,18 +76,18 @@ public function destroy(Topic $topic)
 }
 
     // Show a single topic with its posts
-    public function show(Topic $topic)
-    {
-       $excludedPostIDs = \App\Models\ExclusionList::where('ExcludedUserID', '1')
-        ->where('ContentType', 'post')
-        ->pluck('ContentID');
+    public function show(\App\Models\Discussion $discussion, Topic $topic)
+{
+          $excludedPostIDs = \App\Models\ExclusionList::where('ExcludedUserID', '1')
+          ->where('ContentType', 'post')
+         ->pluck('ContentID');
 
-       $posts = $topic->posts()
-        ->with('user')
-        ->whereNotIn('PostID', $excludedPostIDs)
-        ->paginate(10);
+          $posts = $topic->posts()
+         ->with('user')
+         ->whereNotIn('PostID', $excludedPostIDs)
+         ->paginate(10);
 
-       return view('topics.show', compact('topic', 'posts'));
-    }
+   return view('topics.show', compact('discussion', 'topic', 'posts'));
+}
    
 }

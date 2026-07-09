@@ -1,11 +1,11 @@
 <div class="topbar">
     <span class="hamburger">☰</span>
 
-    <form action="{{ route('discussions.search') }}" method="GET" class="search" style="flex:1; max-width:460px;">
-        <button type="submit" style="all:unset; cursor:pointer;">🔍</button>
-        <input type="text" name="q" placeholder="Search discussions, groups, quizzes..."
-               style="all:unset; flex:1;" value="{{ request('q') }}">
-    </form>
+    <form action="{{ route('discussions.index') }}" method="GET" class="search" style="flex:1; max-width:460px;">
+       <button type="submit" style="all:unset; cursor:pointer;">🔍</button>
+       <input type="text" name="search" placeholder="Search discussions, groups, quizzes..."
+           style="all:unset; flex:1;" value="{{ request('search') }}">
+     </form>
 
     <div class="top-actions">
         <a class="icon-link" href="{{ route('notifications.index') }}">
