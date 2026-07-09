@@ -1,35 +1,33 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Create Group</title>
-</head>
-<body>
-    <h1>Create New Group</h1>
+@extends('layouts.app')
+
+@section('title', 'Create Group')
+
+@section('content')
+<div class="container">
+    <h2>Create New Group</h2>
 
     @if($errors->any())
-        <ul style="color:red;">
+        <div class="alert-error">
             @foreach($errors->all() as $error)
-                <li>{{ $error }}</li>
+                <p>{{ $error }}</p>
             @endforeach
-        </ul>
+        </div>
     @endif
 
-    <form action="/groups" method="POST">
-        @csrf
-        <div>
-            <label>Group Name</label><br>
-            <input type="text" name="group_name" value="{{ old('group_name') }}">
-        </div>
-        <br>
-        <div>
-            <label>Description</label><br>
-            <textarea name="Description">{{ old('Description') }}</textarea>
-        </div>
-        <br>
-        <button type="submit">Create Group</button>
-    </form>
+    <div class="card">
+        <form method="POST" action="{{ route('groups.store') }}">
+            @csrf
+            <label>Group Name</label>
+            <input type="text" name="GroupName" value="{{ old('GroupName') }}" required>
 
-    <br>
-    <a href="/groups">← Back to Groups</a>
-</body>
-</html>
+            <label>Description</label>
+            <textarea name="Description" rows="3">{{ old('Description') }}</textarea>
+
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <a href="{{ route('groups.index') }}">← Back to Groups</a>
+                <button type="submit" class="btn">Create Group</button>
+            </div>
+        </form>
+    </div>
+</div>
+@endsection

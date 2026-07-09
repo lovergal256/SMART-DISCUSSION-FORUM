@@ -2,26 +2,39 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
 class User extends Authenticatable
 {
-    use Notifiable;
+    use HasFactory, Notifiable;
 
     protected $table = 'users';
     protected $primaryKey = 'UserID';
     public $incrementing = true;
-    public $timestamps = false;
+    protected $keyType = 'int';
 
     protected $fillable = [
-        'FullName', 'Email', 'Password', 'DateJoined',
-        'LastActiveDate', 'RoleID',
+        'FullName',
+        'Email',
+        'Password',
+        'RoleID',
+        'DateJoined',
+        'LastActiveDate',
     ];
 
-    protected $hidden = ['Password'];
+    protected $hidden = [
+        'Password',
+        'remember_token',
+    ];
 
-    public function getAuthPassword(): string
+    public function getAuthIdentifierName()
+    {
+        return 'UserID';
+    }
+
+    public function getAuthPassword()
     {
         return $this->Password;
     }

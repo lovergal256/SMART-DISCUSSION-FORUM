@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use App\Models\Exclusion;
 
 class Group extends Model
 {
@@ -11,8 +12,19 @@ class Group extends Model
     public $incrementing = true;
     protected $keyType = 'int';
 
-    protected $guarded = [
+    protected $fillable = [
         'GroupName',
-        'Description'
+        'Description',
     ];
+
+    public function members() {
+        return $this->belongsToMany(User::class, 'group_members', 'GroupID', 'UserID')
+                    ->withPivot('Role', 'JoinedAt')
+                    ->withTimestamps();
+
+    }
+    public function exclusions()
+{
+    return $this->hasMany(Exclusion::class, 'GroupID', 'GroupID');
+}
 }

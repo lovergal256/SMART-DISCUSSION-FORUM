@@ -1,16 +1,16 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\DashboardController;
-use App\Http\Controllers\RecommendationController;
-use App\Http\Controllers\TopicController;
-use App\Http\Controllers\PostController;
-use App\Http\Controllers\ReplyController;
-use App\Http\Controllers\GroupController;
 use App\Http\Controllers\ExclusionController;
-use App\Models\Topic;
+use App\Http\Controllers\GroupController;
+use App\Http\Controllers\PostController;
+use App\Http\Controllers\QuizController;
+use App\Http\Controllers\RecommendationController;
+use App\Http\Controllers\ReplyController;
+use App\Http\Controllers\TopicController;
 use App\Models\Post;
+use App\Models\Topic;
 use Illuminate\Http\Request;
 use App\Http\Controllers\NotificationController;
 
@@ -86,11 +86,18 @@ Route::get('/discussions/{id}', function ($id) {
     Route::get('/groups', [GroupController::class, 'index'])->name('groups.index');
     Route::get('/groups/create', [GroupController::class, 'create'])->name('groups.create');
     Route::post('/groups', [GroupController::class, 'store'])->name('groups.store');
-    Route::get('/groups/{id}', fn ($id) => view('groups.show', compact('id')))->name('groups.show');
-
+    Route::get('/groups/{id}', [GroupController::class, 'show'])->name('groups.show');
+    Route::get('/groups/{id}', [GroupController::class, 'show'])->name('groups.show');
+    Route::post('/groups/{id}/members', [GroupController::class, 'addMember'])->name('groups.addMember');
+    Route::post('/groups/{groupId}/exclusions', [ExclusionController::class, 'store'])->name('exclusions.store');
+    Route::delete('/groups/{groupId}/exclusions/{exclusionId}', [ExclusionController::class, 'destroy'])->name('exclusions.destroy'); 
+    
     // --- Quiz Management Module ---
-    Route::get('/quizzes', fn () => view('quizzes.index'))->name('quizzes.index');
-    Route::get('/quizzes/{id}', fn ($id) => view('quizzes.show', compact('id')))->name('quizzes.show');
+    Route::get('/quizzes', [QuizController::class, 'index'])->name('quizzes.index');
+    Route::get('/quizzes/create', [QuizController::class, 'create'])->name('quizzes.create');
+    Route::post('/quizzes', [QuizController::class, 'store'])->name('quizzes.store');
+    Route::get('/quizzes/{id}', [QuizController::class, 'show'])->name('quizzes.show');
+    Route::post('/quizzes/{id}/attempts', [QuizController::class, 'submitAttempt'])->name('quizzes.attempts.store');
 
     // --- Performance Management Module ---
     Route::get('/performance', fn () => view('performance.index'))->name('performance.index');
