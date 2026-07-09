@@ -5,43 +5,62 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use App\Models\Group;
 
 class User extends Authenticatable
 {
     use HasFactory, Notifiable;
 
     protected $table = 'users';
-
-    protected $primaryKey = 'id';
-
+    protected $primaryKey = 'UserID';
     public $incrementing = true;
+    protected $keyType = 'int';
+    public $timestamps = false;
 
     protected $fillable = [
-        'name',
-        'email',
-        'password',
-        'role',
-    ];
+    'FullName',
+    'Email',
+    'Password',
+    'DateJoined',
+    'LastActiveDate',
+    'RoleID',
+];
 
     protected $hidden = [
-        'password',
+        'Password',
         'remember_token',
     ];
+
+    public function getAuthIdentifierName()
+    {
+        return 'UserID';
+    }
+
+    public function getAuthPassword()
+    {
+        return $this->Password;
+    }
+
+    public function getEmailForPasswordReset()
+    {
+        return $this->Email;
+    }
+
+    public function getEmailForVerification()
+    {
+        return $this->Email;
+    }
 
     protected function casts(): array
     {
         return [
-            'email_verified_at' => 'datetime',
+            'DateJoined' => 'datetime',
         ];
     }
 
-    public function getAuthPassword(): string
+    public function groups()
     {
-        return (string) $this->password;
-    }
-
-    public function getFullNameAttribute(): string
-    {
-        return (string) $this->name;
+        return $this->belongsToMany(Group::class, 'group_members', 'UserID', 'GroupID')
+                    ->withPivot('Role', 'JoinedAt');
     }
 }

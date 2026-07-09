@@ -2,12 +2,12 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
 use App\Models\Group;
 use App\Models\Exclusion;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Http\Request;
 
-class ExclusionController extends Controller
+class GroupExclusionController extends Controller
 {
     public function store(Request $request, $groupId) {
         $group = Group::findOrFail($groupId);
