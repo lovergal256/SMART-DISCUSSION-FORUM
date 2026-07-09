@@ -9,10 +9,10 @@ class Topic extends Model
     protected $primaryKey='TopicID';
     public $timestamps =false;
 
-    protected $fillable=['GroupID','UserID','Title','Description','Status'];
-    public function group()
+    protected $fillable=['DiscussionID','UserID','Title','Description','Status'];
+    public function discussion()
     {
-        return $this->belongsTo(Group::class,'GroupID','GroupID');
+        return $this->belongsTo(Discussion::class,'DiscussionID','DiscussionID');
     }
     public function user()
     {

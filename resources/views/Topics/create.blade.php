@@ -6,6 +6,7 @@
     <div class="card">
         <form action="{{ route('topics.store') }}" method="POST">
             @csrf
+            <input type="hidden" name="discussion_id" value="{{ $discussionId }}">
 
             <label>Topic Title</label>
             <input type="text" name="title" value="{{ old('title') }}" placeholder="Enter topic title">
@@ -20,10 +21,7 @@
             @enderror
 
             <button type="submit" class="btn">Post Topic</button>
-            <a href="{{ route('topics.index') }}" class="btn btn-red">Cancel</a>
+            <a href="{{ route('discussions.show', $discussionId) }}" class="btn btn-red">Cancel</a>
         </form>
     </div>
 @endsection
-
-
-

@@ -6,6 +6,8 @@
 
     <nav>
         <a class="nav-link {{ request()->routeIs('student.dashboard') ? 'active' : '' }}" href="{{ route('student.dashboard') }}">
+           <span class="nav-icon">🏠</span> Dashboard
+        </a>
         <a class="nav-link {{ request()->routeIs('discussions.*') ? 'active' : '' }}" href="{{ route('discussions.index') }}">
             <span class="nav-icon">💬</span> Discussions
         </a>
