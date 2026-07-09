@@ -3,33 +3,29 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Answer extends Model
 {
-    protected $table = 'quiz_answers';
+    protected $table = 'answers';
+    protected $primaryKey = 'AnswerID';
+    public $timestamps = false;
 
     protected $fillable = [
-        'quiz_attempt_id',
-        'question_id',
-        'choice_id',
-        'answer_text',
-        'is_correct',
-        'points_awarded',
+        'AttemptID',
+        'QuestionID',
+        'SelectedOption',
+        'IsCorrect',
+        'MarksAwarded',
+        'DateAnswered',
     ];
 
-    public function attempt(): BelongsTo
+    public function attempt()
     {
-        return $this->belongsTo(Attempt::class, 'quiz_attempt_id');
+        return $this->belongsTo(Attempt::class, 'AttemptID', 'AttemptID');
     }
 
-    public function question(): BelongsTo
+    public function question()
     {
-        return $this->belongsTo(Question::class, 'question_id');
-    }
-
-    public function choice(): BelongsTo
-    {
-        return $this->belongsTo(Choice::class, 'choice_id');
+        return $this->belongsTo(Question::class, 'QuestionID', 'QuestionID');
     }
 }

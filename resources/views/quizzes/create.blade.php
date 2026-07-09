@@ -29,12 +29,9 @@
             <select name="group_id" required>
                 <option value="">Select group</option>
                 @foreach($groups as $group)
-                    <option value="{{ $group->id }}" @selected((string) old('group_id') === (string) $group->id)>
-    {{ $group->name }}
-</option>
-                    <option value="{{ $group->id }}" @selected((string) old('group_id') === (string) $group->id)>
-    {{ $group->name }}
-</option>
+                    <option value="{{ $group->GroupID }}" @selected((string) old('group_id') === (string) $group->GroupID)>
+                        {{ $group->GroupName }}
+                    </option>
                 @endforeach
             </select>
         </div>
@@ -42,7 +39,7 @@
         <div class="field-grid">
             <div class="field">
                 <label>Start Time</label>
-                <input type="datetime-local" name="available_from" value="{{ old('available_from') }}" required>
+                <input type="datetime-local" name="start_time" value="{{ old('start_time') }}" required>
             </div>
             <div class="field">
                 <label>Duration (minutes)</label>
@@ -93,49 +90,16 @@
 
 @push('styles')
     <style>
-        .field {
-            margin-bottom: 14px;
+        .field { margin-bottom: 14px; }
+        .field input, .field select, .field textarea {
+            width: 100%; padding: 10px; border: 1px solid var(--line);
+            border-radius: 8px; font-size: 13px; background: #fff;
         }
-
-        .field input,
-        .field select,
-        .field textarea {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid var(--line);
-            border-radius: 8px;
-            font-size: 13px;
-            background: #fff;
-        }
-
-        .field-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 12px;
-        }
-
-        .section-title {
-            margin: 16px 0 12px;
-            font-size: 16px;
-        }
-
-        .question-block {
-            border: 1px solid var(--line);
-            border-radius: 12px;
-            padding: 14px;
-            margin-bottom: 12px;
-        }
-
-        .question-block h4 {
-            margin-bottom: 10px;
-        }
-
-        .actions {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-top: 14px;
-        }
+        .field-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .section-title { margin: 16px 0 12px; font-size: 16px; }
+        .question-block { border: 1px solid var(--line); border-radius: 12px; padding: 14px; margin-bottom: 12px; }
+        .question-block h4 { margin-bottom: 10px; }
+        .actions { display: flex; justify-content: space-between; align-items: center; margin-top: 14px; }
     </style>
 @endpush
 
@@ -144,10 +108,7 @@
         document.addEventListener('DOMContentLoaded', function () {
             var wrapper = document.getElementById('questions-wrapper');
             var addButton = document.getElementById('add-question');
-
-            if (!wrapper || !addButton) {
-                return;
-            }
+            if (!wrapper || !addButton) return;
 
             addButton.addEventListener('click', function () {
                 var index = wrapper.querySelectorAll('.question-block').length;
@@ -160,22 +121,14 @@
                     + '<input type="text" name="questions[' + index + '][option_c]" placeholder="Option C (optional)">'
                     + '<input type="text" name="questions[' + index + '][option_d]" placeholder="Option D (optional)">'
                     + '<div class="field-grid">'
-                    + '<div class="field">'
-                    + '<label>Correct option</label>'
+                    + '<div class="field"><label>Correct option</label>'
                     + '<select name="questions[' + index + '][correct_option]" required>'
-                    + '<option value="A">A</option>'
-                    + '<option value="B">B</option>'
-                    + '<option value="C">C</option>'
-                    + '<option value="D">D</option>'
-                    + '</select>'
-                    + '</div>'
-                    + '<div class="field">'
-                    + '<label>Marks</label>'
-                    + '<input type="number" name="questions[' + index + '][marks]" min="1" value="1" required>'
-                    + '</div>'
-                    + '</div>'
-                    + '</div>';
-
+                    + '<option value="A">A</option><option value="B">B</option>'
+                    + '<option value="C">C</option><option value="D">D</option>'
+                    + '</select></div>'
+                    + '<div class="field"><label>Marks</label>'
+                    + '<input type="number" name="questions[' + index + '][marks]" min="1" value="1" required></div>'
+                    + '</div></div>';
                 wrapper.insertAdjacentHTML('beforeend', html);
             });
         });

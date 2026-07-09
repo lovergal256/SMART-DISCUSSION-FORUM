@@ -3,12 +3,10 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class QuizScore extends Model
 {
     protected $table = 'quiz_scores';
-
     protected $primaryKey = 'QuizScoreID';
 
     protected $fillable = [
@@ -18,7 +16,12 @@ class QuizScore extends Model
         'DateRecorded',
     ];
 
-    public function quiz(): BelongsTo
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'UserID', 'UserID');
+    }
+
+    public function quiz()
     {
         return $this->belongsTo(Quiz::class, 'QuizID', 'QuizID');
     }
