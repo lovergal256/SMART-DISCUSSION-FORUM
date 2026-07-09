@@ -32,19 +32,19 @@ class AuthController extends Controller
             return back()->withErrors(['Email' => 'Email and password are required.']);
         }
 
-        $user = User::query()->where('email', $email)->first();
+       $user = User::query()->where('Email', $email)->first();
 
-        if (! $user || ! Hash::check($password, $user->password)) {
+        if (! $user || ! Hash::check($password, $user->Password)) {
             return back()->withErrors(['Email' => 'Invalid email or password.']);
         }
 
         Auth::login($user);
 
         // Redirect based on role
-        return match($user->role) {
-            'lecturer' => redirect()->route('lecturer.dashboard'),
-            default => redirect()->route('student.dashboard'),
-        };
+        return match($user->RoleID) {
+          2 => redirect()->route('lecturer.dashboard'),
+          default => redirect()->route('student.dashboard'),
+};
     }
 
     // Show student register page
@@ -84,11 +84,12 @@ class AuthController extends Controller
         ]);
 
         $user = User::query()->create([
-            'name' => $fullName,
-            'email' => $email,
-            'password' => Hash::make($password),
-            'role' => 'student',
-        ]);
+            'FullName' => $fullName,
+            'Email' => $email,
+            'Password' => Hash::make($password),
+            'RoleID' => 1,
+            'DateJoined' => now(),
+]);
 
         Auth::login($user);
 

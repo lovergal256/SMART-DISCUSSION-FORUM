@@ -15,11 +15,11 @@ class Exclusion extends Model
     ];
 
     public function excludedUser() {
-        return $this->belongsTo(User::class, 'ExcludedUserID', 'id');
+        return $this->belongsTo(User::class, 'ExcludedUserID', 'UserID');
     }
 
     public function user() {
-        return $this->belongsTo(User::class, 'UserID', 'id');
+        return $this->belongsTo(User::class, 'UserID', 'UserID');
     }
 
     public function group() {

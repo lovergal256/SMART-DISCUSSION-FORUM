@@ -5,7 +5,6 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-use App\Models\Group;
 
 class User extends Authenticatable
 {
@@ -15,16 +14,15 @@ class User extends Authenticatable
     protected $primaryKey = 'UserID';
     public $incrementing = true;
     protected $keyType = 'int';
-    public $timestamps = false;
 
     protected $fillable = [
-    'FullName',
-    'Email',
-    'Password',
-    'DateJoined',
-    'LastActiveDate',
-    'RoleID',
-];
+        'FullName',
+        'Email',
+        'Password',
+        'RoleID',
+        'DateJoined',
+        'LastActiveDate',
+    ];
 
     protected $hidden = [
         'Password',
@@ -55,6 +53,7 @@ class User extends Authenticatable
     {
         return [
             'DateJoined' => 'datetime',
+            'LastActiveDate' => 'datetime',
         ];
     }
 
@@ -62,5 +61,10 @@ class User extends Authenticatable
     {
         return $this->belongsToMany(Group::class, 'group_members', 'UserID', 'GroupID')
                     ->withPivot('Role', 'JoinedAt');
+    }
+
+    public function role()
+    {
+        return $this->belongsTo(Role::class, 'RoleID', 'RoleID');
     }
 }

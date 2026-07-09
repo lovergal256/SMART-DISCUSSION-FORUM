@@ -18,7 +18,7 @@ return new class extends Migration
             $table->string('Role', 20)->default('member');
             $table->timestamp('JoinedAt')->useCurrent();
             $table->foreign('GroupID')->references('GroupID')->on('groups')->onDelete('cascade');
-            $table->foreign('UserID')->references('id')->on('users')->onDelete('cascade');
+            $table->foreign('UserID')->references('UserID')->on('users')->onDelete('cascade');
             $table->unique(['GroupID', 'UserID']);
             $table->timestamps();
         });

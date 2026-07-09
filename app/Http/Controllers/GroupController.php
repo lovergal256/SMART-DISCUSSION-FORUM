@@ -34,7 +34,7 @@ class GroupController extends Controller
 
 
         $group->members()->attach(Auth::id(), ['Role' => 'admin']);
-
+        
         return redirect()->route('groups.show', $group->GroupID);
     }
 
@@ -49,12 +49,12 @@ class GroupController extends Controller
          $group = Group::findOrFail($id);
 
          $request->validate([
-            'user_id' => 'required|exists:users,id',
+         'user_id' => 'required|exists:users,UserID',
          ]);
 
-         if($group->members()->where('UserID', $request->user_id)->exists()) {
-            return back()->with('error', 'User is already a member of this group. ');
-         }
+        if ($group->members()->where('group_members.UserID', $request->user_id)->exists()) {
+         return back()->with('error', 'User is already a member of this group.');
+        }
 
          $group->members()->attach($request->user_id, ['Role' => 'member']);
 

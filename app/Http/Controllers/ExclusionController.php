@@ -13,7 +13,7 @@ class ExclusionController extends Controller
         $group = Group::findOrFail($groupId);
 
         $request->validate([
-            'excluded_user_id' => 'required|exists:users,id', 
+            'excluded_user_id' => 'required|exists:users,UserID', 
         ]);
 
         if($request->excluded_user_id == Auth::id()) {

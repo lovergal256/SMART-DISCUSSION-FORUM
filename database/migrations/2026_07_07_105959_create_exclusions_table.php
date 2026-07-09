@@ -16,8 +16,8 @@ return new class extends Migration
             $table->unsignedBigInteger('UserID');
             $table->unsignedBigInteger('ExcludedUserID');
             $table->unsignedBigInteger('GroupID');
-            $table->foreign('UserID')->references('id')->on('users')->onDelete('cascade');
-            $table->foreign('ExcludedUserID')->references('id')->on('users')->onDelete('cascade');
+            $table->foreign('UserID')->references('UserID')->on('users')->onDelete('cascade');
+            $table->foreign('ExcludedUserID')->references('UserID')->on('users')->onDelete('cascade');
             $table->foreign('GroupID')->references('GroupID')->on('groups')->onDelete('cascade');
             $table->unique(['UserID', 'ExcludedUserID', 'GroupID']);
             $table->timestamps();
