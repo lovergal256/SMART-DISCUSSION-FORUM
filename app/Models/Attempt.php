@@ -3,34 +3,35 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Attempt extends Model
 {
-    protected $table = 'quiz_attempts';
+    protected $table = 'attempts';
+    protected $primaryKey = 'AttemptID';
+    public $timestamps = false;
 
     protected $fillable = [
-        'quiz_id',
-        'user_id',
-        'started_at',
-        'score',
-        'total_points',
-        'submitted_at',
+        'UserID',
+        'QuizID',
+        'StartTime',
+        'EndTime',
+        'Status',
+        'Score',
+        'AttemptDate',
     ];
 
-    public function quiz(): BelongsTo
+    public function user()
     {
-        return $this->belongsTo(Quiz::class, 'quiz_id');
+        return $this->belongsTo(User::class, 'UserID', 'UserID');
     }
 
-    public function user(): BelongsTo
+    public function quiz()
     {
-        return $this->belongsTo(User::class, 'user_id');
+        return $this->belongsTo(Quiz::class, 'QuizID', 'QuizID');
     }
 
-    public function answers(): HasMany
+    public function answers()
     {
-        return $this->hasMany(Answer::class, 'quiz_attempt_id');
+        return $this->hasMany(Answer::class, 'AttemptID', 'AttemptID');
     }
 }

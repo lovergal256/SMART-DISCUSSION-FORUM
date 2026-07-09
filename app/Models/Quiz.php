@@ -3,36 +3,37 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Quiz extends Model
 {
     protected $table = 'quizzes';
+    protected $primaryKey = 'QuizID';
 
     protected $fillable = [
-        'lecturer_id',
-        'title',
-        'description',
-        'available_from',
-        'available_until',
-        'duration_minutes',
-        'is_published',
-        'results_released',
+        'Title',
+        'StartTime',
+        'Duration',
+        'GroupID',
+        'LecturerID',
     ];
 
-    public function lecturer(): BelongsTo
+    public function group()
     {
-        return $this->belongsTo(User::class, 'lecturer_id');
+        return $this->belongsTo(Group::class, 'GroupID', 'GroupID');
     }
 
-    public function questions(): HasMany
+    public function lecturer()
     {
-        return $this->hasMany(Question::class, 'quiz_id');
+        return $this->belongsTo(User::class, 'LecturerID', 'UserID');
     }
 
-    public function attempts(): HasMany
+    public function questions()
     {
-        return $this->hasMany(Attempt::class, 'quiz_id');
+        return $this->hasMany(Question::class, 'QuizID', 'QuizID');
+    }
+
+    public function attempts()
+    {
+        return $this->hasMany(Attempt::class, 'QuizID', 'QuizID');
     }
 }
