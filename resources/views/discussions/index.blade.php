@@ -1,6 +1,7 @@
 @extends('layouts.app')
 
 @section('content')
+
     <h1>Discussions</h1>
 
     <div class="card">
@@ -23,4 +24,5 @@
             <p>No discussions found.</p>
         </div>
     @endforelse
+
 @endsection

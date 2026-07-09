@@ -5,7 +5,7 @@
 @section('content')
 
     <div class="page-head">
-        <h1>Welcome back, {{ $user->name ?? 'Daphnie' }}! 👋</h1>
+        <h1>Welcome back, {{ $user->FullName ?? 'there' }}! 👋</h1>
         <p>Let's continue your learning journey.</p>
     </div>
 
