@@ -1,3 +1,10 @@
+@php
+use App\Models\Notification;
+
+$unreadCount = Notification::where('UserID', auth()->user()->UserID)
+    ->where('Status', 'Unread')
+    ->count();
+@endphp
 <div class="topbar">
     <span class="hamburger">☰</span>
 
@@ -8,7 +15,7 @@
     </form>
 
     <div class="top-actions">
-        <a class="icon-link" href="{{ route('notifications.index') }}">
+        <a class="icon-link" href="{{ route('student.notifications.index') }}">
             🔔
             @if($unreadNotifications ?? 0)
                 <span class="badge">{{ $unreadNotifications }}</span>

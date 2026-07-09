@@ -12,6 +12,7 @@ use App\Http\Controllers\ExclusionController;
 use App\Models\Topic;
 use App\Models\Post;
 use Illuminate\Http\Request;
+use App\Http\Controllers\NotificationController;
 
 // Public routes
 Route::get('/', function () {
@@ -52,7 +53,7 @@ Route::middleware('auth')->group(function () {
     Route::resource('topics.posts', PostController::class)->only(['create', 'store', 'show']);
     Route::resource('topics.posts.replies', ReplyController::class)->only(['store', 'destroy', 'edit', 'update']);
 
-   
+
 
 Route::get('/discussions', function () {
     $topics = Topic::with(['user', 'group'])
@@ -114,3 +115,6 @@ Route::get('/discussions/{id}', function ($id) {
     Route::delete('/topics/{topic}/posts/{post}/exclude/{user}', [ExclusionController::class, 'destroy'])->name('exclusions.destroy');
     Route::get('/topics/{topic}/exclusions', [ExclusionController::class, 'index'])->name('exclusions.index');
 });
+Route::get('/student/notifications', [NotificationController::class, 'index'])->name('student.notifications.index');
+Route::post('/student/notifications/{id}/read', [NotificationController::class, 'markAsRead'])
+    ->name('student.notifications.read');

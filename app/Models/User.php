@@ -25,4 +25,9 @@ class User extends Authenticatable
     {
         return $this->Password;
     }
+
+    public function notifications()
+    {
+        return $this->hasMany(Notification::class, 'UserID', 'UserID');
+    }
 }
