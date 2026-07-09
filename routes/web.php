@@ -9,6 +9,9 @@ use App\Http\Controllers\PostController;
 use App\Http\Controllers\ReplyController;
 use App\Http\Controllers\GroupController;
 use App\Http\Controllers\ExclusionController;
+use App\Models\Topic;
+use App\Models\Post;
+use Illuminate\Http\Request;
 
 // Public routes
 Route::get('/', function () {
@@ -49,9 +52,34 @@ Route::middleware('auth')->group(function () {
     Route::resource('topics.posts', PostController::class)->only(['create', 'store', 'show']);
     Route::resource('topics.posts.replies', ReplyController::class)->only(['store', 'destroy', 'edit', 'update']);
 
-    Route::get('/discussions', fn () => view('discussions.index'))->name('discussions.index');
-    Route::get('/discussions/search', fn () => view('discussions.index'))->name('discussions.search');
-    Route::get('/discussions/{id}', fn ($id) => view('discussions.show', compact('id')))->name('discussions.show');
+   
+
+Route::get('/discussions', function () {
+    $topics = Topic::with(['user', 'group'])
+        ->withCount('posts')
+        ->latest('TopicID')
+        ->paginate(10);
+    return view('discussions.index', compact('topics'));
+})->name('discussions.index');
+
+Route::get('/discussions/search', function (Request $request) {
+    $query = $request->input('q');
+    $topics = Topic::with(['user', 'group'])
+        ->withCount('posts')
+        ->when($query, fn ($q) => $q->where('Title', 'like', "%{$query}%"))
+        ->latest('TopicID')
+        ->paginate(10);
+    return view('discussions.index', compact('topics', 'query'));
+})->name('discussions.search');
+
+Route::get('/discussions/{id}', function ($id) {
+    $topic = Topic::with(['user', 'group'])->findOrFail($id);
+    $posts = Post::with(['user', 'replies.user'])
+        ->where('TopicID', $id)
+        ->latest('DatePosted')
+        ->get();
+    return view('discussions.show', compact('topic', 'posts'));
+})->name('discussions.show');
 
     // --- Group Management Module ---
     Route::get('/groups', [GroupController::class, 'index'])->name('groups.index');

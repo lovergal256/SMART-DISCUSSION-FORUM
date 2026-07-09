@@ -6,21 +6,23 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
-{
-    Schema::table('replies', function (Blueprint $table) {
-        $table->string('ParentReplyID', 50)->nullable();
-    });
-}
+    {
+        Schema::table('replies', function (Blueprint $table) {
+            $table->string('ParentReplyID', 50)->nullable();
 
-public function down(): void
-{
-    Schema::table('replies', function (Blueprint $table) {
-        $table->dropColumn('ParentReplyID');
-    });
-}
+            $table->foreign('ParentReplyID')
+                  ->references('ReplyID')
+                  ->on('replies')
+                  ->onDelete('set null');
+        });
     }
-;
+
+    public function down(): void
+    {
+        Schema::table('replies', function (Blueprint $table) {
+            $table->dropForeign(['ParentReplyID']);
+            $table->dropColumn('ParentReplyID');
+        });
+    }
+};

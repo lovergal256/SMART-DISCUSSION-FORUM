@@ -12,14 +12,20 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('replies', function (Blueprint $table) {
-            $table->string('ReplyID',50)->primary();
-            $table->string('PostID',50);
+            $table->string('ReplyID', 50)->primary();
+
+            $table->string('PostID', 50);
             $table->foreign('PostID')
                   ->references('PostID')
                   ->on('posts')
                   ->onDelete('cascade');
-            $table->string('UserID',50);
-            $table->foreign('UserId'); 
+
+            $table->unsignedBigInteger('UserID');
+            $table->foreign('UserID')
+                  ->references('UserID')
+                  ->on('users')
+                  ->onDelete('cascade');
+
             $table->timestamps();
         });
     }
@@ -32,5 +38,3 @@ return new class extends Migration
         Schema::dropIfExists('replies');
     }
 };
-
-

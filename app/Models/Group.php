@@ -12,7 +12,7 @@ class Group extends Model
     protected $keyType = 'int';
 
     protected $guarded = [
-        'Group Name',
+        'GroupName',
         'Description'
     ];
 }
