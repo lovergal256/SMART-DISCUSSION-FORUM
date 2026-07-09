@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('attempts', function (Blueprint $table) {
             $table->id('AttemptID');
-            $table->string('UserID',50);
+            $table->unsignedBigInteger('UserID');
             $table->foreign('UserID')->references('UserID')->on('users')->onDelete('cascade');
             $table->foreignId('QuizID')->constrained('quizzes','QuizID')->onDelete('cascade');
             $table->dateTime('StartTime');
@@ -33,3 +33,5 @@ return new class extends Migration
         Schema::dropIfExists('attempts');
     }
 };
+
+

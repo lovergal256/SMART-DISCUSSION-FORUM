@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('notifications', function (Blueprint $table) {
             $table->string('NotificationID')->primary();
-            $table->string('UserID',50);
+            $table->unsignedBigInteger('UserID');
             $table->foreign('UserID')->references('UserID')->on('users')->onDelete('cascade');
             $table->text('Message');
             $table->string('Type',50);
@@ -31,3 +31,5 @@ return new class extends Migration
         Schema::dropIfExists('notifications');
     }
 };
+
+

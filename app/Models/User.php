@@ -2,48 +2,27 @@
 
 namespace App\Models;
 
-use Illuminate\Foundation\Auth\User as Authenticable;
+use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
-class User extends Authenticable
+class User extends Authenticatable
 {
     use Notifiable;
-    protected $primaryKey ='UserID';
-    public $incrementing ='false';
-    protected $keyType ='string';
-    public $timestamps ='false';
 
-    protected $fillable=['UserID','FullName','Email','Password','DateJoined','LastActiveDate','RoleID']
-    ;
-    protected $hidden =['Password'];
+    protected $table = 'users';
+    protected $primaryKey = 'UserID';
+    public $incrementing = true;
+    public $timestamps = false;
 
-    public function getAuthPassword()
+    protected $fillable = [
+        'FullName', 'Email', 'Password', 'DateJoined',
+        'LastActiveDate', 'RoleID',
+    ];
+
+    protected $hidden = ['Password'];
+
+    public function getAuthPassword(): string
     {
         return $this->Password;
     }
-        public function role()
-    {
-        return $this->belongsTo(Role::class,'RoleID','RoleID');
-    }
-        public function topics()
-    {
-        return $this->hasMany(Topic::class,'UserID','UserID');
-    }
-    public function posts()
-    {
-        return $this->hasMany(Post::class,'UserID','UserID');
-    }
-    public function warnings()
-    {
-        return $this->hasMany(Warning::class,'UserID','UserID');
-    }
-    
 }
-
-
-
-
-
-
-
-
