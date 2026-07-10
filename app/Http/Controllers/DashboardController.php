@@ -2,6 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\User;
+use App\Models\Post;
+use App\Models\Discussion;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -13,7 +16,7 @@ class DashboardController extends Controller
         $discussionsCount = \App\Models\Discussion::count();
         $postsCount = \App\Models\Post::count();
 
-        
+
 
         // ---------------------------------------------------------------
         // NOTE: everything below is placeholder data so the view renders
@@ -101,4 +104,38 @@ class DashboardController extends Controller
             'initials'
         ));
     }
+
+public function adminDashboard()
+{
+    $user = Auth::user();
+    $discussions = \App\Models\Discussion::latest()
+    ->take(5)
+    ->get();
+
+    $stats = [
+        [
+            'label' => 'Users',
+            'value' => User::count(),
+            'icon'  => '👥',
+            'change' => '0%',
+            'url' => '#',
+        ],
+        [
+            'label' => 'Discussions',
+            'value' => Discussion::count(),
+            'icon'  => '💬',
+            'change' => '0%',
+            'url' => '#',
+        ],
+        [
+            'label' => 'Posts',
+            'value' => Post::count(),
+            'icon'  => '📝',
+            'change' => '0%',
+            'url' => '#',
+        ],
+    ];
+
+    return view('admin.dashboard', compact('user', 'stats'));
+}
 }

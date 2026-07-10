@@ -41,9 +41,11 @@ class AuthController extends Controller
         Auth::login($user);
 
         // Redirect based on role
-        return match($user->RoleID) {
-          2 => redirect()->route('lecturer.dashboard'),
-          default => redirect()->route('student.dashboard'),
+        return match ($user->RoleID) {
+    3 => redirect()->route('admin.dashboard'),
+    2 => redirect()->route('lecturer.dashboard'),
+    1 => redirect()->route('student.dashboard'),
+    default => abort(403, 'Unauthorized role.'),
 };
     }
 

@@ -14,6 +14,8 @@ use App\Models\Post;
 use App\Models\Topic;
 use Illuminate\Http\Request;
 use App\Http\Controllers\NotificationController;
+use App\Models\Notification;
+use Illuminate\Support\Facades\Auth;
 
 // Public routes
 Route::get('/', function () {
@@ -69,8 +71,8 @@ Route::get('/discussions/{discussion}/topics/{topic}', [TopicController::class, 
     Route::get('/groups/{id}', [GroupController::class, 'show'])->name('groups.show');
     Route::post('/groups/{id}/members', [GroupController::class, 'addMember'])->name('groups.addMember');
     Route::post('/groups/{groupId}/exclusions', [ExclusionController::class, 'store'])->name('exclusions.store');
-    Route::delete('/groups/{groupId}/exclusions/{exclusionId}', [ExclusionController::class, 'destroy'])->name('exclusions.destroy'); 
-    
+    Route::delete('/groups/{groupId}/exclusions/{exclusionId}', [ExclusionController::class, 'destroy'])->name('exclusions.destroy');
+
     // --- Quiz Management Module ---
     Route::get('/quizzes', [QuizController::class, 'index'])->name('quizzes.index');
     Route::get('/quizzes/create', [QuizController::class, 'create'])->name('quizzes.create');
@@ -91,7 +93,14 @@ Route::get('/discussions/{discussion}/topics/{topic}', [TopicController::class, 
     Route::get('/activity', fn () => view('activity.index'))->name('activity.index');
 
     // --- Notification Management Module ---
-    Route::get('/notifications', fn () => view('notifications.index'))->name('notifications.index');
+    Route::get('/notifications', function () {
+
+    $notifications = Notification::where('UserID', Auth::id())
+        ->latest()
+        ->get();
+
+    return view('student.notifications.index', compact('notifications'));
+    })->name('notifications.index');
 
     // --- Profile / Account ---
     Route::get('/profile', fn () => view('profile.show'))->name('profile.show');
@@ -101,6 +110,9 @@ Route::get('/discussions/{discussion}/topics/{topic}', [TopicController::class, 
     Route::delete('/topics/{topic}/posts/{post}/exclude/{user}', [ExclusionController::class, 'destroy'])->name('exclusions.destroy');
     Route::get('/topics/{topic}/exclusions', [ExclusionController::class, 'index'])->name('exclusions.index');
 });
-Route::get('/student/notifications', [NotificationController::class, 'index'])->name('student.notifications.index');
-Route::post('/student/notifications/{id}/read', [NotificationController::class, 'markAsRead'])
-    ->name('student.notifications.read');
+Route::get('/notifications', [NotificationController::class, 'index'])
+    ->name('notifications.index');
+    Route::post('/notifications/{notification}/read', [NotificationController::class, 'markAsRead'])
+    ->name('notifications.read');
+Route::get('/admin/dashboard', [DashboardController::class, 'adminDashboard'])
+    ->name('admin.dashboard');

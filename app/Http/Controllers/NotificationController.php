@@ -9,14 +9,18 @@ use Illuminate\Support\Facades\Auth;
 class NotificationController extends Controller
 {
     public function index()
-    {
-        $user = Auth::user();
-        $notifications = Notification::where('UserID', $user->UserID)
-            ->orderBy('created_at', 'desc')
-            ->get();
+{
+    $notifications = Notification::where('UserID', Auth::id())
+        ->orderByDesc('NotificationID')
+        ->get();
 
-        return view('student.notifications.index', compact('notifications'));
-    }
+    return match (Auth::user()->RoleID) {
+        1 => view('student.notifications.index', compact('notifications')),
+        2 => view('lecturer.notifications.index', compact('notifications')),
+        3 => view('admin.notifications.index', compact('notifications')),
+        default => abort(403),
+    };
+}
 
     public function markAsRead(Request $request)
     {

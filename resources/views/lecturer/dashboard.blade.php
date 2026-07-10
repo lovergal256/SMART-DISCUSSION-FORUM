@@ -1,6 +1,6 @@
-@extends('layouts.admin_app')
+@extends('layouts.lecturer_app')
 
-@section('title', 'Admin Dashboard — Smart Discussion Forum')
+@section('title', 'Lecturer Dashboard — Smart Discussion Forum')
 
 @section('content')
 

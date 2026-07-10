@@ -28,7 +28,7 @@ class RecommendationController extends Controller
                 $join->on('groups.GroupID', '=', 'group_admins.GroupID')
                      ->where('group_admins.UserID', '=', $user->UserID);
             })
-            ->select('groups.GroupID', DB::raw('`groups`.`Group Name` as GroupName'), 'groups.Description')
+            ->select('groups.GroupID', DB::raw('`groups`.`GroupName` as GroupName'), 'groups.Description')
             ->whereNull('group_admins.UserID')
             ->limit(4)
             ->get();
