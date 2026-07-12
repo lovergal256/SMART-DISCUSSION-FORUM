@@ -8,10 +8,16 @@ use Illuminate\Support\Facades\Auth;
 
 class GroupController extends Controller
 {
-    public function index() {
-        $groups = Group::all();
-        return view('groups.index', ['groups' => $groups]);
-    }
+    public function index(Request $request)
+{
+       $search = $request->input('search');
+
+        $groups = Group::when($search, function ($query, $search) {
+        $query->where('GroupName', 'like', '%' . $search . '%');
+        })->get();
+
+        return view('groups.index', ['groups' => $groups, 'search' => $search]);
+}
 
 
     public function create() {
