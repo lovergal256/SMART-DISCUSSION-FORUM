@@ -26,16 +26,41 @@
             <p>No members yet.</p>
         @else
             @foreach($members as $member)
-                <div style="display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid #eee;">
-                    <div>
-                        <strong>{{ $member->FullName }}</strong>
-                        <div style="font-size:0.85em; color:#666;">{{ $member->Email }}</div>
-                    </div>
-                    <span style="font-size:0.8em; padding:2px 8px; background:#d0e8f5; border-radius:4px;">
-                        {{ $member->pivot->Role }}
-                    </span>
-                </div>
-            @endforeach
+    <div style="display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid #eee;">
+        <div>
+            <strong>{{ $member->FullName }}</strong>
+            <div style="font-size:0.85em; color:#666;">{{ $member->Email }}</div>
+        </div>
+        <div style="display:flex; align-items:center; gap:10px;">
+            <span style="font-size:0.8em; padding:2px 8px; background:#d0e8f5; border-radius:4px;">
+                {{ $member->pivot->Role }}
+            </span>
+            @php
+                $authRole = $members->firstWhere('UserID', auth()->id())?->pivot->Role;
+            @endphp
+            @if($authRole === 'admin' && auth()->user()->UserID !== $member->UserID)
+                @if($member->pivot->Role !== 'admin')
+                    <form method="POST" action="{{ route('groups.promote', [$group->GroupID, $member->UserID]) }}">
+                        @csrf
+                        <button type="submit"
+                                style="font-size:0.8em; padding:2px 8px; background:#0077b6; color:white; border:none; border-radius:4px; cursor:pointer;">
+                            Promote
+                        </button>
+                    </form>
+                @endif
+                <form method="POST" action="{{ route('groups.removeMember', [$group->GroupID, $member->UserID]) }}">
+                    @csrf
+                    @method('DELETE')
+                    <button type="submit"
+                            onclick="return confirm('Remove {{ $member->FullName }} from this group?')"
+                            style="font-size:0.8em; color:red; background:none; border:none; cursor:pointer;">
+                        Remove
+                    </button>
+                </form>
+            @endif
+        </div>
+    </div>
+@endforeach
         @endif
     </div>
 
@@ -92,5 +117,21 @@
     </div>
 
     <a href="{{ route('groups.index') }}">← Back to Groups</a>
+
+    @php
+       $isMember = $members->contains('UserID', auth()->id());
+    @endphp
+
+    @if($isMember)
+        <form method="POST" action="{{ route('groups.leave', $group->GroupID) }}" style="display:inline; margin-top:10px;">
+            @csrf 
+            @method('DELETE')
+            <button type="submit"
+                    onclick="return confirm('Are you sure you want to leave this group?')"
+                    style="color:red; background:none; border:none; cursor:pointer; font-size:0.9em;">
+                    Leave this group 
+            </button>
+        </form>
+    @endif         
 </div>
 @endsection

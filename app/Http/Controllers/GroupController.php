@@ -60,4 +60,84 @@ class GroupController extends Controller
 
          return back()->with('success', 'Member added successfully.');
     }
+
+    public function leave(Request $request, $id){
+        $group = Group::findOrFail($id);
+
+        //checking if a user is actually a member
+        if(!$group->members()->where('group_members.UserID', Auth::id())->exists()) {
+            return redirect()->route('groups.index')->with('error', 'You are not a member of this group.');
+        }
+
+        //Check the user is not the only admin
+        $adminCount = $group->members()->wherePivot('Role', 'admin')->count();
+        $userRole = $group->members()->where('group_members.UserID', Auth::id())->first()->pivot->Role;
+
+        if($userRole === 'admin' && $adminCount === 1) {
+            return back()->with('error', 'You are the only admin. Promote another member before leaving.');
+        }
+
+        $group->members()->detach(Auth::id());
+
+        return redirect()->route('groups.index')->with('success', 'You have left the group.');
+    }
+
+    public function promote(Request $request, $id, $userId) {
+        $group = Group::findOrFail($id);
+
+        //only admins can promote
+        $userRole = $group->members()
+                          ->where('group_members.UserID', Auth::id())
+                          ->first();
+
+        if(!$userRole || $userRole->pivot->Role !== 'admin') {
+            return back()->with('error', 'Only admins can promote members.');
+        }
+
+        //Check the target user is actually a member 
+        $member = $group->members()
+                        ->where('group_members.UserID', $userId)
+                        ->first();
+
+        if(!$member) {
+            return back()->with('error', 'That user is not a member of this group.');
+        }
+
+        //Update their role to admin
+        $group->members()->updateExistingPivot($userId, ['Role' => 'admin']);
+
+        return back()->with('success', $member->FullName . " has been promoted to admin.");
+    }
+
+    public function removeMember(Request $request, $id, $userId)
+{
+    $group = Group::findOrFail($id);
+
+    // Only admins can remove members
+    $authUser = $group->members()
+                      ->where('group_members.UserID', Auth::id())
+                      ->first();
+
+    if (!$authUser || $authUser->pivot->Role !== 'admin') {
+        return back()->with('error', 'Only admins can remove members.');
+    }
+
+    // Can't remove yourself this way
+    if ($userId == Auth::id()) {
+        return back()->with('error', 'Use the leave button to leave the group.');
+    }
+
+    // Check target is actually a member
+    $member = $group->members()
+                    ->where('group_members.UserID', $userId)
+                    ->first();
+
+    if (!$member) {
+        return back()->with('error', 'That user is not a member of this group.');
+    }
+
+    $group->members()->detach($userId);
+
+    return back()->with('success', $member->FullName . ' has been removed from the group.');
+}
 }
