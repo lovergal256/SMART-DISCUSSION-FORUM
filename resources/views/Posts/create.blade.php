@@ -1,13 +1,19 @@
 @extends('layouts.app')
 
 @section('content')
-    <h1>Add Post to: {{ $topic->title }}</h1>
+    <h1>Add Post to: {{ $topic->Title }}</h1>
 
     <div class="card">
         <form action="{{ route('topics.posts.store', $topic->TopicID) }}" method="POST">
             @csrf
 
             <label>Your Post</label>
+            @if(session('error'))
+    <div style="background:#fdd; border:1px solid #f99; color:#900; padding:10px; border-radius:4px; margin-bottom:15px;">
+        {{ session('error') }}
+    </div>
+@endif
+
             <textarea name="body" rows="6" placeholder="Write your post...">{{ old('body') }}</textarea>
             @error('body')
                 <p style="color:red">{{ $message }}</p>

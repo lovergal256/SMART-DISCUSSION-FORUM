@@ -1,20 +1,36 @@
 @extends('layouts.app')
 
 @section('content')
-    <h1>{{ $topic->Title }}</h1>
-    <div class="card">
-      <p><strong>Topic Description </strong> <br>{{ $topic->Description }}</p>
-        <small>Posted by {{ $topic->user->FullName ?? 'Unknown' }}</small>
-      
-         @if(true)
-           <a href="{{ route('topics.edit', $topic) }}" class="btn">Edit</a>
-         <form action="{{ route('topics.destroy', $topic) }}" method="POST" style="display:inline">
-             @csrf
-             @method('DELETE')
-            <button type="submit" class="btn" onclick="return confirm('Delete this topic?')">Delete</button>
-         </form>
-        @endif
+    @if(session('success'))
+        <div class="alert-success">{{ session('success') }}</div>
+    @endif
+    @if(session('error'))
+        <div class="alert-error">{{ session('error') }}</div>
+    @endif
+
+    <div style="display:flex; justify-content:space-between; align-items:center;">
+        <h1>{{ $topic->Title }}</h1>
+        <button onclick="shareTopic()" class="btn">🔗 Share Topic</button>
     </div>
+
+      <div class="card">
+      <p><strong>Topic Description </strong> <br>{{ $topic->Description }}</p>
+
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-top:10px;">
+            <small>Posted by {{ $topic->user->FullName ?? 'Unknown' }}</small>
+
+            @if($canManageTopic)
+                <div>
+                    <a href="{{ route('topics.edit', $topic) }}" class="btn">Edit</a>
+                    <form action="{{ route('topics.destroy', $topic) }}" method="POST" style="display:inline">
+                        @csrf
+                        @method('DELETE')
+                        <button type="submit" class="btn" onclick="return confirm('Delete this topic?')">Delete</button>
+                    </form>
+                </div>
+            @endif
+        </div>
+    </div> 
 
       <h2>Posts</h2>
       <a href="{{ route('topics.posts.create', $topic->TopicID) }}" class="btn">+ Add Post</a>
@@ -38,31 +54,20 @@
              💬 View Replies ({{ $post->replies()->count() }})
             </button>
 
-        {{-- Replies hidden by default --}}
-            <div id="replies-{{ $post->PostID }}" style="display:none; margin-top:10px;">
-                @foreach($post->replies()->with('user')->get()->where('ParentReplyID', null) as $reply)
-                   <div class="card" style="margin-left: 40px; margin-top:10px;">
-                     <p>{{ $reply->Body }}</p>
-                     <small style="color: #023e8a; font-weight:600;">By {{ $reply->user->FullName ?? 'Unknown' }}</small>
-                     <small style="color:#888;">· {{ $reply->created_at?->diffForHumans() }}</small>
-
-                    {{-- Nested replies --}}
-                      @foreach($post->replies()->with('user')->get()->where('ParentReplyID', $reply->ReplyID) as $childReply)
-                        <div class="card" style="margin-left: 60px; margin-top:10px;">
-                            <p>{{ $childReply->Body }}</p>
-                            <small style="color: #023e8a; font-weight:600;">By {{ $childReply->user->FullName ?? 'Unknown' }}</small>
-                            <small style="color:#888;">· {{ $childReply->created_at?->diffForHumans() }}</small>
-                        </div>
-                      @endforeach
-                    </div>
-                @endforeach
-
-                @if($post->replies()->count() === 0)
-                  <p style="margin-left:40px; color:#888;">No replies yet.</p>
-                @endif
+          {{-- Replies hidden by default --}}
+          <div id="replies-{{ $post->PostID }}" style="display:none; margin-top:10px;">
+                @php
+                    $allReplies = $post->replies()->with('user')->get();
+                @endphp
+                @forelse($allReplies->where('ParentReplyID', null) as $reply)
+                    @include('partials.reply-thread-simple', ['reply' => $reply, 'allReplies' => $allReplies, 'depth' => 1, 'topic' => $topic, 'post' => $post])
+                @empty
+                    <p style="margin-left:40px; color:#888;">No replies yet.</p>
+                @endforelse
             </div>
         </div>
-        @empty
+    @empty 
+
        <div class="card">
          <p>No posts yet. Be the first to post!</p>
        </div>
@@ -77,6 +82,45 @@
         div.style.display = 'none';
        }
        }
+
+       function shareTopic() {
+    const shareData = {
+        title: @json($topic->Title),
+        text: 'Check out this topic: {{ $topic->Title }}',
+        url: '{{ route('discussions.topics.show', [$topic->DiscussionID, $topic->TopicID]) }}'
+    };
+
+    if (navigator.share) {
+        navigator.share(shareData).catch((err) => console.log('Share cancelled or failed:', err));
+    } else if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(shareData.url).then(() => {
+            alert('Link copied to clipboard!');
+        }).catch((err) => {
+            console.log('Clipboard failed:', err);
+            fallbackCopy(shareData.url);
+        });
+    } else {
+        fallbackCopy(shareData.url);
+    }
+}
+
+function fallbackCopy(text) {
+    const textarea = document.createElement('textarea');
+    textarea.value = text;
+    textarea.style.position = 'fixed';
+    textarea.style.opacity = '0';
+    document.body.appendChild(textarea);
+    textarea.focus();
+    textarea.select();
+    try {
+        document.execCommand('copy');
+        alert('Link copied to clipboard!');
+    } catch (err) {
+        prompt('Copy this link:', text);
+    }
+    document.body.removeChild(textarea);
+}
+       
     </script>
 
 

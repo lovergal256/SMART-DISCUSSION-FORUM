@@ -18,12 +18,14 @@ class NotificationController extends Controller
         return view('student.notifications.index', compact('notifications'));
     }
 
-    public function markAsRead(Request $request)
-    {
-        $notificationIds = $request->input('notification_ids', []);
-        Notification::whereIn('NotificationID', $notificationIds)
-            ->update(['Status' => 'read']);
+   public function markAsRead(Request $request, $id)
+{
+    \Log::info('markAsRead called', ['id' => $id]);
 
-        return redirect()->back()->with('success', 'Notifications marked as read.');
-    }
+    $updated = Notification::where('NotificationID', $id)->update(['Status' => 'read']);
+
+    \Log::info('markAsRead result', ['rows_updated' => $updated]);
+
+    return redirect()->back()->with('success', 'Notification marked as read.');
+} 
 }

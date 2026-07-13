@@ -22,6 +22,7 @@ class User extends Authenticatable
         'RoleID',
         'DateJoined',
         'LastActiveDate',
+        'Theme',
     ];
 
     protected $hidden = [
@@ -51,5 +52,15 @@ class User extends Authenticatable
 public function getRoleNameAttribute()
 {
     return strtolower((string) ($this->roleRelation->RoleName ?? ''));
+}
+
+public function warnings()
+{
+    return $this->hasMany(Warning::class, 'UserID', 'UserID');
+}
+
+public function blacklists()
+{
+    return $this->hasMany(Blacklist::class, 'UserID', 'UserID');
 }
 }

@@ -20,21 +20,29 @@ return new class extends Migration
         });
     }
 
-    // Step 2: create a placeholder discussion for existing test topics
-    $firstUserId = DB::table('users')->value('UserID') ?? 1;
+    // Step 2: only create a placeholder discussion if there are existing topics to backfill
+// AND at least one user to attach it to. On a fresh install, both are empty, so skip.
+$hasOrphanTopics = Schema::hasColumn('topics', 'DiscussionID')
+    && DB::table('topics')->whereNull('DiscussionID')->exists();
 
-    $discussionId = DB::table('discussions')->insertGetId([
-        'Title' => 'Migrated Test Discussion',
-        'Description' => 'Auto-created to hold existing test topics after migration.',
-        'UserID' => $firstUserId,
-        'created_at' => now(),
-        'updated_at' => now(),
-    ]);
+if ($hasOrphanTopics) {
+    $firstUserId = DB::table('users')->value('UserID');
 
-    // Step 3: backfill existing topics with that discussion id
-    DB::table('topics')->whereNull('DiscussionID')->update([
-        'DiscussionID' => $discussionId,
-    ]);
+    if ($firstUserId) {
+        $discussionId = DB::table('discussions')->insertGetId([
+            'Title' => 'Migrated Test Discussion',
+            'Description' => 'Auto-created to hold existing test topics after migration.',
+            'UserID' => $firstUserId,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        // Step 3: backfill existing topics with that discussion id
+        DB::table('topics')->whereNull('DiscussionID')->update([
+            'DiscussionID' => $discussionId,
+        ]);
+    }
+}
 
     // Step 4: drop the old GroupID column if it still exists
     if (Schema::hasColumn('topics', 'GroupID')) {

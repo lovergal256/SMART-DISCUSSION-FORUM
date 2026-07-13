@@ -57,7 +57,8 @@ Route::middleware('auth')->group(function () {
 
 
 Route::resource('discussions', DiscussionController::class);
-
+Route::get('/discussions/{discussion}/export-pdf', [DiscussionController::class, 'exportPdf'])
+    ->name('discussions.exportPdf');
 Route::get('/discussions/{discussion}/topics/{topic}', [TopicController::class, 'show'])
     ->name('discussions.topics.show');
 
@@ -66,10 +67,14 @@ Route::get('/discussions/{discussion}/topics/{topic}', [TopicController::class, 
     Route::get('/groups/create', [GroupController::class, 'create'])->name('groups.create');
     Route::post('/groups', [GroupController::class, 'store'])->name('groups.store');
     Route::get('/groups/{id}', [GroupController::class, 'show'])->name('groups.show');
-    Route::get('/groups/{id}', [GroupController::class, 'show'])->name('groups.show');
     Route::post('/groups/{id}/members', [GroupController::class, 'addMember'])->name('groups.addMember');
+    Route::delete('/groups/{id}', [GroupController::class, 'destroy'])->name('groups.destroy');
     Route::post('/groups/{groupId}/exclusions', [ExclusionController::class, 'store'])->name('exclusions.store');
     Route::delete('/groups/{groupId}/exclusions/{exclusionId}', [ExclusionController::class, 'destroy'])->name('exclusions.destroy'); 
+    Route::post('/groups/{id}/request-join', [GroupController::class, 'requestJoin'])->name('groups.requestJoin');
+    Route::post('/groups/{groupId}/approve/{userId}', [GroupController::class, 'approveMember'])->name('groups.approve');
+    Route::post('/groups/{groupId}/reject/{userId}', [GroupController::class, 'rejectMember'])->name('groups.reject');
+    Route::post('/groups/{id}/leave', [GroupController::class, 'leaveGroup'])->name('groups.leave');
     
     // --- Quiz Management Module ---
     Route::get('/quizzes', [QuizController::class, 'index'])->name('quizzes.index');
@@ -85,16 +90,82 @@ Route::get('/discussions/{discussion}/topics/{topic}', [TopicController::class, 
     Route::get('/recommendations', [RecommendationController::class, 'index'])->name('recommendations.index');
 
     // --- Blacklisting and Warning Module (student-facing view) ---
-    Route::get('/warnings', fn () => view('warnings.index'))->name('warnings.index');
+    Route::get('/warnings', function () {
+    $user = auth()->user();
+    $warnings = $user->warnings()->orderByDesc('WarningDate')->get();
+    $activeBlacklist = $user->blacklists()
+        ->where('EndDate', '>=', now()->toDateString())
+        ->first();
+
+    return view('warnings.index', compact('warnings', 'activeBlacklist'));
+})->name('warnings.index');
 
     // --- Statistics Management Module ---
     Route::get('/activity', fn () => view('activity.index'))->name('activity.index');
 
     // --- Notification Management Module ---
-    Route::get('/notifications', fn () => view('student.notifications.index'))->name('notifications.index');
+    Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
 
     // --- Profile / Account ---
-    Route::get('/profile', fn () => view('profile.show'))->name('profile.show');
+   // --- Profile / Account ---
+    Route::get('/profile', function () {
+        $user = auth()->user();
+        return view('profile.show', compact('user'));
+    })->name('profile.show');
+
+    Route::post('/profile/update', function (\Illuminate\Http\Request $request) {
+        $validated = $request->validate([
+            'FullName' => 'required|string|max:255',
+            'Theme' => 'required|in:light,dark',
+        ]);
+
+        auth()->user()->update($validated);
+
+        return redirect()->route('profile.show')->with('success', 'Profile updated successfully.');
+    })->name('profile.update');
+
+    Route::post('/profile/change-password', function (\Illuminate\Http\Request $request) {
+        $validated = $request->validate([
+            'current_password' => 'required',
+            'new_password' => 'required|min:6|confirmed',
+        ]);
+
+        $user = auth()->user();
+
+        if (!\Illuminate\Support\Facades\Hash::check($validated['current_password'], $user->Password)) {
+            return back()->with('error', 'Current password is incorrect.');
+        }
+
+        $user->update([
+            'Password' => \Illuminate\Support\Facades\Hash::make($validated['new_password']),
+        ]);
+
+        return redirect()->route('profile.show')->with('success', 'Password changed successfully.');
+    })->name('profile.changePassword');
+
+    Route::delete('/profile/delete', function (\Illuminate\Http\Request $request) {
+        $validated = $request->validate([
+            'delete_confirm_password' => 'required',
+        ]);
+
+        $user = auth()->user();
+
+        if (!\Illuminate\Support\Facades\Hash::check($validated['delete_confirm_password'], $user->Password)) {
+            return back()->with('error', 'Password is incorrect. Account not deleted.');
+        }
+
+        $user->update([
+            'FullName' => 'Deleted User',
+            'Email' => 'deleted_' . $user->UserID . '_' . uniqid() . '@deleted.local',
+            'Password' => \Illuminate\Support\Facades\Hash::make(uniqid() . uniqid()),
+        ]);
+
+        auth()->logout();
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+
+        return redirect()->route('login')->with('success', 'Your account has been deleted.');
+    })->name('profile.delete');
 
     // --- Exclusions ---
     Route::post('/topics/{topic}/posts/{post}/exclude', [ExclusionController::class, 'store'])->name('exclusions.store');

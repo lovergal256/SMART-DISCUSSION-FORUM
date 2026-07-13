@@ -1,3 +1,12 @@
+@php
+    $currentUser = auth()->user();
+    $currentInitials = $currentUser
+        ? collect(explode(' ', $currentUser->FullName ?? ''))->map(fn($w) => $w[0] ?? '')->take(2)->implode('')
+        : 'ST';
+    $currentUnread = $currentUser
+        ? \App\Models\Notification::where('UserID', $currentUser->UserID)->where('Status', 'Unread')->count()
+        : 0;
+@endphp
 <div class="topbar">
     <span class="hamburger">☰</span>
 
@@ -10,15 +19,15 @@
     <div class="top-actions">
         <a class="icon-link" href="{{ route('notifications.index') }}">
             🔔
-            @if($unreadNotifications ?? 0)
-                <span class="badge">{{ $unreadNotifications }}</span>
+            @if($currentUnread > 0)
+                <span class="badge">{{ $currentUnread }}</span>
             @endif
         </a>
 
         <a class="profile-link" href="{{ route('profile.show') }}">
-            <div class="avatar-img">{{ $initials ?? 'ST' }}</div>
+            <div class="avatar-img">{{ $currentInitials ?: 'ST' }}</div>
             <div>
-                <div class="profile-name">{{ $user->name ?? 'Student Name' }}</div>
+                <div class="profile-name">{{ $currentUser->FullName ?? 'Student Name' }}</div>
                 <div class="profile-role">Student</div>
             </div>
             <span class="chevron">▾</span>

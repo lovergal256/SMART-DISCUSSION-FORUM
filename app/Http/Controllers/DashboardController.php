@@ -12,7 +12,10 @@ class DashboardController extends Controller
         $user = Auth::user();
         $discussionsCount = \App\Models\Discussion::count();
         $postsCount = \App\Models\Post::count();
-
+         $groupsJoinedCount = \App\Models\Group::whereHas('members', function ($query) use ($user) {
+        $query->where('group_members.UserID', $user->UserID)
+              ->where('group_members.Status', 'approved');
+    })->count();
         
 
         // ---------------------------------------------------------------
@@ -24,7 +27,7 @@ class DashboardController extends Controller
 
         $stats = [
             ['icon' => '💬', 'value' => (string) $discussionsCount,  'label' => 'Discussions Joined', 'change' => '3 this week',  'url' => route('discussions.index')],
-            ['icon' => '👥', 'value' => '4',   'label' => 'Groups Joined',      'change' => '1 this week',  'url' => route('groups.index')],
+            ['icon' => '👥', 'value' => (string) $groupsJoinedCount,   'label' => 'Groups Joined',      'change' => '1 this week',  'url' => route('groups.index')],
             ['icon' => '📖', 'value' => '84%', 'label' => 'Quiz Average',       'change' => '6% this week', 'url' => route('performance.index')],
             ['icon' => '📈', 'value' => (string) $postsCount,  'label' => 'Posts Created',      'change' => '5 this week',  'url' => route('activity.index')],
             ['icon' => '⭐', 'value' => '120', 'label' => 'Points Earned',      'change' => '15 this week', 'url' => route('performance.index')],
@@ -65,13 +68,28 @@ class DashboardController extends Controller
             ['icon' => '🎯', 'title' => 'Take the Laravel Quiz Challenge',            'subtitle' => 'Improve your quiz performance',              'url' => route('quizzes.index')],
         ];
 
-        $groups = [
-            ['id' => 1, 'name' => 'Database Systems Group', 'members' => 24, 'new_posts' => 5, 'status' => 'Active'],
-            ['id' => 2, 'name' => 'Web Development Group',  'members' => 18, 'new_posts' => 2, 'status' => 'Active'],
-            ['id' => 3, 'name' => 'AI & Machine Learning',  'members' => 15, 'new_posts' => 3, 'status' => 'Active'],
-            ['id' => 4, 'name' => 'Cyber Security Group',   'members' => 20, 'new_posts' => 1, 'status' => 'Active'],
-        ];
+        $groups = \App\Models\Group::whereHas('members', function ($query) use ($user) {
+                $query->where('group_members.UserID', $user->UserID)
+                      ->where('group_members.Status', 'approved');
+            })
+            ->withCount(['members as members_count' => function ($query) {
+                $query->where('group_members.Status', 'approved');
+            }])
+            ->get()
+            ->map(function ($group) {
+                $newPosts = \App\Models\Discussion::where('GroupID', $group->GroupID)
+                    ->where('created_at', '>=', now()->subDays(7))
+                    ->count();
 
+                return [
+                    'id' => $group->GroupID,
+                    'name' => $group->GroupName,
+                    'members' => $group->members_count,
+                    'new_posts' => $newPosts,
+                    'status' => 'Active',
+                ];
+            })
+            ->toArray();
         $repliesCount = \App\Models\Reply::where('UserID', $user->UserID)->count();
 
         $activity = [
@@ -85,7 +103,9 @@ class DashboardController extends Controller
         // Mon..Sun points for the sparkline, pre-plotted onto a 0-300 x 0-110 viewBox.
         $activityChartPoints = '10,80 55,55 100,65 145,15 190,50 235,68 280,25';
 
-        $unreadNotifications = 3;
+        $unreadNotifications = \App\Models\Notification::where('UserID', $user->UserID)
+         ->where('Status', 'Unread')
+         ->count();
         $initials = $user->FullName ? collect(explode(' ', $user->FullName))->map(fn ($w) => $w[0])->take(2)->implode('') : 'ST';
 
         return view('dashboard', compact(
