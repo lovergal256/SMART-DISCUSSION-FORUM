@@ -74,7 +74,9 @@ Route::get('/discussions/{discussion}/topics/{topic}', [TopicController::class, 
     Route::post('/groups/{id}/request-join', [GroupController::class, 'requestJoin'])->name('groups.requestJoin');
     Route::post('/groups/{groupId}/approve/{userId}', [GroupController::class, 'approveMember'])->name('groups.approve');
     Route::post('/groups/{groupId}/reject/{userId}', [GroupController::class, 'rejectMember'])->name('groups.reject');
-    Route::post('/groups/{id}/leave', [GroupController::class, 'leaveGroup'])->name('groups.leave');
+    Route::delete('/groups/{id}/leave', [GroupController::class, 'leave'])->name('groups.leave');
+    Route::post('/groups/{id}/promote/{userId}', [GroupController::class, 'promote'])->name('groups.promote');
+    Route::delete('/groups/{id}/members/{userId}', [GroupController::class, 'removeMember'])->name('groups.removeMember');
     
     // --- Quiz Management Module ---
     Route::get('/quizzes', [QuizController::class, 'index'])->name('quizzes.index');
@@ -175,3 +177,6 @@ Route::get('/discussions/{discussion}/topics/{topic}', [TopicController::class, 
 Route::get('/student/notifications', [NotificationController::class, 'index'])->name('student.notifications.index');
 Route::post('/student/notifications/{id}/read', [NotificationController::class, 'markAsRead'])
     ->name('student.notifications.read');
+
+
+    

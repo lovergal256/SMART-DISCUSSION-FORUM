@@ -38,21 +38,46 @@
         @if($members->isEmpty())
             <p>No members yet.</p>
         @else
-          @foreach($members as $member)
+            @foreach($members as $member)
     <div style="display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid #eee;">
         <div>
-             <strong>
+            <strong>
     {{ $member->FullName }}
     {{ $member->UserID == $group->CreatedBy ? ' (Creator)' : '' }}
     {{ $member->UserID == auth()->id() ? ' (me)' : '' }}
 </strong>
             <div style="font-size:0.85em; color:#666;">{{ $member->Email }}</div>
         </div>
-        <span style="font-size:0.8em; padding:2px 8px; background:#d0e8f5; border-radius:4px;">
-            {{ $member->pivot->Role }}
-        </span>
+        <div style="display:flex; align-items:center; gap:10px;">
+            <span style="font-size:0.8em; padding:2px 8px; background:#d0e8f5; border-radius:4px;">
+                {{ $member->pivot->Role }}
+            </span>
+            @php
+                $authRole = $members->firstWhere('UserID', auth()->id())?->pivot->Role;
+            @endphp
+            @if($authRole === 'admin' && auth()->user()->UserID !== $member->UserID)
+                @if($member->pivot->Role !== 'admin')
+                    <form method="POST" action="{{ route('groups.promote', [$group->GroupID, $member->UserID]) }}">
+                        @csrf
+                        <button type="submit"
+                                style="font-size:0.8em; padding:2px 8px; background:#0077b6; color:white; border:none; border-radius:4px; cursor:pointer;">
+                            Promote
+                        </button>
+                    </form>
+                @endif
+                <form method="POST" action="{{ route('groups.removeMember', [$group->GroupID, $member->UserID]) }}">
+                    @csrf
+                    @method('DELETE')
+                    <button type="submit"
+                            onclick="return confirm('Remove {{ $member->FullName }} from this group?')"
+                            style="font-size:0.8em; color:red; background:none; border:none; cursor:pointer;">
+                        Remove
+                    </button>
+                </form>
+            @endif
+        </div>
     </div>
-@endforeach 
+@endforeach
         @endif
     </div>
 
@@ -156,12 +181,11 @@
     <div style="display:flex; justify-content:space-between; align-items:center; margin-top:20px;">
     <a href="{{ route('groups.index') }}">← Back to Groups</a>
 
-   
-
     <div style="display:flex; gap:10px;">
         @if($isMember)
             <form action="{{ route('groups.leave', $group->GroupID) }}" method="POST" onsubmit="return confirm('Are you sure you want to leave this group?')">
                 @csrf
+                @method('DELETE')
                 <button type="submit" class="btn btn-red">Exit Group</button>
             </form>
         @endif
