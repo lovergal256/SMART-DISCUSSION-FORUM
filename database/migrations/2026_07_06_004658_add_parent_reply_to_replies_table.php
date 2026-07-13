@@ -1,28 +1,20 @@
 <?php
 
 use Illuminate\Database\Migrations\Migration;
-use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\DB;
 
 return new class extends Migration
 {
     public function up(): void
     {
-        Schema::table('replies', function (Blueprint $table) {
-            $table->string('ParentReplyID', 50)->nullable();
+        DB::statement("ALTER TABLE replies ADD COLUMN ParentReplyID VARCHAR(50) NULL, ALGORITHM=COPY, LOCK=SHARED");
 
-            $table->foreign('ParentReplyID')
-                  ->references('ReplyID')
-                  ->on('replies')
-                  ->onDelete('set null');
-        });
+        DB::statement("ALTER TABLE replies ADD CONSTRAINT replies_parentreplyid_foreign FOREIGN KEY (ParentReplyID) REFERENCES replies (ReplyID) ON DELETE SET NULL, ALGORITHM=COPY, LOCK=SHARED");
     }
 
     public function down(): void
     {
-        Schema::table('replies', function (Blueprint $table) {
-            $table->dropForeign(['ParentReplyID']);
-            $table->dropColumn('ParentReplyID');
-        });
+        DB::statement("ALTER TABLE replies DROP FOREIGN KEY replies_parentreplyid_foreign");
+        DB::statement("ALTER TABLE replies DROP COLUMN ParentReplyID");
     }
 };

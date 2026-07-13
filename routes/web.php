@@ -13,6 +13,7 @@ use App\Http\Controllers\DiscussionController;
 use App\Models\Post;
 use App\Models\Topic;
 use Illuminate\Http\Request;
+use App\Http\Controllers\PerformanceController;
 use App\Http\Controllers\NotificationController;
 
 // Public routes
@@ -86,7 +87,7 @@ Route::get('/discussions/{discussion}/topics/{topic}', [TopicController::class, 
     Route::post('/quizzes/{id}/attempts', [QuizController::class, 'submitAttempt'])->name('quizzes.attempts.store');
 
     // --- Performance Management Module ---
-    Route::get('/performance', fn () => view('performance.index'))->name('performance.index');
+    Route::get('/performance', [PerformanceController::class, 'index'])->name('performance.index');
 
     // --- Recommendation Management Module ---
     Route::get('/recommendations', [RecommendationController::class, 'index'])->name('recommendations.index');

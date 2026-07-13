@@ -22,16 +22,16 @@ class RecommendationController extends Controller
             ->limit(5)
             ->get();
 
-        // 2. Suggested Groups - groups user is NOT in
-        $suggestedGroups = DB::table('groups')
-            ->leftJoin('group_admins', function($join) use ($user) {
-                $join->on('groups.GroupID', '=', 'group_admins.GroupID')
-                     ->where('group_admins.UserID', '=', $user->UserID);
-            })
-            ->select('groups.GroupID', DB::raw('`groups`.`Group Name` as GroupName'), 'groups.Description')
-            ->whereNull('group_admins.UserID')
-            ->limit(4)
-            ->get();
+       // 2. Suggested Groups - groups user is NOT in
+$suggestedGroups = DB::table('groups')
+    ->leftJoin('group_admins', function($join) use ($user) {
+        $join->on('groups.GroupID', '=', 'group_admins.GroupID')
+             ->where('group_admins.UserID', '=', $user->UserID);
+    })
+    ->select('groups.GroupID', 'groups.GroupName', 'groups.Description')
+    ->whereNull('group_admins.UserID')
+    ->limit(4)
+    ->get();
 
         // 3. Active Posts - most recent
 $activePosts = DB::table('posts')
