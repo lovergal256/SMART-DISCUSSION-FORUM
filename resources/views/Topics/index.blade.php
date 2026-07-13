@@ -1,4 +1,4 @@
-@extends('layouts.app')
+@extends('layouts.lecturer_app')
 
 @section('content')
     <h1>All Topics</h1>
@@ -22,5 +22,5 @@
         <p>No topics yet. Be the first to create one!</p>
     </div>
 @endforelse
-    
+
 @endsection

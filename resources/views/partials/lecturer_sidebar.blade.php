@@ -14,8 +14,8 @@
         <a class="nav-link {{ request()->routeIs('quizzes.*') ? 'active' : '' }}" href="{{ route('quizzes.create') }}">
             <span class="nav-icon">👥</span> Create Quiz
         </a>
-        <a class="nav-link {{ request()->routeIs('quizzes.*') ? 'active' : '' }}" href="{{ route('quizzes.index') }}">
-            <span class="nav-icon">📝</span> Create Post
+        <a class="nav-link {{ request()->routeIs('topics.*') ? 'active' : '' }}" href="{{ route('topics.index') }}">
+            <span class="nav-icon">📝</span> Create Topic
         </a>
         <a class="nav-link {{ request()->routeIs('performance.*') ? 'active' : '' }}" href="{{ route('performance.index') }}">
             <span class="nav-icon">📊</span> Performance

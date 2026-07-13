@@ -52,4 +52,9 @@ public function getRoleNameAttribute()
 {
     return strtolower((string) ($this->roleRelation->RoleName ?? ''));
 }
+
+public function lecturer()
+{
+    return $this->hasOne(Lecturer::class, 'UserID', 'UserID');
+}
 }

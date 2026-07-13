@@ -15,6 +15,7 @@ use App\Models\Topic;
 use Illuminate\Http\Request;
 use App\Http\Controllers\NotificationController;
 use App\Models\Notification;
+use App\Http\Controllers\Admin\LecturerController;
 use Illuminate\Support\Facades\Auth;
 
 // Public routes
@@ -110,9 +111,24 @@ Route::get('/discussions/{discussion}/topics/{topic}', [TopicController::class, 
     Route::delete('/topics/{topic}/posts/{post}/exclude/{user}', [ExclusionController::class, 'destroy'])->name('exclusions.destroy');
     Route::get('/topics/{topic}/exclusions', [ExclusionController::class, 'index'])->name('exclusions.index');
 });
-Route::get('/notifications', [NotificationController::class, 'index'])
+    Route::get('/notifications', [NotificationController::class, 'index'])
     ->name('notifications.index');
     Route::post('/notifications/{notification}/read', [NotificationController::class, 'markAsRead'])
     ->name('notifications.read');
-Route::get('/admin/dashboard', [DashboardController::class, 'adminDashboard'])
+    Route::get('/admin/dashboard', [DashboardController::class, 'adminDashboard'])
     ->name('admin.dashboard');
+    Route::get('/lecturer/register', [LecturerController::class, 'create'])
+    ->name('lecturer.register');
+    Route::post('/lecturer/register', [LecturerController::class, 'store'])
+    ->name('lecturer.register.store');
+    Route::middleware('auth')->group(function () {
+
+    Route::get('/admin/lecturers', [LecturerController::class, 'index'])
+        ->name('admin.lecturers.index');
+
+    Route::get('/admin/lecturers/create', [LecturerController::class, 'create'])
+        ->name('admin.lecturers.create');
+
+    Route::post('/admin/lecturers', [LecturerController::class, 'store'])
+        ->name('admin.lecturers.store');
+});
