@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Attempt;
 use App\Models\Answer;
 use App\Models\Group;
+use App\Models\Lecturer;
 use App\Models\Question;
 use App\Models\Quiz;
 use App\Models\QuizScore;
@@ -19,7 +20,7 @@ class QuizController extends Controller
     public function index()
     {
         $user = Auth::user();
-        $role = strtolower((string) ($user->role ?? $user->RoleID ?? ''));
+        $role = $user->role_name;
 
         $quizzes = Quiz::with('group')
             ->withCount('questions')
@@ -68,12 +69,17 @@ class QuizController extends Controller
         $user = Auth::user();
 
         DB::transaction(function () use ($validated, $user): void {
+            $lecturer = Lecturer::firstOrCreate(
+                ['UserID' => $user->UserID],
+                ['Department' => 'General', 'DateEmployed' => now(), 'Status' => 'active']
+            );
+
             $quiz = Quiz::query()->create([
                 'Title' => $validated['title'],
                 'StartTime' => Carbon::parse($validated['start_time']),
                 'Duration' => (int) $validated['duration'],
                 'GroupID' => $validated['group_id'],
-                'LecturerID' => $user->UserID,
+                'LecturerID' => $lecturer->LecturerID,
             ]);
 
             foreach ($validated['questions'] as $questionData) {
@@ -97,7 +103,7 @@ class QuizController extends Controller
     public function show(Quiz $quiz)
     {
         $user = Auth::user();
-        $role = strtolower((string) ($user->role ?? $user->RoleID ?? ''));
+        $role = $user->role_name;
         $now = Carbon::now();
 
         $startTime = Carbon::parse($quiz->StartTime);
