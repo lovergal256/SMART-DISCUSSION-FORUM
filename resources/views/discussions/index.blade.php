@@ -14,7 +14,7 @@
     @forelse($discussions as $discussion)
         <a href="{{ route('discussions.show', $discussion->DiscussionID) }}" style="text-decoration:none; color:inherit;">
             <div class="card">
-                <h3>{{ $discussion->Title }}</h3>
+                <h3>{{ $discussion->Title }} <small style="color:#888;">— {{ $discussion->group->GroupName ?? 'No Group' }}</small></h3>
                 <p>{{ $discussion->Description }}</p>
                 <small>👤 {{ $discussion->user->FullName ?? 'Unknown' }} · 🗂️ {{ $discussion->topics()->count() }} {{ Str::plural('topic', $discussion->topics()->count()) }}</small>
             </div>

@@ -12,13 +12,17 @@ class Discussion extends Model
         'Title',
         'Description',
         'UserID',
+        'GroupID',
     ];
 
     public function user()
     {
         return $this->belongsTo(User::class, 'UserID', 'UserID');
     }
-
+    public function group()
+{
+    return $this->belongsTo(\App\Models\Group::class, 'GroupID', 'GroupID');
+}
     public function topics()
     {
         return $this->hasMany(Topic::class, 'DiscussionID', 'DiscussionID');

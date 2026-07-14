@@ -9,9 +9,12 @@ class Notification extends Model
     protected $table = 'notifications';
 
     protected $primaryKey = 'NotificationID';
+    public $incrementing = false;
+    protected $keyType = 'string';
 
     protected $fillable = [
-        'UserID',
+        'NotificationID',
+        "UserID",
         'Message',
         'Type',
         'Status'

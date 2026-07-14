@@ -11,52 +11,13 @@
 
     <h3>Replies</h3>
 
-   @forelse($replies->where('ParentReplyID', null) as $reply)
-    <div class="card" style="margin-left: 40px;">
-        <p>{{ $reply->Body }}</p>
-        <small style="color: #023e8a; font-weight: 600;">By {{ $reply->user->FullName ?? 'Unknown' }}</small>
-        <small style="color: #888;">· {{ $reply->created_at?->diffForHumans() }}</small>
-
-        @if(true)
-            <a href="{{ route('topics.posts.replies.edit', [$topic, $post, $reply]) }}" class="btn">✏️ Edit</a>
-            <form action="{{ route('topics.posts.replies.destroy', [$topic, $post, $reply]) }}" method="POST" style="display:inline">
-                @csrf
-                @method('DELETE')
-                <button type="submit" class="btn btn-red" onclick="return confirm('Delete this reply?')">Delete</button>
-            </form>
-        @endif
-
-        {{-- Reply to this reply --}}
-        <form action="{{ route('topics.posts.replies.store', [$topic, $post]) }}" method="POST" style="margin-top:10px">
-            @csrf
-            <input type="hidden" name="parent_reply_id" value="{{ $reply->ReplyID }}">
-            <textarea name="body" rows="2" placeholder="Reply to this..."></textarea>
-            <button type="submit" class="btn">↩ Reply</button>
-        </form>
-
-        {{-- Nested replies indented --}}
-     @foreach($replies->where('ParentReplyID', $reply->ReplyID) as $childReply)
-       <div class="card" style="margin-left: 60px; margin-top: 10px;">
-            <p>{{ $childReply->Body }}</p>
-            <small style="color: #023e8a; font-weight: 600;">By {{ $childReply->user->FullName ?? 'Unknown' }}</small>
-            <small style="color: #888;">· {{ $childReply->created_at?->diffForHumans() }}</small>
-            <br><br>
-          @if(true)
-            <a href="{{ route('topics.posts.replies.edit', [$topic, $post, $childReply]) }}" class="btn">✏️ Edit</a>
-            <form action="{{ route('topics.posts.replies.destroy', [$topic, $post, $childReply]) }}" method="POST" style="display:inline">
-                @csrf
-                @method('DELETE')
-                <button type="submit" class="btn btn-red" onclick="return confirm('Delete this reply?')">Delete</button>
-            </form>
-          @endif
-       </div>
-     @endforeach
-    </div>
-@empty
-    <div class="card">
-        <p>No replies yet. Be the first to reply!</p>
-    </div>
-@endforelse
+    @forelse($replies->where('ParentReplyID', null) as $reply)
+        @include('partials.reply-thread', ['reply' => $reply, 'allReplies' => $replies, 'topic' => $topic, 'post' => $post, 'depth' => 1])
+    @empty
+        <div class="card">
+            <p>No replies yet. Be the first to reply!</p>
+        </div>
+    @endforelse
 
     {{ $replies->links() }}
 
@@ -65,6 +26,12 @@
         <form action="{{ route('topics.posts.replies.store', [$topic->TopicID, $post->PostID]) }}" method="POST">
             @csrf
             <label>Your Reply</label>
+            @if(session('error'))
+    <div style="background:#fdd; border:1px solid #f99; color:#900; padding:10px; border-radius:4px; margin-bottom:15px;">
+        {{ session('error') }}
+    </div>
+@endif
+
             <textarea name="body" rows="4" placeholder="Write your reply...">{{ old('body') }}</textarea>
             @error('body')
                 <p style="color:red">{{ $message }}</p>

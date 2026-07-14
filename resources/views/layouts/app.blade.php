@@ -23,10 +23,23 @@
         input, textarea { width: 100%; padding: 10px; margin-bottom: 15px; border: 1px solid #b0c4d8; border-radius: 4px; outline: none; background: #f8fafc; }
         input:focus, textarea:focus { border-color: #0077b6; box-shadow: 0 0 4px rgba(0,119,182,0.3); }
         label { font-weight: bold; display: block; margin-bottom: 5px; color: #0077b6; }
+
+        /* Dark mode overrides */
+        body.dark-mode { background: #121212; color: #e0e0e0; }
+        body.dark-mode nav { background: linear-gradient(135deg, #1a1a1a, #000000); }
+        body.dark-mode .card { background: #1e1e1e; color: #e0e0e0; box-shadow: 0 2px 8px rgba(0,0,0,0.4); border-left: 4px solid #4da3ff; }
+        body.dark-mode .card h3 a { color: #4da3ff; }
+        body.dark-mode .card h3 a:hover { color: #82c1ff; }
+        body.dark-mode .alert-success { background: #16323e; color: #82c1ff; border-left: 4px solid #4da3ff; }
+        body.dark-mode .alert-error { background: #3e1a1d; color: #f5b7bb; }
+        body.dark-mode input, body.dark-mode textarea { background: #2a2a2a; color: #e0e0e0; border: 1px solid #444; }
+        body.dark-mode label { color: #4da3ff; }
+        body.dark-mode .btn { background: linear-gradient(135deg, #1a1a1a, #333); }
+        body.dark-mode .btn:hover { background: linear-gradient(135deg, #333, #444); }
     </style>
     @stack('styles')
 </head>
-<body>
+<body class="{{ auth()->check() && auth()->user()->Theme === 'dark' ? 'dark-mode' : '' }}">
 
     @include('partials.sidebar')
 

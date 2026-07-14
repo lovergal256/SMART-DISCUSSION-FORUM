@@ -4,41 +4,49 @@ namespace App\Http\Controllers;
 
 use App\Models\Discussion;
 use Illuminate\Http\Request;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class DiscussionController extends Controller
 {
     public function index(Request $request)
-    {
-        $query = Discussion::query();
+{
+    $userGroupIds = \App\Models\GroupMember::where('UserID', auth()->user()->UserID)
+        ->pluck('GroupID');
 
-        if ($request->filled('search')) {
-            $query->where('Title', 'like', '%' . $request->search . '%');
-        }
+    $query = Discussion::with('group')
+        ->whereIn('GroupID', $userGroupIds);
 
-        $discussions = $query->latest()->get();
-
-        return view('discussions.index', compact('discussions'));
+    if ($request->filled('search')) {
+        $query->where('Title', 'like', '%' . $request->search . '%');
     }
 
-    public function create()
-    {
-        return view('discussions.create');
-    }
+    $discussions = $query->latest()->get();
 
-    public function store(Request $request)
-    {
-        $validated = $request->validate([
-            'Title' => 'required|string|max:255',
-            'Description' => 'nullable|string',
-        ]);
+    return view('discussions.index', compact('discussions'));
+}
+    public function create(Request $request)
+{
+    $groupId = $request->query('group');
+    $group = $groupId ? \App\Models\Group::find($groupId) : null;
 
-        $validated['UserID'] = auth()->id() ?? auth()->user()->UserID;
+    return view('discussions.create', compact('group'));
+}
 
-        $discussion = Discussion::create($validated);
+   
+      public function store(Request $request)
+{
+    $validated = $request->validate([
+        'Title' => 'required|string|max:255',
+        'Description' => 'nullable|string',
+        'GroupID' => 'required|exists:groups,GroupID',
+    ]);
+    $validated['UserID'] = auth()->id() ?? auth()->user()->UserID;
 
-        return redirect()->route('discussions.show', $discussion->DiscussionID)
-            ->with('success', 'Discussion created successfully.');
-    }
+    $discussion = Discussion::create($validated);
+
+    return redirect()->route('discussions.show', $discussion->DiscussionID)
+        ->with('success', 'Discussion created successfully.');
+}
 
     public function show(Discussion $discussion)
     {
@@ -46,7 +54,23 @@ class DiscussionController extends Controller
 
         return view('discussions.show', compact('discussion', 'topics'));
     }
+     public function exportPdf(Discussion $discussion)
+    {
+        $discussion->load([
+            'user',
+            'group',
+            'topics.user',
+            'topics.posts.user',
+            'topics.posts.replies.user',
+        ]);
 
+        $pdf = Pdf::loadView('discussions.pdf', compact('discussion'))
+            ->setPaper('a4');
+
+        $filename = 'discussion-' . $discussion->DiscussionID . '.pdf';
+
+        return $pdf->download($filename);
+    }
     public function edit(Discussion $discussion)
     {
         return view('discussions.edit', compact('discussion'));

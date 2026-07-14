@@ -21,7 +21,7 @@ class ExclusionController extends Controller
         }
 
         //checking the excluded user is actually in the group
-        if(!$group->members()->where('UserID', $request->excluded_user_id)) {
+        if(!$group->members()->where('group_members.UserID', $request->excluded_user_id)->exists()) {
             return back()->with('error', 'That user is not a member of this groupchat');
         }
 

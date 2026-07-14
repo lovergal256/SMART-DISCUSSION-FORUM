@@ -9,13 +9,32 @@
         <a href="{{ route('groups.create') }}" class="btn">+ New Group</a>
     </div>
 
+      {{-- Search form --}}
+    <div class="card" style="padding:12px 20px;">
+        <form method="GET" action="{{ route('groups.index') }}" style="display:flex; gap:10px;">
+            <input type="text"
+                   name="search"
+                   value="{{ $search ?? '' }}"
+                   placeholder="Search groups..."
+                   style="flex:1; margin:0;">
+            <button type="submit" class="btn">Search</button>
+            @if($search)
+                <a href="{{ route('groups.index') }}" class="btn" style="background:#666;">Clear</a>
+            @endif
+        </form>
+    </div>
+
     @if(session('success'))
         <div class="alert-success">{{ session('success') }}</div>
     @endif
 
     @if($groups->isEmpty())
         <div class="card">
-            <p>No groups yet.</p>
+            @if($search)
+                <p>No groups found matching "{{ $search }}".</p>
+            @else
+                <p>No groups yet.</p>
+            @endif
         </div>
     @else
         @foreach($groups as $group)
@@ -27,3 +46,5 @@
     @endif
 </div>
 @endsection
+
+  

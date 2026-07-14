@@ -42,6 +42,7 @@ class AuthController extends Controller
 
         // Redirect based on role
         return match($user->RoleID) {
+         3 => redirect()->route('admin.dashboard'),
           2 => redirect()->route('lecturer.dashboard'),
           default => redirect()->route('student.dashboard'),
 };

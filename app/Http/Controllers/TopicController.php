@@ -65,29 +65,59 @@ public function update(Request $request, Topic $topic)
 }
 
 // Delete topic
+      // Delete topic
 public function destroy(Topic $topic)
 {
-   // if (auth()->id() != $topic->UserID) {
-   //     abort(403, 'Unauthorized');
-    //}
+    $isCreator = $topic->UserID == Auth::id();
+
+    $groupId = $topic->discussion->GroupID ?? null;
+    $isGroupAdmin = false;
+
+    if ($groupId) {
+        $isGroupAdmin = \App\Models\GroupMember::where('GroupID', $groupId)
+            ->where('UserID', Auth::id())
+            ->where('Role', 'admin')
+            ->where('Status', 'approved')
+            ->exists();
+    }
+
+    if (!$isCreator && !$isGroupAdmin) {
+        return redirect()->back()->with('error', 'Only the topic creator or group admin can delete this topic.');
+    }
+
     $topic->delete();
     return redirect()->route('topics.index')
         ->with('success', 'Topic deleted successfully!');
 }
 
     // Show a single topic with its posts
-    public function show(\App\Models\Discussion $discussion, Topic $topic)
+   public function show(\App\Models\Discussion $discussion, Topic $topic)
 {
-          $excludedPostIDs = \App\Models\ExclusionList::where('ExcludedUserID', '1')
-          ->where('ContentType', 'post')
-         ->pluck('ContentID');
+    $excludedPostIDs = \App\Models\ExclusionList::where('ExcludedUserID', '1')
+    ->where('ContentType', 'post')
+    ->pluck('ContentID');
 
-          $posts = $topic->posts()
-         ->with('user')
-         ->whereNotIn('PostID', $excludedPostIDs)
-         ->paginate(10);
+    $posts = $topic->posts()
+    ->with('user')
+    ->whereNotIn('PostID', $excludedPostIDs)
+    ->paginate(10);
 
-   return view('topics.show', compact('discussion', 'topic', 'posts'));
+    $isCreator = $topic->UserID == Auth::id();
+
+    $groupId = $topic->discussion->GroupID ?? null;
+    $isGroupAdmin = false;
+
+    if ($groupId) {
+        $isGroupAdmin = \App\Models\GroupMember::where('GroupID', $groupId)
+            ->where('UserID', Auth::id())
+            ->where('Role', 'admin')
+            ->where('Status', 'approved')
+            ->exists();
+    }
+
+    $canManageTopic = $isCreator || $isGroupAdmin;
+
+    return view('topics.show', compact('discussion', 'topic', 'posts', 'canManageTopic'));
 }
    
 }

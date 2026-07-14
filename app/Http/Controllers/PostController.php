@@ -16,24 +16,31 @@ class PostController extends Controller
     }
 
     // Save new post to database
-    public function store(Request $request, Topic $topic)
+   public function store(Request $request, Topic $topic)
     {
+        $isBlacklisted = \App\Models\Blacklist::where('UserID', Auth::id())
+            ->where('EndDate', '>=', now()->toDateString())
+            ->exists();
+
+        if ($isBlacklisted) {
+            return redirect()->back()->with('error', 'You are currently blocked from posting due to inactivity. This restriction will lift automatically.');
+        }
+
         $request->validate([
             'body' => 'required|min:5',
         ]);
-
         // Handle exclusions
        $newPost = Post::create([
          'PostID'     => uniqid(),
          'Content'    => $request->body,
          'TopicID'    => $topic->TopicID,
-         'UserID'     => '1',
+         'UserID'     => Auth::id(),
          'DatePosted' => now(),
 ]);
      if($request->visibility === 'exclude' && $request->excluded_users) {
         foreach($request->excluded_users as $excludedUserID) {
            \App\Models\ExclusionList::create([
-            'UserID'         => '1',
+            'UserID'         => Auth::id(),
             'ExcludedUserID' => $excludedUserID,
             'ContentType'    => 'post',
             'ContentID'      => $newPost->PostID,
@@ -44,13 +51,41 @@ class PostController extends Controller
     $allUsers = \App\Models\User::whereNotIn('UserID', $request->share_with_users)->get();
     foreach($allUsers as $user) {
         \App\Models\ExclusionList::create([
-            'UserID'         => '1',
+            'UserID'         => Auth::id(),
             'ExcludedUserID' => $user->UserID,
             'ContentType'    => 'post',
             'ContentID'      => $newPost->PostID,
             'ExclusionDate'  => now(),
         ]);
     }
+}
+
+    // Notify approved group members about the new post (excluding the poster
+    // and anyone this post was excluded from via visibility settings)
+    $groupId = $topic->discussion->GroupID ?? null;
+
+    if ($groupId) {
+        $excludedUserIds = \App\Models\ExclusionList::where('ContentType', 'post')
+            ->where('ContentID', $newPost->PostID)
+            ->pluck('ExcludedUserID')
+            ->toArray();
+
+        $memberIds = \App\Models\GroupMember::where('GroupID', $groupId)
+            ->where('Status', 'approved')
+            ->where('UserID', '!=', Auth::id())
+            ->whereNotIn('UserID', $excludedUserIds)
+            ->pluck('UserID');
+
+        foreach ($memberIds as $memberId) {
+            \App\Models\Notification::create([
+                'NotificationID' => uniqid(),
+                'UserID' => $memberId,
+                'Message' => "{$request->user()->FullName} posted in \"{$topic->Title}\".",
+                'Type' => 'new_post',
+                'Status' => 'Unread',
+            ]);
+        }
+    
 }
     
 
