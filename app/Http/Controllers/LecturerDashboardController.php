@@ -125,7 +125,7 @@ class LecturerDashboardController extends Controller
             'title' => $discussion->Title,
             'author' => auth()->user()->FullName,
             'posted_at' => $discussion->created_at?->diffForHumans() ?? 'Recently',
-            'replies' => Post::where('DiscussionID', $discussion->DiscussionID)->count(),
+            'replies' => Post::where('TopicID', $discussion->DiscussionID)->count(),
         ];
     })
     ->toArray();
