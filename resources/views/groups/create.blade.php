@@ -1,4 +1,4 @@
-@extends('layouts.app')
+@extends('layouts.lecturer_app')
 
 @section('title', 'Create Group')
 

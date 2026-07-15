@@ -27,5 +27,28 @@ class NotificationController extends Controller
     \Log::info('markAsRead result', ['rows_updated' => $updated]);
 
     return redirect()->back()->with('success', 'Notification marked as read.');
+}
+
+public function lecturerIndex()
+{
+    $user = auth()->user();
+
+    $notifications = \App\Models\Notification::where('UserID', $user->UserID)
+        ->latest()
+        ->paginate(10);
+
+    return view('lecturer.notifications.index', compact('notifications'));
+}
+
+public function lecturerMarkAsRead($id)
+{
+    $notification = Notification::findOrFail($id);
+
+    $notification->update([
+        'Status' => 'Read'
+    ]);
+
+    return back()->with('success', 'Notification marked as read.');
+}
 } 
 }

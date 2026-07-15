@@ -26,4 +26,14 @@ class Group extends Model
 {
     return $this->hasMany(Exclusion::class, 'GroupID', 'GroupID');
 }
+
+    public function quizzes()
+    {
+        return $this->hasMany(Quiz::class, 'GroupID', 'GroupID');
+    }
+
+    public function discussions()
+    {
+        return $this->hasMany(Discussion::class, 'GroupID', 'GroupID');
+    }
 }

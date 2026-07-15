@@ -13,6 +13,7 @@ use App\Http\Controllers\DiscussionController;
 use App\Models\Post;
 use App\Models\Topic;
 use Illuminate\Http\Request;
+use App\Http\Controllers\PerformanceController;
 use App\Http\Controllers\NotificationController;
 
 // Public routes
@@ -56,10 +57,10 @@ Route::middleware('auth')->group(function () {
 
 
 
-Route::resource('discussions', DiscussionController::class);
-Route::get('/discussions/{discussion}/export-pdf', [DiscussionController::class, 'exportPdf'])
+    Route::resource('discussions', DiscussionController::class);
+    Route::get('/discussions/{discussion}/export-pdf', [DiscussionController::class, 'exportPdf'])
     ->name('discussions.exportPdf');
-Route::get('/discussions/{discussion}/topics/{topic}', [TopicController::class, 'show'])
+    Route::get('/discussions/{discussion}/topics/{topic}', [TopicController::class, 'show'])
     ->name('discussions.topics.show');
 
     // --- Group Management Module ---
@@ -70,14 +71,14 @@ Route::get('/discussions/{discussion}/topics/{topic}', [TopicController::class, 
     Route::post('/groups/{id}/members', [GroupController::class, 'addMember'])->name('groups.addMember');
     Route::delete('/groups/{id}', [GroupController::class, 'destroy'])->name('groups.destroy');
     Route::post('/groups/{groupId}/exclusions', [ExclusionController::class, 'store'])->name('exclusions.store');
-    Route::delete('/groups/{groupId}/exclusions/{exclusionId}', [ExclusionController::class, 'destroy'])->name('exclusions.destroy'); 
+    Route::delete('/groups/{groupId}/exclusions/{exclusionId}', [ExclusionController::class, 'destroy'])->name('exclusions.destroy');
     Route::post('/groups/{id}/request-join', [GroupController::class, 'requestJoin'])->name('groups.requestJoin');
     Route::post('/groups/{groupId}/approve/{userId}', [GroupController::class, 'approveMember'])->name('groups.approve');
     Route::post('/groups/{groupId}/reject/{userId}', [GroupController::class, 'rejectMember'])->name('groups.reject');
     Route::delete('/groups/{id}/leave', [GroupController::class, 'leave'])->name('groups.leave');
     Route::post('/groups/{id}/promote/{userId}', [GroupController::class, 'promote'])->name('groups.promote');
     Route::delete('/groups/{id}/members/{userId}', [GroupController::class, 'removeMember'])->name('groups.removeMember');
-    
+
     // --- Quiz Management Module ---
     Route::get('/quizzes', [QuizController::class, 'index'])->name('quizzes.index');
     Route::get('/quizzes/create', [QuizController::class, 'create'])->name('quizzes.create');
@@ -86,21 +87,21 @@ Route::get('/discussions/{discussion}/topics/{topic}', [TopicController::class, 
     Route::post('/quizzes/{id}/attempts', [QuizController::class, 'submitAttempt'])->name('quizzes.attempts.store');
 
     // --- Performance Management Module ---
-    Route::get('/performance', fn () => view('performance.index'))->name('performance.index');
+    Route::get('/performance', [PerformanceController::class, 'index'])->name('performance.index');
 
     // --- Recommendation Management Module ---
     Route::get('/recommendations', [RecommendationController::class, 'index'])->name('recommendations.index');
 
     // --- Blacklisting and Warning Module (student-facing view) ---
     Route::get('/warnings', function () {
-    $user = auth()->user();
-    $warnings = $user->warnings()->orderByDesc('WarningDate')->get();
-    $activeBlacklist = $user->blacklists()
+        $user = auth()->user();
+        $warnings = $user->warnings()->orderByDesc('WarningDate')->get();
+        $activeBlacklist = $user->blacklists()
         ->where('EndDate', '>=', now()->toDateString())
         ->first();
 
-    return view('warnings.index', compact('warnings', 'activeBlacklist'));
-})->name('warnings.index');
+        return view('warnings.index', compact('warnings', 'activeBlacklist'));
+    })->name('warnings.index');
 
     // --- Statistics Management Module ---
     Route::get('/activity', fn () => view('activity.index'))->name('activity.index');
@@ -178,5 +179,24 @@ Route::get('/student/notifications', [NotificationController::class, 'index'])->
 Route::post('/student/notifications/{id}/read', [NotificationController::class, 'markAsRead'])
     ->name('student.notifications.read');
 
+Route::get('/lecturer/notifications', [NotificationController::class, 'lecturerIndex'])
+    ->name('lecturer.notifications.index');
 
-    
+Route::post('/lecturer/notifications/{id}/read', [NotificationController::class, 'lecturerMarkAsRead'])
+    ->name('lecturer.notifications.read');
+Route::middleware(['auth'])->group(function () {
+
+    Route::get('/lecturer/notifications', [NotificationController::class, 'lecturerIndex'])
+        ->name('lecturer.notifications.index');
+
+    Route::post('/lecturer/notifications/{id}/read', [NotificationController::class, 'markAsRead'])
+        ->name('lecturer.notifications.read');
+
+});
+Route::get('/lecturer/dashboard',
+[\App\Http\Controllers\LecturerDashboardController::class,'index'])
+->middleware('auth')
+->name('lecturer.dashboard');
+
+Route::resource('students', StudentController::class);
+

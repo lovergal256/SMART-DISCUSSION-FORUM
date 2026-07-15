@@ -1,4 +1,4 @@
-@extends('layouts.app')
+@extends('layouts.lecturer_app')
 
 @section('content')
     <h1>Create New Discussion</h1>
