@@ -10,8 +10,16 @@ class DashboardController extends Controller
     public function index(Request $request)
     {
         $user = Auth::user();
-        $discussionsCount = \App\Models\Discussion::count();
-        $postsCount = \App\Models\Post::count();
+        $discussionsCount = \App\Models\Discussion::where(function ($query) use ($user) {
+            $query->where('UserID', $user->UserID)
+                ->orWhereHas('topics', function ($q) use ($user) {
+                    $q->where('UserID', $user->UserID);
+                })
+                ->orWhereHas('topics.posts', function ($q) use ($user) {
+                    $q->where('UserID', $user->UserID);
+                });
+        })->count();
+        $postsCount = \App\Models\Post::where('UserID', $user->UserID)->count();
          $groupsJoinedCount = \App\Models\Group::whereHas('members', function ($query) use ($user) {
         $query->where('group_members.UserID', $user->UserID)
               ->where('group_members.Status', 'approved');

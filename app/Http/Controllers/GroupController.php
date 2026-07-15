@@ -149,63 +149,79 @@ class GroupController extends Controller
     }
 
     public function promote(Request $request, $id, $userId) {
-        $group = Group::findOrFail($id);
+    $group = Group::findOrFail($id);
 
-        // Only admins can promote
-        $userRole = $group->members()
-                          ->where('group_members.UserID', Auth::id())
-                          ->first();
+    // Only admins can promote
+    $userRole = $group->members()
+                      ->where('group_members.UserID', Auth::id())
+                      ->first();
 
-        if (!$userRole || $userRole->pivot->Role !== 'admin') {
-            return back()->with('error', 'Only admins can promote members.');
-        }
-
-        // Check the target user is actually a member
-        $member = $group->members()
-                        ->where('group_members.UserID', $userId)
-                        ->first();
-
-        if (!$member) {
-            return back()->with('error', 'That user is not a member of this group.');
-        }
-
-        // Update their role to admin
-        $group->members()->updateExistingPivot($userId, ['Role' => 'admin']);
-
-        return back()->with('success', $member->FullName . " has been promoted to admin.");
+    if (!$userRole || $userRole->pivot->Role !== 'admin') {
+        return back()->with('error', 'Only admins can promote members.');
     }
 
-    public function removeMember(Request $request, $id, $userId)
-    {
-        $group = Group::findOrFail($id);
+    // Check the target user is actually a member
+    $member = $group->members()
+                    ->where('group_members.UserID', $userId)
+                    ->first();
 
-        // Only admins can remove members
-        $authUser = $group->members()
-                          ->where('group_members.UserID', Auth::id())
-                          ->first();
-
-        if (!$authUser || $authUser->pivot->Role !== 'admin') {
-            return back()->with('error', 'Only admins can remove members.');
-        }
-
-        // Can't remove yourself this way
-        if ($userId == Auth::id()) {
-            return back()->with('error', 'Use the leave button to leave the group.');
-        }
-
-        // Check target is actually a member
-        $member = $group->members()
-                        ->where('group_members.UserID', $userId)
-                        ->first();
-
-        if (!$member) {
-            return back()->with('error', 'That user is not a member of this group.');
-        }
-
-        $group->members()->detach($userId);
-
-        return back()->with('success', $member->FullName . ' has been removed from the group.');
+    if (!$member) {
+        return back()->with('error', 'That user is not a member of this group.');
     }
+
+    // Update their role to admin
+    $group->members()->updateExistingPivot($userId, ['Role' => 'admin']);
+
+    \App\Models\Notification::create([
+        'NotificationID' => uniqid(),
+        'UserID' => $userId,
+        'Message' => "You have been promoted to admin in the group \"{$group->GroupName}\".",
+        'Type' => 'group_promoted',
+        'Status' => 'Unread',
+    ]);
+
+    return back()->with('success', $member->FullName . " has been promoted to admin.");
+}
+
+     public function removeMember(Request $request, $id, $userId)
+{
+    $group = Group::findOrFail($id);
+
+    // Only admins can remove members
+    $authUser = $group->members()
+                      ->where('group_members.UserID', Auth::id())
+                      ->first();
+
+    if (!$authUser || $authUser->pivot->Role !== 'admin') {
+        return back()->with('error', 'Only admins can remove members.');
+    }
+
+    // Can't remove yourself this way
+    if ($userId == Auth::id()) {
+        return back()->with('error', 'Use the leave button to leave the group.');
+    }
+
+    // Check target is actually a member
+    $member = $group->members()
+                    ->where('group_members.UserID', $userId)
+                    ->first();
+
+    if (!$member) {
+        return back()->with('error', 'That user is not a member of this group.');
+    }
+
+    $group->members()->detach($userId);
+
+    \App\Models\Notification::create([
+        'NotificationID' => uniqid(),
+        'UserID' => $userId,
+        'Message' => "You have been removed from the group \"{$group->GroupName}\".",
+        'Type' => 'group_removed',
+        'Status' => 'Unread',
+    ]);
+
+    return back()->with('success', $member->FullName . ' has been removed from the group.');
+}
 
     public function destroy($id)
     {
