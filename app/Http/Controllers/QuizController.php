@@ -13,6 +13,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rule;
 use Carbon\Carbon;
 
 class QuizController extends Controller
@@ -41,19 +42,29 @@ class QuizController extends Controller
     }
 
     public function create()
-    {
-        $groups = Group::all();
+{
+    $user = Auth::user();
 
-        return view('quizzes.create', [
-            'groups' => $groups,
-        ]);
-    }
+    $groups = Group::whereHas('members', function ($query) use ($user) {
+        $query->where('group_members.UserID', $user->UserID)
+            ->where('group_members.Status', 'approved');
+    })->get();
+
+    return view('quizzes.create', [
+        'groups' => $groups,
+    ]);
+}
 
     public function store(Request $request)
     {
         $validated = $request->validate([
             'title' => 'required|string|max:255',
-            'group_id' => 'required|exists:groups,GroupID',
+            'group_id' => [
+        'required',
+        Rule::exists('group_members', 'GroupID')->where(function ($query) {
+            $query->where('UserID', Auth::id())->where('Status', 'approved');
+        }),
+    ],
             'start_time' => 'required|date',
             'duration' => 'required|integer|min:1|max:300',
             'questions' => 'required|array|min:1',
