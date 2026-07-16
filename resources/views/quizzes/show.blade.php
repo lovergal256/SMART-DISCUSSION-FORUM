@@ -34,27 +34,40 @@
             <div class="panel-head">
                 <div class="panel-title"><span class="ic">📌</span> Summary</div>
             </div>
-            @if($role === 'lecturer')
-                <div class="meta-item"><strong>Attempts:</strong> {{ $attemptCount }}</div>
-                <div class="meta-item">
-                    <strong>Average score:</strong>
-                    {{ is_null($averageScore) ? 'No attempts yet' : number_format($averageScore, 2) . '%' }}
-                </div>
+      @if($role === 'lecturer')
+    <div class="meta-item"><strong>Attempts:</strong> {{ $attemptCount }}</div>
+    <div class="meta-item">
+        <strong>Average score:</strong>
+        {{ is_null($averageScore) ? 'No attempts yet' : number_format($averageScore, 2) . '%' }}
+    </div>
+    <div class="meta-item">
+        <strong>Results released:</strong> {{ $quiz->ResultsReleased ? 'Yes' : 'No' }}
+    </div>
+    @if(! $quiz->ResultsReleased)
+        <form method="POST" action="{{ route('quizzes.release', $quiz->QuizID) }}">
+            @csrf
+            <button type="submit" class="take-quiz-link">Release Results</button>
+        </form>
+    @endif
+@else
+    <div class="meta-item"><strong>Attempts allowed:</strong> 1</div>
+    <div class="meta-item">
+        <strong>Your status:</strong>
+        @if($attempt)
+            @if($quiz->ResultsReleased)
+                Attempted ({{ number_format($attempt->Score, 2) }}%)
             @else
-                <div class="meta-item"><strong>Attempts allowed:</strong> 1</div>
-                <div class="meta-item">
-                    <strong>Your status:</strong>
-                    @if($attempt)
-                        Attempted ({{ number_format($attempt->Score, 2) }}%)
-                    @elseif($isActive)
-                        Available now
-                    @elseif(now()->lt($startTime))
-                        Not open yet
-                    @else
-                        Closed
-                    @endif
-                </div>
+                Attempted — results not yet released
             @endif
+        @elseif($isActive)
+            Available now
+        @elseif(now()->lt($startTime))
+            Not open yet
+        @else
+            Closed
+        @endif
+    </div>
+@endif
             <a class="view-all" href="{{ route('quizzes.index') }}">← Back to quizzes</a>
         </div>
     </div>

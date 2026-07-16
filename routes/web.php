@@ -84,8 +84,9 @@ Route::middleware('auth')->group(function () {
     Route::get('/quizzes', [QuizController::class, 'index'])->name('quizzes.index');
     Route::get('/quizzes/create', [QuizController::class, 'create'])->name('quizzes.create');
     Route::post('/quizzes', [QuizController::class, 'store'])->name('quizzes.store');
-    Route::get('/quizzes/{id}', [QuizController::class, 'show'])->name('quizzes.show');
-    Route::post('/quizzes/{id}/attempts', [QuizController::class, 'submitAttempt'])->name('quizzes.attempts.store');
+    Route::get('/quizzes/{quiz}', [QuizController::class, 'show'])->name('quizzes.show');
+    Route::post('/quizzes/{quiz}/attempts', [QuizController::class, 'storeAttempt'])->name('quizzes.attempts.store');
+Route::post('/quizzes/{quiz}/release', [QuizController::class, 'releaseResults'])->name('quizzes.release');
 
     // --- Performance Management Module ---
     Route::get('/performance', [PerformanceController::class, 'index'])->name('performance.index');
