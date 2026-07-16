@@ -32,9 +32,7 @@ Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
 // Lecturer routes (role 2)
 Route::middleware(['auth'])->group(function () {
-    Route::get('/lecturer/dashboard', function () {
-        return view('lecturer.dashboard');
-    })->name('lecturer.dashboard');
+   
 });
 
 // Admin routes (role 3)
