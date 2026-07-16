@@ -75,11 +75,16 @@ $userId = $user->UserID;
             })
             ->toArray();
 
-        // --- Upcoming Quizzes (real) ---
+$myGroupIds = \App\Models\Group::whereHas('members', function ($query) use ($user) {
+            $query->where('group_members.UserID', $user->UserID)
+                ->where('group_members.Status', 'approved');
+        })->pluck('GroupID');
+
         $quizzes = Quiz::with('group')
+            ->whereIn('GroupID', $myGroupIds)
             ->where('StartTime', '>=', now())
             ->orderBy('StartTime')
-            ->take(3)
+            ->take(5)
             ->get()
             ->map(function ($quiz) {
                 $start = Carbon::parse($quiz->StartTime);
@@ -88,6 +93,14 @@ $userId = $user->UserID;
                     : ($start->isTomorrow()
                         ? 'Tomorrow, ' . $start->format('g:i A')
                         : $start->format('d F Y, g:i A'));
+
+                return [
+                    'id' => $quiz->QuizID,
+                    'title' => $quiz->Title,
+                    'subtitle' => optional($quiz->group)->GroupName ?? 'Group',
+                    'due' => $due,
+                ];
+            })
 
                 return [
                     'id' => $quiz->QuizID,
