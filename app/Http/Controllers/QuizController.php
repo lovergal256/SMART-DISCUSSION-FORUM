@@ -23,10 +23,26 @@ class QuizController extends Controller
         $user = Auth::user();
         $role = $user->role_name;
 
-        $quizzes = Quiz::with('group')
-            ->withCount('questions')
-            ->orderByDesc('StartTime')
-            ->get();
+        if ($this->isLecturer($user)) {
+            $lecturer = Lecturer::where('UserID', $user->UserID)->first();
+
+            $quizzes = Quiz::with('group')
+                ->withCount('questions')
+                ->where('LecturerID', optional($lecturer)->LecturerID)
+                ->orderByDesc('StartTime')
+                ->get();
+        } else {
+            $myGroupIds = Group::whereHas('members', function ($query) use ($user) {
+                $query->where('group_members.UserID', $user->UserID)
+                    ->where('group_members.Status', 'approved');
+            })->pluck('GroupID');
+
+            $quizzes = Quiz::with('group')
+                ->withCount('questions')
+                ->whereIn('GroupID', $myGroupIds)
+                ->orderByDesc('StartTime')
+                ->get();
+        }
 
         $attemptedQuizIds = Attempt::query()
             ->where('UserID', $user->UserID)
@@ -42,29 +58,29 @@ class QuizController extends Controller
     }
 
     public function create()
-{
-    $user = Auth::user();
+    {
+        $user = Auth::user();
 
-    $groups = Group::whereHas('members', function ($query) use ($user) {
-        $query->where('group_members.UserID', $user->UserID)
-            ->where('group_members.Status', 'approved');
-    })->get();
+        $groups = Group::whereHas('members', function ($query) use ($user) {
+            $query->where('group_members.UserID', $user->UserID)
+                ->where('group_members.Status', 'approved');
+        })->get();
 
-    return view('quizzes.create', [
-        'groups' => $groups,
-    ]);
-}
+        return view('quizzes.create', [
+            'groups' => $groups,
+        ]);
+    }
 
     public function store(Request $request)
     {
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'group_id' => [
-        'required',
-        Rule::exists('group_members', 'GroupID')->where(function ($query) {
-            $query->where('UserID', Auth::id())->where('Status', 'approved');
-        }),
-    ],
+                'required',
+                Rule::exists('group_members', 'GroupID')->where(function ($query) {
+                    $query->where('UserID', Auth::id())->where('Status', 'approved');
+                }),
+            ],
             'start_time' => 'required|date',
             'duration' => 'required|integer|min:1|max:300',
             'questions' => 'required|array|min:1',
@@ -117,6 +133,14 @@ class QuizController extends Controller
         $role = $user->role_name;
         $now = Carbon::now();
 
+        if ($role === 'lecturer') {
+            $lecturer = Lecturer::where('UserID', $user->UserID)->first();
+
+            if (! $lecturer || $quiz->LecturerID !== $lecturer->LecturerID) {
+                abort(403, 'You can only review quizzes you created.');
+            }
+        }
+
         $startTime = Carbon::parse($quiz->StartTime);
         $endTime = (clone $startTime)->addMinutes((int) $quiz->Duration);
 
@@ -151,13 +175,14 @@ class QuizController extends Controller
             'now' => $now,
         ]);
     }
-    public function releaseResults(Quiz $quiz)
-{
-    $quiz->update(['ResultsReleased' => true]);
 
-    return redirect()->route('quizzes.show', $quiz->QuizID)
-        ->with('success', 'Results released to students.');
-}
+    public function releaseResults(Quiz $quiz)
+    {
+        $quiz->update(['ResultsReleased' => true]);
+
+        return redirect()->route('quizzes.show', $quiz->QuizID)
+            ->with('success', 'Results released to students.');
+    }
 
     public function storeAttempt(Request $request, Quiz $quiz)
     {
