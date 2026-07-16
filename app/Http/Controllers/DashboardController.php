@@ -63,11 +63,26 @@ class DashboardController extends Controller
     })
     ->toArray();
 
-        $quizzes = [
-            ['id' => 1, 'title' => 'Database Systems Quiz',  'subtitle' => 'Chapters 1 - 4',         'due' => 'Tomorrow, 11:59 PM'],
-            ['id' => 2, 'title' => 'Web Development Quiz',   'subtitle' => 'HTML, CSS, JavaScript',  'due' => '12 July 2026, 11:59 PM'],
-            ['id' => 3, 'title' => 'AI Fundamentals Quiz',   'subtitle' => 'Basic Concepts',         'due' => '15 July 2026, 11:59 PM'],
-        ];
+        $myGroupIds = \App\Models\Group::whereHas('members', function ($query) use ($user) {
+            $query->where('group_members.UserID', $user->UserID)
+                ->where('group_members.Status', 'approved');
+        })->pluck('GroupID');
+
+        $quizzes = \App\Models\Quiz::with('group')
+            ->whereIn('GroupID', $myGroupIds)
+            ->where('StartTime', '>=', now())
+            ->orderBy('StartTime')
+            ->take(5)
+            ->get()
+            ->map(function ($quiz) {
+                return [
+                    'id' => $quiz->QuizID,
+                    'title' => $quiz->Title,
+                    'subtitle' => optional($quiz->group)->GroupName ?? 'Group',
+                    'due' => $quiz->StartTime->format('d M Y, h:i A'),
+                ];
+            })
+            ->toArray();
 
         $recommendations = [
             ['icon' => '👥', 'title' => 'Join the Machine Learning Group',            'subtitle' => 'Connect with students interested in ML',    'url' => route('groups.index')],

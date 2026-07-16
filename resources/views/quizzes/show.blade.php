@@ -131,7 +131,25 @@
         .question-card { border: 1px solid var(--line); border-radius: 12px; padding: 16px; margin-bottom: 14px; }
         .question-card h3 { margin-bottom: 8px; font-size: 14px; }
         .question-card p { margin-bottom: 12px; font-size: 13px; }
-        .option-item { display: flex; gap: 8px; margin-bottom: 8px; align-items: center; font-size: 13px; color: var(--ink); }
+        .option-item {
+    display: flex !important;
+    justify-content: flex-start !important;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 8px;
+    font-size: 13px;
+    color: var(--ink);
+    width: auto;
+}
+.option-item input[type="radio"] {
+    width: auto !important;
+    flex-shrink: 0;
+    margin: 0;
+    padding: 0;
+}
+.option-item span {
+    text-align: left;
+}
         .meta-item { margin-bottom: 8px; font-size: 13px; color: var(--ink-soft); }
         .correct-badge { margin-top: 8px; color: var(--success); font-size: 12px; font-weight: 700; }
         .empty-state { color: var(--ink-soft); }
