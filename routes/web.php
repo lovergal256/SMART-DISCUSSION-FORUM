@@ -78,13 +78,15 @@ Route::middleware('auth')->group(function () {
     Route::delete('/groups/{id}/leave', [GroupController::class, 'leave'])->name('groups.leave');
     Route::post('/groups/{id}/promote/{userId}', [GroupController::class, 'promote'])->name('groups.promote');
     Route::delete('/groups/{id}/members/{userId}', [GroupController::class, 'removeMember'])->name('groups.removeMember');
+    Route::patch('/groups/{id}/visibility', [GroupController::class, 'toggleVisibility'])->name('groups.toggleVisibility');
 
     // --- Quiz Management Module ---
     Route::get('/quizzes', [QuizController::class, 'index'])->name('quizzes.index');
     Route::get('/quizzes/create', [QuizController::class, 'create'])->name('quizzes.create');
     Route::post('/quizzes', [QuizController::class, 'store'])->name('quizzes.store');
-    Route::get('/quizzes/{id}', [QuizController::class, 'show'])->name('quizzes.show');
-    Route::post('/quizzes/{id}/attempts', [QuizController::class, 'submitAttempt'])->name('quizzes.attempts.store');
+    Route::get('/quizzes/{quiz}', [QuizController::class, 'show'])->name('quizzes.show');
+    Route::post('/quizzes/{quiz}/attempts', [QuizController::class, 'storeAttempt'])->name('quizzes.attempts.store');
+Route::post('/quizzes/{quiz}/release', [QuizController::class, 'releaseResults'])->name('quizzes.release');
 
     // --- Performance Management Module ---
     Route::get('/performance', [PerformanceController::class, 'index'])->name('performance.index');

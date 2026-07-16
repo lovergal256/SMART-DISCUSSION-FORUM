@@ -140,6 +140,13 @@ class QuizController extends Controller
             'now' => $now,
         ]);
     }
+    public function releaseResults(Quiz $quiz)
+{
+    $quiz->update(['ResultsReleased' => true]);
+
+    return redirect()->route('quizzes.show', $quiz->QuizID)
+        ->with('success', 'Results released to students.');
+}
 
     public function storeAttempt(Request $request, Quiz $quiz)
     {

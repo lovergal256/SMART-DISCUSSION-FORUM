@@ -12,8 +12,12 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        //
-    })
+    $middleware->alias([
+        'prevent-back-history' => \App\Http\Middleware\PreventBackHistory::class,
+    ]);
+
+    $middleware->appendToGroup('web', \App\Http\Middleware\PreventBackHistory::class);
+})
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(
             fn (Request $request) => $request->is('api/*'),

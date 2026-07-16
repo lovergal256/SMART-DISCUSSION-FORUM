@@ -10,12 +10,13 @@ class Quiz extends Model
     protected $primaryKey = 'QuizID';
 
     protected $fillable = [
-        'Title',
-        'StartTime',
-        'Duration',
-        'GroupID',
-        'LecturerID',
-    ];
+    'Title',
+    'StartTime',
+    'Duration',
+    'GroupID',
+    'LecturerID',
+    'ResultsReleased',
+];
 
     public function group()
     {

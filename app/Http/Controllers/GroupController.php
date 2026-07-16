@@ -8,30 +8,45 @@ use Illuminate\Support\Facades\Auth;
 
 class GroupController extends Controller
 {
-    public function index(Request $request)
-    {
-        $search = $request->input('search');
+   public function index(Request $request)
+{
+    $search = $request->input('search');
 
-        $groups = Group::when($search, function ($query, $search) {
+    $myGroups = Auth::user()->groups()
+        ->when($search, function ($query, $search) {
             $query->where('GroupName', 'like', '%' . $search . '%');
-        })->get();
+        })
+        ->get();
 
-        return view('groups.index', ['groups' => $groups, 'search' => $search]);
-    }
+    $myGroupIds = $myGroups->pluck('GroupID');
 
+    $discoverGroups = Group::where('Visibility', 'public')
+        ->whereNotIn('GroupID', $myGroupIds)
+        ->when($search, function ($query, $search) {
+            $query->where('GroupName', 'like', '%' . $search . '%');
+        })
+        ->get();
+
+    return view('groups.index', [
+        'groups' => $myGroups,
+        'discoverGroups' => $discoverGroups,
+        'search' => $search
+    ]);
+}
     public function create() {
         return view('groups.create');
     }
 
     public function store(Request $request) {
         $request->validate([
-           'GroupName' => 'required|max:100',
+           'GroupName' => 'required|max:100|unique:groups,GroupName',
            'Description' => 'nullable',
         ]);
 
         $group = Group::create([
             'GroupName' => $request->input('GroupName'),
             'Description' => $request->input('Description'),
+            'Visibility' => $request->input('Visibility', 'private'),
             'CreatedBy' => Auth::id(),
         ]);
 
@@ -41,47 +56,62 @@ class GroupController extends Controller
     }
 
     public function show($id) {
-        $group = Group::findOrFail($id);
+    $group = Group::findOrFail($id);
 
-        $members = $group->members()->wherePivot('Status', 'approved')->get();
+    $isMember = $group->members()
+        ->where('group_members.UserID', Auth::id())
+        ->wherePivot('Status', 'approved')
+        ->exists();
 
-        $pendingRequests = $group->members()->wherePivot('Status', 'pending')->get();
-
-        $isMember = $group->members()
-            ->where('group_members.UserID', Auth::id())
-            ->wherePivot('Status', 'approved')
-            ->exists();
-
-        $isAdmin = $group->members()
-            ->where('group_members.UserID', Auth::id())
-            ->wherePivot('Role', 'admin')
-            ->wherePivot('Status', 'approved')
-            ->exists();
-
-        $hasPendingRequest = $group->members()
-            ->where('group_members.UserID', Auth::id())
-            ->wherePivot('Status', 'pending')
-            ->exists();
-
-        $discussions = \App\Models\Discussion::where('GroupID', $group->GroupID)->latest()->get();
-
-        return view('groups.show', compact('group', 'members', 'pendingRequests', 'isMember', 'isAdmin', 'hasPendingRequest', 'discussions'));
+    if (!$isMember) {
+        return redirect()->route('groups.index')
+            ->with('error', 'You are not a member of this group.');
     }
 
+    $members = $group->members()->wherePivot('Status', 'approved')->get();
+    $pendingRequests = $group->members()->wherePivot('Status', 'pending')->get();
+
+    $isAdmin = $group->members()
+        ->where('group_members.UserID', Auth::id())
+        ->wherePivot('Role', 'admin')
+        ->wherePivot('Status', 'approved')
+        ->exists();
+
+    $hasPendingRequest = $group->members()
+        ->where('group_members.UserID', Auth::id())
+        ->wherePivot('Status', 'pending')
+        ->exists();
+
+    $discussions = \App\Models\Discussion::where('GroupID', $group->GroupID)->latest()->get();
+
+    return view('groups.show', compact('group', 'members', 'pendingRequests', 'isMember', 'isAdmin', 'hasPendingRequest', 'discussions'));
+}
+    
+    
     public function addMember(Request $request, $id) {
-        $group = Group::findOrFail($id);
+      $group = Group::findOrFail($id);
 
-        $request->validate([
-            'user_id' => 'required|exists:users,UserID',
-        ]);
+      // Only admins can directly add members
+      $authUser = $group->members()
+                      ->where('group_members.UserID', Auth::id())
+                      ->wherePivot('Status', 'approved')
+                      ->first();
 
-        if ($group->members()->where('group_members.UserID', $request->user_id)->exists()) {
-            return back()->with('error', 'User is already a member of this group.');
-        }
+      if (!$authUser || $authUser->pivot->Role !== 'admin') {
+          return back()->with('error', 'Only group admins can add members directly.');
+      }
 
-        $group->members()->attach($request->user_id, ['Role' => 'member']);
+      $request->validate([
+          'user_id' => 'required|exists:users,UserID',
+      ]);
 
-        return back()->with('success', 'Member added successfully.');
+      if ($group->members()->where('group_members.UserID', $request->user_id)->exists()) {
+          return back()->with('error', 'User is already a member of this group.');
+      }
+
+      $group->members()->attach($request->user_id, ['Role' => 'member', 'Status' => 'approved']);
+
+      return back()->with('success', 'Member added successfully.');
     }
 
     public function requestJoin($id) {
@@ -243,4 +273,24 @@ class GroupController extends Controller
         return redirect()->route('groups.index')
             ->with('success', 'Group deleted successfully.');
     }
+
+    public function toggleVisibility($id)
+{
+    $group = Group::findOrFail($id);
+
+    $isAdmin = $group->members()
+        ->where('group_members.UserID', Auth::id())
+        ->wherePivot('Role', 'admin')
+        ->wherePivot('Status', 'approved')
+        ->exists();
+
+    if (!$isAdmin) {
+        return back()->with('error', 'Only admins can change group visibility.');
+    }
+
+    $group->Visibility = $group->Visibility === 'public' ? 'private' : 'public';
+    $group->save();
+
+    return back()->with('success', 'Group visibility updated to ' . $group->Visibility . '.');
+}
 }
