@@ -63,4 +63,11 @@ public function blacklists()
 {
     return $this->hasMany(Blacklist::class, 'UserID', 'UserID');
 }
+
+public function groups()
+{
+    return $this->belongsToMany(Group::class, 'group_members', 'UserID', 'GroupID')
+                ->withPivot('Role', 'Status', 'JoinedAt')
+                ->withTimestamps();
+}
 }

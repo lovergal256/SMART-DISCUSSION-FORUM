@@ -78,6 +78,7 @@ Route::middleware('auth')->group(function () {
     Route::delete('/groups/{id}/leave', [GroupController::class, 'leave'])->name('groups.leave');
     Route::post('/groups/{id}/promote/{userId}', [GroupController::class, 'promote'])->name('groups.promote');
     Route::delete('/groups/{id}/members/{userId}', [GroupController::class, 'removeMember'])->name('groups.removeMember');
+    Route::patch('/groups/{id}/visibility', [GroupController::class, 'toggleVisibility'])->name('groups.toggleVisibility');
 
     // --- Quiz Management Module ---
     Route::get('/quizzes', [QuizController::class, 'index'])->name('quizzes.index');

@@ -15,8 +15,11 @@ class Group extends Model
     protected $fillable = [
     'GroupName',
     'Description',
+    'Visibility',
     'CreatedBy',
+    
 ];
+
     public function members() {
     return $this->belongsToMany(User::class, 'group_members', 'GroupID', 'UserID')
                 ->withPivot('Role', 'Status', 'JoinedAt')

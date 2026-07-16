@@ -18,6 +18,16 @@
 <div class="card">
     <h3>About this group</h3>
     <p>{{ $group->Description ?? 'No description provided.' }}</p>
+    <small style="color:#888;">Visibility: <strong>{{ ucfirst($group->Visibility) }}</strong></small>
+    @if($isAdmin)
+        <form method="POST" action="{{ route('groups.toggleVisibility', $group->GroupID) }}" style="margin-top:10px;">
+            @csrf
+            @method('PATCH')
+            <button type="submit" class="btn" style="font-size:0.85em;">
+                {{ $group->Visibility === 'public' ? 'Make Private' : 'Make Public' }}
+            </button>
+        </form>
+    @endif
     <div style="display:flex; justify-content:flex-end; align-items:center; gap:10px; margin-top:15px;">
              @if($isMember)
             <a href="{{ route('discussions.create', ['group' => $group->GroupID]) }}" class="btn">+ Start a Discussion</a>
@@ -82,18 +92,20 @@
     </div>
 
     {{-- Add Member --}}
-    <div class="card">
-        <h3>Add a Member</h3>
-        <form method="POST" action="{{ route('groups.addMember', $group->GroupID) }}">
-            @csrf
-            <label>User ID</label>
-            <input type="number" name="user_id" placeholder="Enter User ID">
-            @error('user_id')
-                <p style="color:red;">{{ $message }}</p>
-            @enderror
-            <button type="submit" class="btn">Add Member</button>
-        </form>
-    </div>
+    @if($isAdmin)
+      <div class="card">
+          <h3>Add a Member</h3>
+          <form method="POST" action="{{ route('groups.addMember', $group->GroupID) }}">
+              @csrf
+              <label>User ID</label>
+              <input type="number" name="user_id" placeholder="Enter User ID">
+              @error('user_id')
+                  <p style="color:red;">{{ $message }}</p>
+              @enderror
+              <button type="submit" class="btn">Add Member</button>
+          </form>
+       </div>
+    @endif 
 
     {{-- Pending Requests (admin only) --}}
 @if($isAdmin)
