@@ -94,18 +94,10 @@ $myGroupIds = \App\Models\Group::whereHas('members', function ($query) use ($use
                         ? 'Tomorrow, ' . $start->format('g:i A')
                         : $start->format('d F Y, g:i A'));
 
-                return [
+               return [
                     'id' => $quiz->QuizID,
                     'title' => $quiz->Title,
                     'subtitle' => optional($quiz->group)->GroupName ?? 'Group',
-                    'due' => $due,
-                ];
-            })
-
-                return [
-                    'id' => $quiz->QuizID,
-                    'title' => $quiz->Title,
-                    'subtitle' => $quiz->group->GroupName ?? 'General',
                     'due' => $due,
                 ];
             })
