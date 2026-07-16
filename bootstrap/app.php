@@ -12,11 +12,14 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-    $middleware->alias([
+$middleware->alias([
         'prevent-back-history' => \App\Http\Middleware\PreventBackHistory::class,
     ]);
 
-    $middleware->appendToGroup('web', \App\Http\Middleware\PreventBackHistory::class);
+    $middleware->web(append: [
+        \App\Http\Middleware\PreventBackHistory::class,
+        \App\Http\Middleware\UpdateLastActive::class,
+    ]);
 })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(

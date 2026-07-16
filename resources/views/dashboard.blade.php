@@ -45,23 +45,22 @@
         </div>
 
         {{-- UPCOMING QUIZZES --}}
-        <div class="panel">
-            <div class="panel-head">
-                <div class="panel-title"><span class="ic">🗓</span> Upcoming Quizzes</div>
-                <a class="view-all" href="{{ route('quizzes.index') }}">View all →</a>
-            </div>
+<div class="panel">
+    <div class="panel-head">
+        <div class="panel-title"><span class="ic">🗓</span> Upcoming Quizzes</div>
+        <a class="view-all" href="{{ route('quizzes.index') }}">View all →</a>
+    </div>
 
-            @foreach($quizzes as $quiz)
-                <div class="quiz-card">
-                    <div class="quiz-title">{{ $quiz['title'] }}</div>
-                    <div class="quiz-sub">{{ $quiz['subtitle'] }}</div>
-                    <div class="quiz-foot">
-                        <div class="quiz-due">📅 Due {{ $quiz['due'] }}</div>
-                        <a class="take-quiz-link" href="{{ route('quizzes.show', $quiz['id']) }}">Take Quiz</a>
-                    </div>
-                </div>
-            @endforeach
+    @if(count($quizzes) > 0)
+        @foreach($quizzes as $quiz)
+            ...
+        @endforeach
+    @else
+        <div class="empty-state">
+            <p>🗓 No upcoming quizzes.</p>
         </div>
+    @endif
+</div>
 
         {{-- RECOMMENDED --}}
         <div class="panel">

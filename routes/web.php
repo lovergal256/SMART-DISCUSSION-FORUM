@@ -15,6 +15,7 @@ use App\Models\Topic;
 use Illuminate\Http\Request;
 use App\Http\Controllers\PerformanceController;
 use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\ActivityController;
 
 // Public routes
 Route::get('/', function () {
@@ -106,7 +107,8 @@ Route::post('/quizzes/{quiz}/release', [QuizController::class, 'releaseResults']
     })->name('warnings.index');
 
     // --- Statistics Management Module ---
-    Route::get('/activity', fn () => view('activity.index'))->name('activity.index');
+    // routes/web.php
+Route::get('/activity', [ActivityController::class, 'index'])->name('activity.index');
 
     // --- Notification Management Module ---
     Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
