@@ -51,4 +51,4 @@ public function lecturerMarkAsRead($id)
     return back()->with('success', 'Notification marked as read.');
 }
 } 
-}
+

@@ -1,6 +1,8 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\StudentController;
+use App\Http\Controllers\AdminController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ExclusionController;
 use App\Http\Controllers\GroupController;
@@ -36,12 +38,11 @@ Route::middleware(['auth'])->group(function () {
 });
 
 // Admin routes (role 3)
-Route::middleware(['auth'])->group(function () {
-    Route::get('/admin/dashboard', function () {
-        return view('admin.dashboard');
-    })->name('admin.dashboard');
+Route::middleware(['auth', 'admin'])->group(function () {
+    Route::get('/admin/dashboard', [AdminController::class, 'dashboard'])->name('admin.dashboard');
+    Route::get('/admin/lecturers/create', [AdminController::class, 'createLecturer'])->name('admin.lecturers.create');
+    Route::post('/admin/lecturers', [AdminController::class, 'storeLecturer'])->name('admin.lecturers.store');
 });
-
 /*
 |--------------------------------------------------------------------------
 | Student routes (role 1) — dashboard + module placeholders
