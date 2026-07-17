@@ -132,8 +132,10 @@
                     <polygon points="{{ $activityChartPoints }} 280,105 10,105" fill="url(#areaFill)"/>
                 </svg>
                 <div class="chart-labels">
-                    <span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span><span>Sun</span>
-                </div>
+    @foreach($chartDayLabels as $label)
+        <span>{{ $label }}</span>
+    @endforeach
+</div>
             </div>
         </div>
     </div>

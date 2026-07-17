@@ -9,7 +9,7 @@ use App\Models\Post;
 use App\Models\Reply;
 use App\Models\Quiz;
 use App\Models\QuizScore;
-use App\Services\CollaborativeFilteringService;
+use App\Services\MatrixFactorizationService;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 
@@ -106,7 +106,7 @@ $myGroupIds = \App\Models\Group::whereHas('members', function ($query) use ($use
         // --- Recommended For You (real, mirrors Recommendations page logic) ---
         $recommendations = [];
 
-        $cf = new CollaborativeFilteringService();
+       $cf = new MatrixFactorizationService();
         $recommendedGroupIds = $cf->recommendGroups($userId, 1);
 
         if (!empty($recommendedGroupIds)) {

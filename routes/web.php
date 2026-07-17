@@ -95,6 +95,7 @@ Route::post('/quizzes/{quiz}/release', [QuizController::class, 'releaseResults']
 
     // --- Recommendation Management Module ---
     Route::get('/recommendations', [RecommendationController::class, 'index'])->name('recommendations.index');
+    Route::get('/recommendations/training', [RecommendationController::class, 'trainingReport'])->name('recommendations.training');
 
     // --- Blacklisting and Warning Module (student-facing view) ---
     Route::get('/warnings', function () {
