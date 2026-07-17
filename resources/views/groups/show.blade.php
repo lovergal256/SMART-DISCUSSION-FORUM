@@ -1,4 +1,4 @@
-@extends('layouts.app')
+@extends($layout)
 
 @section('title', $group->GroupName)
 
@@ -28,18 +28,23 @@
             </button>
         </form>
     @endif
-    <div style="display:flex; justify-content:flex-end; align-items:center; gap:10px; margin-top:15px;">
-             @if($isMember)
-            <a href="{{ route('discussions.create', ['group' => $group->GroupID]) }}" class="btn">+ Start a Discussion</a>
-        @elseif($hasPendingRequest)
-            <span style="font-size:0.9em; color:#666;">Your request to join is pending admin approval.</span>
-        @else
-            <form method="POST" action="{{ route('groups.requestJoin', $group->GroupID) }}">
-                @csrf
-                <button type="submit" class="btn">Request to Join</button>
-            </form>
-        @endif
-    </div>
+   <div style="display:flex; justify-content:flex-end; align-items:center; gap:10px; margin-top:15px;">
+
+    @can('manage-quizzes')
+        <a href="{{ route('quizzes.create', ['group' => $group->GroupID]) }}" class="btn">+ Create Quiz</a>
+    @endcan
+
+    @if($isMember)
+        <a href="{{ route('discussions.create', ['group' => $group->GroupID]) }}" class="btn">+ Start a Discussion</a>
+    @elseif($hasPendingRequest)
+        <span style="font-size:0.9em; color:#666;">Your request to join is pending admin approval.</span>
+    @else
+        <form method="POST" action="{{ route('groups.requestJoin', $group->GroupID) }}">
+            @csrf
+            <button type="submit" class="btn">Request to Join</button>
+        </form>
+    @endif
+</div>
 </div>
 
     {{-- Members --}}

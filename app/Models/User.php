@@ -67,6 +67,7 @@ public function blacklists()
 public function groups()
 {
     return $this->belongsToMany(Group::class, 'group_members', 'UserID', 'GroupID')
+                ->wherePivot('Status', 'approved')
                 ->withPivot('Role', 'Status', 'JoinedAt')
                 ->withTimestamps();
 }

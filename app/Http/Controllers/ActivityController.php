@@ -123,22 +123,25 @@ class ActivityController extends Controller
                 return $item;
             });
 
+        // --- Layout (role-based sidebar) ---
+        $layout = $user->RoleID == 2 ? 'layouts.lecturer_app' : 'layouts.app';
+
         return view('activity.index', compact(
             'discussionsCount', 'postsCount', 'repliesCount', 'quizzesCount',
             'groupsCount', 'warningsCount', 'lastActive',
             'weeklyData', 'weeklyMax', 'activityLevel',
-            'distribution', 'recentActivities'
+            'distribution', 'recentActivities', 'layout'
         ));
     }
 
     private function relativeDayLabel(Carbon $date): string
-{
-    $days = (int) floor($date->diffInDays(Carbon::now()));
+    {
+        $days = (int) floor($date->diffInDays(Carbon::now()));
 
-    if ($date->isToday()) return 'Today';
-    if ($date->isYesterday()) return 'Yesterday';
-    if ($days < 7) return $days . ' Day' . ($days === 1 ? '' : 's') . ' Ago';
-    if ($days < 14) return 'Last Week';
-    return $date->format('M d, Y');
-}
+        if ($date->isToday()) return 'Today';
+        if ($date->isYesterday()) return 'Yesterday';
+        if ($days < 7) return $days . ' Day' . ($days === 1 ? '' : 's') . ' Ago';
+        if ($days < 14) return 'Last Week';
+        return $date->format('M d, Y');
+    }
 }
