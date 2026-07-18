@@ -44,23 +44,33 @@
             @endforeach
         </div>
 
-        {{-- UPCOMING QUIZZES --}}
-<div class="panel">
-    <div class="panel-head">
-        <div class="panel-title"><span class="ic">🗓</span> Upcoming Quizzes</div>
-        <a class="view-all" href="{{ route('quizzes.index') }}">View all →</a>
-    </div>
+        {{-- RECENT QUIZZES --}}
+        <div class="panel">
+            <div class="panel-head">
+                <div class="panel-title"><span class="ic">🗓</span> Recent Quizzes</div>
+                <a class="view-all" href="{{ route('quizzes.index') }}">View all →</a>
+            </div>
 
-    @if(count($quizzes) > 0)
-        @foreach($quizzes as $quiz)
-            ...
-        @endforeach
-    @else
-        <div class="empty-state">
-            <p>🗓 No upcoming quizzes.</p>
+            @if(count($quizzes) > 0)
+                @foreach($quizzes as $quiz)
+                    <div class="disc-item">
+                        <div class="disc-body">
+                            <a class="disc-title" href="{{ route('quizzes.show', $quiz['id']) }}">{{ $quiz['title'] }}</a>
+                            <div class="disc-meta">{{ $quiz['subtitle'] }} · Due {{ $quiz['due'] }}</div>
+                        </div>
+                        @if($quiz['attempted'])
+                            <span class="disc-replies">Attempted</span>
+                        @else
+                            <a class="view-all" href="{{ route('quizzes.show', $quiz['id']) }}">Attempt →</a>
+                        @endif
+                    </div>
+                @endforeach
+            @else
+                <div class="empty-state">
+                    <p>🗓 No upcoming quizzes.</p>
+                </div>
+            @endif
         </div>
-    @endif
-</div>
 
         {{-- RECOMMENDED --}}
         <div class="panel">
