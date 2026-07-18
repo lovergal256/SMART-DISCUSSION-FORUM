@@ -1,4 +1,4 @@
-@extends('layouts.app')
+@extends($layout)
 
 @section('title', 'My Quizzes - Smart Discussion Forum')
 
@@ -11,10 +11,6 @@
         <div class="page-head">
             <h1>Quiz Management</h1>
             <p>Create and manage quizzes for your students.</p>
-        </div>
-
-        <div style="margin-bottom: 16px;">
-            <a class="take-quiz-link" href="{{ route('quizzes.create') }}">+ Create Quiz</a>
         </div>
 
         <div class="panel">

@@ -9,7 +9,7 @@ use App\Models\Post;
 use App\Models\Reply;
 use App\Models\Quiz;
 use App\Models\QuizScore;
-use App\Services\CollaborativeFilteringService;
+use App\Services\MatrixFactorizationService;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 
@@ -106,7 +106,7 @@ $myGroupIds = \App\Models\Group::whereHas('members', function ($query) use ($use
         // --- Recommended For You (real, mirrors Recommendations page logic) ---
         $recommendations = [];
 
-        $cf = new CollaborativeFilteringService();
+       $cf = new MatrixFactorizationService();
         $recommendedGroupIds = $cf->recommendGroups($userId, 1);
 
         if (!empty($recommendedGroupIds)) {
@@ -189,8 +189,8 @@ $myGroupIds = \App\Models\Group::whereHas('members', function ($query) use ($use
         $repliesThisWeek = Reply::where('UserID', $userId)->whereBetween('created_at', [$weekStart, now()])->count();
         $repliesLastWeek = Reply::where('UserID', $userId)->whereBetween('created_at', [$prevWeekStart, $prevWeekEnd])->count();
 
-        $topicsThisWeek = Topic::where('UserID', $userId)->whereBetween('created_at', [$weekStart, now()])->count();
-        $topicsLastWeek = Topic::where('UserID', $userId)->whereBetween('created_at', [$prevWeekStart, $prevWeekEnd])->count();
+        $topicsThisWeek = \App\Models\Discussion::where('UserID', $userId)->whereBetween('created_at', [$weekStart, now()])->count();
+$topicsLastWeek = \App\Models\Discussion::where('UserID', $userId)->whereBetween('created_at', [$prevWeekStart, $prevWeekEnd])->count();
 
         $quizzesThisWeek = QuizScore::where('UserID', $userId)->whereBetween('DateRecorded', [$weekStart, now()])->count();
         $quizzesLastWeek = QuizScore::where('UserID', $userId)->whereBetween('DateRecorded', [$prevWeekStart, $prevWeekEnd])->count();
@@ -213,7 +213,7 @@ for ($i = 6; $i >= 0; $i--) {
     $day = Carbon::now()->subDays($i)->startOfDay();
     $dayEnd = (clone $day)->endOfDay();
 
-    $t = Topic::where('UserID', $userId)->whereBetween('created_at', [$day, $dayEnd])->count();
+   $t = \App\Models\Discussion::where('UserID', $userId)->whereBetween('created_at', [$day, $dayEnd])->count();
     $p = Post::where('UserID', $userId)->whereBetween('DatePosted', [$day, $dayEnd])->count();
     $r = Reply::where('UserID', $userId)->whereBetween('created_at', [$day, $dayEnd])->count();
     $q = QuizScore::where('UserID', $userId)->whereBetween('DateRecorded', [$day, $dayEnd])->count();
@@ -232,6 +232,11 @@ for ($i = 6; $i >= 0; $i--) {
             $y = round($yBase - (($total / $maxTotal) * ($yBase - $yTop)), 1);
             $points[] = "{$x},{$y}";
         }
+$chartDayLabels = [];
+for ($i = 6; $i >= 0; $i--) {
+    $chartDayLabels[] = Carbon::now()->subDays($i)->format('D');
+}
+
         $activityChartPoints = implode(' ', $points);
 
         $unreadNotifications = \App\Models\Notification::where('UserID', $user->UserID)
@@ -239,17 +244,18 @@ for ($i = 6; $i >= 0; $i--) {
             ->count();
         $initials = $user->FullName ? collect(explode(' ', $user->FullName))->map(fn ($w) => $w[0])->take(2)->implode('') : 'ST';
 
-        return view('dashboard', compact(
-            'user',
-            'stats',
-            'discussions',
-            'quizzes',
-            'recommendations',
-            'groups',
-            'activity',
-            'activityChartPoints',
-            'unreadNotifications',
-            'initials'
-        ));
+       return view('dashboard', compact(
+    'user',
+    'stats',
+    'discussions',
+    'quizzes',
+    'recommendations',
+    'groups',
+    'activity',
+    'activityChartPoints',
+    'chartDayLabels',
+    'unreadNotifications',
+    'initials'
+));
     }
 }

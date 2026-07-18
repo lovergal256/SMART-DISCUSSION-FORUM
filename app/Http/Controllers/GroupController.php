@@ -8,33 +8,39 @@ use Illuminate\Support\Facades\Auth;
 
 class GroupController extends Controller
 {
-   public function index(Request $request)
-{
-    $search = $request->input('search');
+    public function index(Request $request)
+    {
+        $search = $request->input('search');
 
-    $myGroups = Auth::user()->groups()
-        ->when($search, function ($query, $search) {
-            $query->where('GroupName', 'like', '%' . $search . '%');
-        })
-        ->get();
+        $myGroups = Auth::user()->groups()
+            ->when($search, function ($query, $search) {
+                $query->where('GroupName', 'like', '%' . $search . '%');
+            })
+            ->get();
 
-    $myGroupIds = $myGroups->pluck('GroupID');
+        $myGroupIds = $myGroups->pluck('GroupID');
 
-    $discoverGroups = Group::where('Visibility', 'public')
-        ->whereNotIn('GroupID', $myGroupIds)
-        ->when($search, function ($query, $search) {
-            $query->where('GroupName', 'like', '%' . $search . '%');
-        })
-        ->get();
+        $discoverGroups = Group::where('Visibility', 'public')
+            ->whereNotIn('GroupID', $myGroupIds)
+            ->when($search, function ($query, $search) {
+                $query->where('GroupName', 'like', '%' . $search . '%');
+            })
+            ->get();
 
-    return view('groups.index', [
-        'groups' => $myGroups,
-        'discoverGroups' => $discoverGroups,
-        'search' => $search
-    ]);
-}
+        $layout = Auth::user()->RoleID == 2 ? 'layouts.lecturer_app' : 'layouts.app';
+
+        return view('groups.index', [
+            'groups' => $myGroups,
+            'discoverGroups' => $discoverGroups,
+            'search' => $search,
+            'layout' => $layout,
+        ]);
+    }
+
     public function create() {
-        return view('groups.create');
+        $layout = Auth::user()->RoleID == 2 ? 'layouts.lecturer_app' : 'layouts.app';
+
+        return view('groups.create', compact('layout'));
     }
 
     public function store(Request $request) {
@@ -56,38 +62,43 @@ class GroupController extends Controller
     }
 
     public function show($id) {
-    $group = Group::findOrFail($id);
+        $group = Group::findOrFail($id);
 
-    $isMember = $group->members()
-        ->where('group_members.UserID', Auth::id())
-        ->wherePivot('Status', 'approved')
-        ->exists();
+        $isMember = $group->members()
+            ->where('group_members.UserID', Auth::id())
+            ->wherePivot('Status', 'approved')
+            ->exists();
 
-    if (!$isMember) {
-        return redirect()->route('groups.index')
-            ->with('error', 'You are not a member of this group.');
+        if (!$isMember) {
+            return redirect()->route('groups.index')
+                ->with('error', 'You are not a member of this group.');
+        }
+
+        $members = $group->members()->wherePivot('Status', 'approved')->get();
+        $pendingRequests = $group->members()->wherePivot('Status', 'pending')->get();
+
+        $isAdmin = $group->members()
+            ->where('group_members.UserID', Auth::id())
+            ->wherePivot('Role', 'admin')
+            ->wherePivot('Status', 'approved')
+            ->exists();
+
+        $hasPendingRequest = $group->members()
+            ->where('group_members.UserID', Auth::id())
+            ->wherePivot('Status', 'pending')
+            ->exists();
+
+        $discussions = \App\Models\Discussion::where('GroupID', $group->GroupID)->latest()->get();
+
+        $layout = Auth::user()->RoleID == 2 ? 'layouts.lecturer_app' : 'layouts.app';
+
+        return view('groups.show', compact(
+            'group', 'members', 'pendingRequests', 'isMember', 'isAdmin',
+            'hasPendingRequest', 'discussions', 'layout'
+        ));
     }
 
-    $members = $group->members()->wherePivot('Status', 'approved')->get();
-    $pendingRequests = $group->members()->wherePivot('Status', 'pending')->get();
 
-    $isAdmin = $group->members()
-        ->where('group_members.UserID', Auth::id())
-        ->wherePivot('Role', 'admin')
-        ->wherePivot('Status', 'approved')
-        ->exists();
-
-    $hasPendingRequest = $group->members()
-        ->where('group_members.UserID', Auth::id())
-        ->wherePivot('Status', 'pending')
-        ->exists();
-
-    $discussions = \App\Models\Discussion::where('GroupID', $group->GroupID)->latest()->get();
-
-    return view('groups.show', compact('group', 'members', 'pendingRequests', 'isMember', 'isAdmin', 'hasPendingRequest', 'discussions'));
-}
-    
-    
     public function addMember(Request $request, $id) {
       $group = Group::findOrFail($id);
 
