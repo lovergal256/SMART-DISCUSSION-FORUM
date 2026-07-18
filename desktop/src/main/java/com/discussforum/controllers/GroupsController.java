@@ -5,10 +5,12 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
+import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
-import javafx.scene.text.Text;
+import javafx.stage.Stage;
 
 import java.net.URL;
 import java.util.ResourceBundle;
@@ -27,7 +29,7 @@ public class GroupsController implements Initializable {
     }
 
     @FXML
-    private void loadMyGroups() {
+    public void loadMyGroups() {
         sectionTitle.setText("My Groups");
         statusLabel.setText("Loading...");
         groupsList.getChildren().clear();
@@ -41,20 +43,19 @@ public class GroupsController implements Initializable {
                     } else {
                         statusLabel.setText(groups.size() + " group(s)");
                         for (JsonElement el : groups) {
-                            JsonObject g = el.getAsJsonObject();
-                            groupsList.getChildren().add(createGroupCard(g));
+                            groupsList.getChildren().add(createGroupCard(el.getAsJsonObject()));
                         }
                     }
                 });
             } catch (Exception e) {
                 javafx.application.Platform.runLater(() ->
-                    statusLabel.setText("Error loading groups: " + e.getMessage()));
+                    statusLabel.setText("Error: " + e.getMessage()));
             }
         }).start();
     }
 
     @FXML
-    private void loadDiscoverGroups() {
+    public void loadDiscoverGroups() {
         sectionTitle.setText("Discover Groups");
         statusLabel.setText("Loading...");
         groupsList.getChildren().clear();
@@ -68,14 +69,13 @@ public class GroupsController implements Initializable {
                     } else {
                         statusLabel.setText(groups.size() + " public group(s)");
                         for (JsonElement el : groups) {
-                            JsonObject g = el.getAsJsonObject();
-                            groupsList.getChildren().add(createGroupCard(g));
+                            groupsList.getChildren().add(createGroupCard(el.getAsJsonObject()));
                         }
                     }
                 });
             } catch (Exception e) {
                 javafx.application.Platform.runLater(() ->
-                    statusLabel.setText("Error loading groups: " + e.getMessage()));
+                    statusLabel.setText("Error: " + e.getMessage()));
             }
         }).start();
     }
@@ -84,12 +84,13 @@ public class GroupsController implements Initializable {
         VBox card = new VBox(5);
         card.setStyle("-fx-background-color: white; -fx-padding: 15; -fx-background-radius: 6; " +
                       "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.08), 6, 0, 0, 2); " +
-                      "-fx-border-left-color: #0077b6; -fx-border-left-width: 3;");
+                      "-fx-cursor: hand;");
 
         String name = group.get("name").getAsString();
         String desc = group.has("description") && !group.get("description").isJsonNull()
                 ? group.get("description").getAsString() : "No description";
         int members = group.has("members_count") ? group.get("members_count").getAsInt() : 0;
+        int id = group.get("id").getAsInt();
 
         Label nameLabel = new Label(name);
         nameLabel.setStyle("-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #0077b6;");
@@ -97,21 +98,48 @@ public class GroupsController implements Initializable {
         Label descLabel = new Label(desc);
         descLabel.setStyle("-fx-text-fill: #555; -fx-font-size: 12px;");
 
-        Label membersLabel = new Label(members + " members");
+        Label membersLabel = new Label(members + " members · click to view");
         membersLabel.setStyle("-fx-text-fill: #888; -fx-font-size: 11px;");
 
         card.getChildren().addAll(nameLabel, descLabel, membersLabel);
+
+        // Click to open group detail
+        card.setOnMouseClicked(e -> openGroupDetail(id, name));
+
+        // Hover effect
+        card.setOnMouseEntered(e -> card.setStyle(card.getStyle() +
+            "-fx-background-color: #f0f7ff;"));
+        card.setOnMouseExited(e -> card.setStyle(
+            "-fx-background-color: white; -fx-padding: 15; -fx-background-radius: 6; " +
+            "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.08), 6, 0, 0, 2); -fx-cursor: hand;"));
+
         return card;
+    }
+
+    private void openGroupDetail(int groupId, String groupName) {
+        try {
+            FXMLLoader loader = new FXMLLoader(
+                getClass().getResource("/com/discussforum/views/GroupDetail.fxml"));
+            Scene scene = new Scene(loader.load(), 900, 600);
+
+            GroupDetailController controller = loader.getController();
+            controller.loadGroup(groupId, groupName);
+
+            Stage stage = (Stage) groupsList.getScene().getWindow();
+            stage.setScene(scene);
+        } catch (Exception e) {
+            statusLabel.setText("Error opening group: " + e.getMessage());
+        }
     }
 
     @FXML
     private void handleLogout() {
         ApiService.logout();
         try {
-            javafx.fxml.FXMLLoader loader = new javafx.fxml.FXMLLoader(
+            FXMLLoader loader = new FXMLLoader(
                 getClass().getResource("/com/discussforum/views/Login.fxml"));
-            javafx.scene.Scene scene = new javafx.scene.Scene(loader.load(), 900, 600);
-            javafx.stage.Stage stage = (javafx.stage.Stage) userLabel.getScene().getWindow();
+            Scene scene = new Scene(loader.load(), 900, 600);
+            Stage stage = (Stage) userLabel.getScene().getWindow();
             stage.setScene(scene);
         } catch (Exception e) {
             e.printStackTrace();
