@@ -77,4 +77,20 @@ public class ApiService {
 
         return gson.fromJson(response.body(), JsonArray.class);
     }
+
+    public static JsonObject post(String endpoint, JsonObject body) throws Exception {
+        HttpRequest request = HttpRequest.newBuilder()
+            .uri(URI.create(BASE_URL + endpoint))
+            .header("Content-Type", "application/json")
+            .header("Accept", "application/json")
+            .header("Authorization", "Bearer " + authToken)
+            .POST(HttpRequest.BodyPublishers.ofString(
+                body != null ? body.toString() : "{}"))
+            .build();
+
+        HttpResponse<String> response = client.send(request,
+            HttpResponse.BodyHandlers.ofString());
+
+        return gson.fromJson(response.body(), JsonObject.class);
+    }
 }

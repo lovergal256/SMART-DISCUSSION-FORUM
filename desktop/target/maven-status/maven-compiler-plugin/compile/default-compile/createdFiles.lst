@@ -1,4 +1,5 @@
 com/discussforum/services/ApiService.class
+com/discussforum/controllers/CreateGroupController.class
 com/discussforum/controllers/LoginController.class
 com/discussforum/App.class
 com/discussforum/controllers/GroupsController.class

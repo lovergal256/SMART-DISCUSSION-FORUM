@@ -43,7 +43,8 @@ public class GroupsController implements Initializable {
                     } else {
                         statusLabel.setText(groups.size() + " group(s)");
                         for (JsonElement el : groups) {
-                            groupsList.getChildren().add(createGroupCard(el.getAsJsonObject()));
+                            groupsList.getChildren().add(
+                                createGroupCard(el.getAsJsonObject(), false));
                         }
                     }
                 });
@@ -69,7 +70,8 @@ public class GroupsController implements Initializable {
                     } else {
                         statusLabel.setText(groups.size() + " public group(s)");
                         for (JsonElement el : groups) {
-                            groupsList.getChildren().add(createGroupCard(el.getAsJsonObject()));
+                            groupsList.getChildren().add(
+                                createGroupCard(el.getAsJsonObject(), true));
                         }
                     }
                 });
@@ -80,8 +82,8 @@ public class GroupsController implements Initializable {
         }).start();
     }
 
-    private VBox createGroupCard(JsonObject group) {
-        VBox card = new VBox(5);
+    private VBox createGroupCard(JsonObject group, boolean showJoinButton) {
+        VBox card = new VBox(8);
         card.setStyle("-fx-background-color: white; -fx-padding: 15; -fx-background-radius: 6; " +
                       "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.08), 6, 0, 0, 2); " +
                       "-fx-cursor: hand;");
@@ -98,20 +100,54 @@ public class GroupsController implements Initializable {
         Label descLabel = new Label(desc);
         descLabel.setStyle("-fx-text-fill: #555; -fx-font-size: 12px;");
 
-        Label membersLabel = new Label(members + " members · click to view");
+        Label membersLabel = new Label(members + " members");
         membersLabel.setStyle("-fx-text-fill: #888; -fx-font-size: 11px;");
 
         card.getChildren().addAll(nameLabel, descLabel, membersLabel);
 
-        // Click to open group detail
-        card.setOnMouseClicked(e -> openGroupDetail(id, name));
+        if (showJoinButton) {
+            Label feedbackLabel = new Label("");
+            feedbackLabel.setStyle("-fx-font-size: 11px;");
 
-        // Hover effect
-        card.setOnMouseEntered(e -> card.setStyle(card.getStyle() +
-            "-fx-background-color: #f0f7ff;"));
-        card.setOnMouseExited(e -> card.setStyle(
-            "-fx-background-color: white; -fx-padding: 15; -fx-background-radius: 6; " +
-            "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.08), 6, 0, 0, 2); -fx-cursor: hand;"));
+            Button joinBtn = new Button("Request to Join");
+            joinBtn.setStyle("-fx-background-color: #0077b6; -fx-text-fill: white; " +
+                           "-fx-padding: 6 12; -fx-background-radius: 4; -fx-cursor: hand;");
+
+            joinBtn.setOnAction(e -> {
+                joinBtn.setDisable(true);
+                joinBtn.setText("Sending...");
+                new Thread(() -> {
+                    try {
+                        JsonObject response = ApiService.post(
+                            "/groups/" + id + "/request-join", null);
+                        javafx.application.Platform.runLater(() -> {
+                            String msg = response.has("message") ?
+                                response.get("message").getAsString() : "Request sent.";
+                            feedbackLabel.setStyle("-fx-text-fill: green; -fx-font-size: 11px;");
+                            feedbackLabel.setText(msg);
+                            joinBtn.setVisible(false);
+                        });
+                    } catch (Exception ex) {
+                        javafx.application.Platform.runLater(() -> {
+                            feedbackLabel.setStyle("-fx-text-fill: red; -fx-font-size: 11px;");
+                            feedbackLabel.setText("Error: " + ex.getMessage());
+                            joinBtn.setDisable(false);
+                            joinBtn.setText("Request to Join");
+                        });
+                    }
+                }).start();
+            });
+
+            card.getChildren().addAll(joinBtn, feedbackLabel);
+        } else {
+            card.setOnMouseClicked(e -> openGroupDetail(id, name));
+            card.setOnMouseEntered(e -> card.setStyle(
+                "-fx-background-color: #f0f7ff; -fx-padding: 15; -fx-background-radius: 6; " +
+                "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.08), 6, 0, 0, 2); -fx-cursor: hand;"));
+            card.setOnMouseExited(e -> card.setStyle(
+                "-fx-background-color: white; -fx-padding: 15; -fx-background-radius: 6; " +
+                "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.08), 6, 0, 0, 2); -fx-cursor: hand;"));
+        }
 
         return card;
     }
@@ -121,10 +157,8 @@ public class GroupsController implements Initializable {
             FXMLLoader loader = new FXMLLoader(
                 getClass().getResource("/com/discussforum/views/GroupDetail.fxml"));
             Scene scene = new Scene(loader.load(), 900, 600);
-
             GroupDetailController controller = loader.getController();
             controller.loadGroup(groupId, groupName);
-
             Stage stage = (Stage) groupsList.getScene().getWindow();
             stage.setScene(scene);
         } catch (Exception e) {
@@ -145,4 +179,17 @@ public class GroupsController implements Initializable {
             e.printStackTrace();
         }
     }
+
+    @FXML
+    private void openCreateGroup() {
+      try {
+          FXMLLoader loader = new FXMLLoader(
+              getClass().getResource("/com/discussforum/views/CreateGroup.fxml"));
+          Scene scene = new Scene(loader.load(), 900, 600);
+          Stage stage = (Stage) groupsList.getScene().getWindow();
+          stage.setScene(scene);
+    }   catch (Exception e) {
+          statusLabel.setText("Error: " + e.getMessage());
+    }
+}
 }
