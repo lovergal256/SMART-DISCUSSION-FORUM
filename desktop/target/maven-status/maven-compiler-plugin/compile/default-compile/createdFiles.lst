@@ -1,2 +1,11 @@
+<<<<<<< HEAD
 com\discussforum\App.class
 com\discussforum\controllers\LoginController.class
+=======
+com/discussforum/services/ApiService.class
+com/discussforum/controllers/CreateGroupController.class
+com/discussforum/controllers/LoginController.class
+com/discussforum/App.class
+com/discussforum/controllers/GroupsController.class
+com/discussforum/controllers/GroupDetailController.class
+>>>>>>> 0cd9362635a3889272fb9311779a8511fd19d300
