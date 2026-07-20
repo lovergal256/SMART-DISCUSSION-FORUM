@@ -55,8 +55,6 @@ public class GroupDetailController {
     }
 
     public void setGroupId(int groupId) {
-        // Used when returning from another screen (e.g. after creating a quiz)
-        // without the full group name on hand yet; loadGroup will refresh it.
         loadGroup(groupId, groupNameLabel.getText());
     }
 
