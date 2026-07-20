@@ -16,6 +16,7 @@ public class GroupDetailController {
     @FXML private Label groupNameLabel;
     @FXML private Label statusLabel;
     @FXML private VBox membersList;
+    @FXML private Button createQuizButton;
 
     private int currentGroupId;
 
@@ -24,6 +25,13 @@ public class GroupDetailController {
         groupNameLabel.setText(groupName);
         statusLabel.setText("Loading members...");
         membersList.getChildren().clear();
+
+        // Only lecturers can create quizzes, matching the web app's manage-quizzes gate.
+        if (createQuizButton != null) {
+            boolean isLecturer = ApiService.isLecturer();
+            createQuizButton.setVisible(isLecturer);
+            createQuizButton.setManaged(isLecturer);
+        }
 
         new Thread(() -> {
             try {
@@ -44,6 +52,10 @@ public class GroupDetailController {
                     statusLabel.setText("Error loading group: " + e.getMessage()));
             }
         }).start();
+    }
+
+    public void setGroupId(int groupId) {
+        loadGroup(groupId, groupNameLabel.getText());
     }
 
     private HBox createMemberRow(JsonObject member) {
@@ -74,6 +86,21 @@ public class GroupDetailController {
 
         row.getChildren().addAll(info, spacer, roleLabel);
         return row;
+    }
+
+    @FXML
+    private void handleCreateQuiz() {
+        try {
+            FXMLLoader loader = new FXMLLoader(
+                getClass().getResource("/com/discussforum/views/CreateQuiz.fxml"));
+            Scene scene = new Scene(loader.load(), 900, 600);
+            CreateQuizController controller = loader.getController();
+            controller.setGroup(currentGroupId, groupNameLabel.getText());
+            Stage stage = (Stage) groupNameLabel.getScene().getWindow();
+            stage.setScene(scene);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     @FXML

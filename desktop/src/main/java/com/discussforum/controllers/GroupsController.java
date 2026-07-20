@@ -21,10 +21,22 @@ public class GroupsController implements Initializable {
     @FXML private Label sectionTitle;
     @FXML private Label statusLabel;
     @FXML private VBox groupsList;
+    @FXML private Button myQuizzesButton;
+    @FXML private SidebarController sidebarController;   // NEW: auto-injected via fx:include fx:id="sidebar"
 
     @Override
     public void initialize(URL url, ResourceBundle rb) {
         userLabel.setText(ApiService.getCurrentUserName());
+
+        // My Quizzes is a student-only view, mirroring the web sidebar.
+        if (myQuizzesButton != null) {
+            boolean isStudent = !ApiService.isLecturer();
+            myQuizzesButton.setVisible(isStudent);
+            myQuizzesButton.setManaged(isStudent);
+        }
+
+        sidebarController.setActive("groups");   // NEW: highlights "My Groups" in the shared sidebar
+
         loadMyGroups();
     }
 
@@ -167,6 +179,19 @@ public class GroupsController implements Initializable {
     }
 
     @FXML
+    private void openMyQuizzes() {
+        try {
+            FXMLLoader loader = new FXMLLoader(
+                getClass().getResource("/com/discussforum/views/Quizzes.fxml"));
+            Scene scene = new Scene(loader.load(), 900, 600);
+            Stage stage = (Stage) groupsList.getScene().getWindow();
+            stage.setScene(scene);
+        } catch (Exception e) {
+            statusLabel.setText("Error opening quizzes: " + e.getMessage());
+        }
+    }
+
+    @FXML
     private void handleLogout() {
         ApiService.logout();
         try {
@@ -182,14 +207,14 @@ public class GroupsController implements Initializable {
 
     @FXML
     private void openCreateGroup() {
-      try {
-          FXMLLoader loader = new FXMLLoader(
-              getClass().getResource("/com/discussforum/views/CreateGroup.fxml"));
-          Scene scene = new Scene(loader.load(), 900, 600);
-          Stage stage = (Stage) groupsList.getScene().getWindow();
-          stage.setScene(scene);
-    }   catch (Exception e) {
-          statusLabel.setText("Error: " + e.getMessage());
+        try {
+            FXMLLoader loader = new FXMLLoader(
+                getClass().getResource("/com/discussforum/views/CreateGroup.fxml"));
+            Scene scene = new Scene(loader.load(), 900, 600);
+            Stage stage = (Stage) groupsList.getScene().getWindow();
+            stage.setScene(scene);
+        } catch (Exception e) {
+            statusLabel.setText("Error: " + e.getMessage());
+        }
     }
-}
 }
