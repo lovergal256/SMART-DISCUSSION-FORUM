@@ -14,7 +14,7 @@
                      -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 10, 0, 0, 2);"
               maxWidth="380">
 
-            <Label text="DiscussForum"
+            <Label text="Smart Discussion Forum"
                    style="-fx-font-size: 28px; -fx-font-weight: bold; -fx-text-fill: #0077b6;"/>
 
             <Label text="Academic Discussion Platform"

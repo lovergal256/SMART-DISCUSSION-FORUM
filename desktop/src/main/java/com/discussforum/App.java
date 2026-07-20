@@ -17,7 +17,7 @@ public class App extends Application {
     App.class.getResource("/com/discussforum/views/Login.fxml")
         );
         Scene scene = new Scene(loader.load(), 900, 600);
-        stage.setTitle("DiscussForum");
+        stage.setTitle("Smart Discussion Forum");
         stage.setScene(scene);
         stage.show();
     }
