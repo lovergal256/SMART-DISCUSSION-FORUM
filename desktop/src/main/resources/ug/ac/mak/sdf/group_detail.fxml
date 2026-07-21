@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+
+<BorderPane xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:controller="ug.ac.mak.sdf.GroupDetailController"
+            stylesheets="@style.css">
+
+    <top>
+        <fx:include source="topbar.fxml" />
+    </top>
+
+    <left>
+        <fx:include source="sidebar.fxml" fx:id="sidebar" />
+    </left>
+
+    <center>
+        <ScrollPane fitToWidth="true" styleClass="groups-scroll">
+            <VBox styleClass="main-content" spacing="18">
+                <padding><Insets top="30" right="30" bottom="30" left="30" /></padding>
+
+                <Label fx:id="backLabel" text="← Back to Groups" styleClass="back-link" />
+
+                <Label fx:id="groupNameLabel" styleClass="page-title" />
+
+                <VBox styleClass="discussion-card" spacing="8">
+                    <padding><Insets top="16" right="18" bottom="16" left="18" /></padding>
+                    <Label text="About this group" styleClass="section-label" />
+                    <Label fx:id="groupDescLabel" styleClass="discussion-desc" wrapText="true" />
+                    <Label fx:id="groupVisibilityLabel" styleClass="discussion-meta" />
+                    <HBox spacing="10">
+                        <Button fx:id="visibilityButton" styleClass="action-button" onAction="#handleToggleVisibility" />
+                    </HBox>
+                </VBox>
+
+                <HBox alignment="CENTER_LEFT">
+                    <Label fx:id="membersHeaderLabel" styleClass="section-label" />
+                    <HBox HBox.hgrow="ALWAYS" />
+                    <Button text="+ Start a Discussion" styleClass="new-group-button" onAction="#handleStartDiscussion" />
+                </HBox>
+
+                <VBox fx:id="membersContainer" styleClass="discussion-card" spacing="0" />
+
+                <VBox fx:id="addMemberSection" styleClass="discussion-card" spacing="8" visible="false" managed="false">
+                    <padding><Insets top="16" right="18" bottom="16" left="18" /></padding>
+                    <Label text="Add a Member" styleClass="section-label" />
+                    <TextField fx:id="addMemberField" styleClass="search-field" promptText="Enter User ID" />
+                    <Button text="Add Member" styleClass="action-button" onAction="#handleAddMember" />
+                </VBox>
+
+                <VBox fx:id="pendingSection" styleClass="discussion-card" spacing="0" visible="false" managed="false">
+                    <padding><Insets top="16" right="18" bottom="16" left="18" /></padding>
+                    <Label fx:id="pendingHeaderLabel" styleClass="section-label" />
+                    <VBox fx:id="pendingContainer" spacing="0" />
+                </VBox>
+
+                <VBox styleClass="discussion-card" spacing="0">
+                    <padding><Insets top="16" right="18" bottom="16" left="18" /></padding>
+                    <Label fx:id="discussionsHeaderLabel" styleClass="section-label" />
+                    <VBox fx:id="discussionsContainer" spacing="0" />
+                </VBox>
+
+                <VBox styleClass="discussion-card" spacing="8">
+                    <padding><Insets top="16" right="18" bottom="16" left="18" /></padding>
+                    <Label text="My Exclusions" styleClass="section-label" />
+                    <Label text="Excluded members will not see your posts in this group." styleClass="discussion-meta" wrapText="true" />
+                    <VBox fx:id="exclusionsContainer" spacing="0" />
+                    <Label text="Exclude User by ID" styleClass="field-label" />
+                    <TextField fx:id="excludeUserField" styleClass="search-field" promptText="Enter User ID to exclude" />
+                    <Button text="Exclude" styleClass="blacklist-button" onAction="#handleExcludeUser" />
+                </VBox>
+
+                <HBox alignment="CENTER_LEFT">
+                    <Label fx:id="backLabel2" text="← Back to Groups" styleClass="back-link" />
+                    <HBox HBox.hgrow="ALWAYS" />
+                    <Button text="Exit Group" styleClass="blacklist-button" onAction="#handleExitGroup" />
+                    <Button fx:id="deleteGroupButton" text="Delete Group" styleClass="blacklist-button" onAction="#handleDeleteGroup" visible="false" managed="false" />
+                </HBox>
+
+                <Label fx:id="statusLabel" styleClass="status-label" />
+            </VBox>
+        </ScrollPane>
+    </center>
+
+</BorderPane>

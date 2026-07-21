@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+
+<BorderPane xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:controller="ug.ac.mak.sdf.PostsController"
+            stylesheets="@style.css">
+          <top>
+             <fx:include source="topbar.fxml" />
+         </top>
+    <left>
+       <fx:include source="sidebar.fxml" fx:id="sidebar" />
+   </left>
+
+    <center>
+        <VBox styleClass="main-content" spacing="14">
+            <padding><Insets top="30" right="30" bottom="30" left="30" /></padding>
+
+            <HBox alignment="CENTER_LEFT">
+                <Label fx:id="backLabel" text="← Back to Topics" styleClass="back-link" />
+                <HBox HBox.hgrow="ALWAYS" />
+                <Button text="🔗 Share Topic" styleClass="action-button" />
+            </HBox>
+
+            <Label fx:id="topicTitleLabel" styleClass="discussion-title" />
+
+            <VBox styleClass="discussion-card" spacing="4">
+                <padding><Insets top="16" right="18" bottom="16" left="18" /></padding>
+                <Label text="Topic Description" styleClass="section-label" />
+                <Label fx:id="topicDescLabel" styleClass="discussion-desc" wrapText="true" />
+                <Label fx:id="topicMetaLabel" styleClass="discussion-meta" />
+                <HBox spacing="10" style="-fx-padding: 8 0 0 0;">
+                    <Button text="Edit" styleClass="action-button" onAction="#handleEditTopic" />
+                    <Button text="Delete" styleClass="action-button" onAction="#handleDeleteTopic" />
+                </HBox>
+            </VBox>
+
+            <HBox alignment="CENTER_LEFT">
+                <Label text="Posts" styleClass="page-title" />
+                <HBox HBox.hgrow="ALWAYS" />
+                <Button text="+ Add Post" styleClass="new-group-button" onAction="#handleAddPost" />
+            </HBox>
+
+            <ScrollPane fitToWidth="true" styleClass="groups-scroll">
+                <VBox fx:id="postsContainer" spacing="14" />
+            </ScrollPane>
+
+            <Label fx:id="statusLabel" styleClass="status-label" />
+        </VBox>
+    </center>
+
+</BorderPane>

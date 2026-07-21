@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+
+<BorderPane xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:controller="ug.ac.mak.sdf.DashboardController"
+            stylesheets="@style.css">
+
+    <top>
+        <fx:include source="topbar.fxml" />
+    </top>
+
+    <left>
+        <fx:include source="sidebar.fxml" fx:id="sidebar" />
+    </left>
+
+    <center>
+        <ScrollPane fitToWidth="true" styleClass="dashboard-scroll">
+            <VBox styleClass="main-content" spacing="20">
+                <padding><Insets top="30" right="30" bottom="30" left="30" /></padding>
+
+                <VBox spacing="2">
+                    <Label fx:id="welcomeLabel" text="Welcome back!" styleClass="page-title" />
+                    <Label text="Let's continue your learning journey." styleClass="page-subtitle" />
+                </VBox>
+
+                <HBox fx:id="statsRow" spacing="14" />
+
+                <HBox spacing="16" alignment="TOP_LEFT">
+                    <VBox fx:id="discussionsPanel" styleClass="dashboard-panel" spacing="10" HBox.hgrow="ALWAYS" />
+                    <VBox fx:id="quizzesPanel" styleClass="dashboard-panel" spacing="10" HBox.hgrow="ALWAYS" />
+                    <VBox fx:id="recommendationsPanel" styleClass="dashboard-panel" spacing="10" HBox.hgrow="ALWAYS" />
+                </HBox>
+
+                <HBox spacing="16" alignment="TOP_LEFT">
+                    <VBox fx:id="myGroupsPanel" styleClass="dashboard-panel" spacing="10" HBox.hgrow="ALWAYS" />
+                    <VBox fx:id="activityPanel" styleClass="dashboard-panel" spacing="10" HBox.hgrow="ALWAYS" />
+                </HBox>
+
+                <Label fx:id="statusLabel" styleClass="status-label" />
+
+            </VBox>
+        </ScrollPane>
+    </center>
+
+</BorderPane>

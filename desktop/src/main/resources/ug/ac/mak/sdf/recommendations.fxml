@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+
+<BorderPane xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:controller="ug.ac.mak.sdf.RecommendationsController"
+            stylesheets="@style.css">
+
+    <top>
+        <fx:include source="topbar.fxml" />
+    </top>
+
+    <left>
+        <fx:include source="sidebar.fxml" fx:id="sidebar" />
+    </left>
+
+    <center>
+        <ScrollPane fitToWidth="true" styleClass="dashboard-scroll">
+            <VBox styleClass="main-content" spacing="20">
+                <padding><Insets top="30" right="30" bottom="30" left="30" /></padding>
+
+                <VBox spacing="2">
+                    <Label text="Recommendations For You" styleClass="page-title" />
+                    <Label text="Personalized suggestions based on forum activity." styleClass="page-subtitle" />
+                </VBox>
+
+                <HBox spacing="16">
+                    <VBox fx:id="trendingPanel" styleClass="panel" spacing="10" HBox.hgrow="ALWAYS" />
+                    <VBox fx:id="activePostsPanel" styleClass="panel" spacing="10" HBox.hgrow="ALWAYS" />
+                </HBox>
+
+                <VBox fx:id="suggestedGroupsPanel" styleClass="panel" spacing="10" />
+
+                <Label fx:id="statusLabel" styleClass="status-label" />
+            </VBox>
+        </ScrollPane>
+    </center>
+
+</BorderPane>

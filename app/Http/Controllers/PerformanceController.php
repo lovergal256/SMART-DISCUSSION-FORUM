@@ -14,6 +14,9 @@ class PerformanceController extends Controller
     {
         $user = Auth::user();
         $userId = $user->UserID;
+        if ($user->RoleID !== 1) {
+            return redirect()->route('lecturer.dashboard');
+        }
 
         // --- Discussion Participation ---
         $topicsCreated = Topic::where('UserID', $userId)->count();

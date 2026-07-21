@@ -104,7 +104,7 @@ class DashboardController extends Controller
                     'id' => $quiz->QuizID,
                     'title' => $quiz->Title,
                     'subtitle' => optional($quiz->group)->GroupName ?? 'Group',
-                    'due' => $due,
+'due' => $due,
                     'attempted' => in_array($quiz->QuizID, $attemptedQuizIds, true),
                 ];
             })

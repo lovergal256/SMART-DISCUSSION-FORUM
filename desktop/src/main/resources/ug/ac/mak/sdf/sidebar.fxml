@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.layout.Priority?>
+
+<VBox xmlns="http://javafx.com/javafx"
+      xmlns:fx="http://javafx.com/fxml"
+      fx:controller="ug.ac.mak.sdf.SideBarController"
+      styleClass="sidebar"
+      prefWidth="230"
+      spacing="4">
+
+    <padding><Insets top="24" right="16" bottom="20" left="16" /></padding>
+
+    <HBox spacing="8" alignment="CENTER_LEFT">
+        <Label text="💬" styleClass="sidebar-logo-icon" />
+        <Label text="SMART DISCUSSION FORUM" styleClass="sidebar-title" wrapText="true" />
+    </HBox>
+
+    <VBox spacing="2" style="-fx-padding: 22 0 0 0;">
+        <HBox fx:id="navDashboard" styleClass="sidebar-item" alignment="CENTER_LEFT" spacing="10" onMouseClicked="#handleDashboard">
+            <Label text="🏠" styleClass="sidebar-icon" />
+            <Label text="Dashboard" styleClass="sidebar-label" />
+        </HBox>
+        <HBox fx:id="navDiscussions" styleClass="sidebar-item" alignment="CENTER_LEFT" spacing="10" onMouseClicked="#handleDiscussions">
+            <Label text="💬" styleClass="sidebar-icon" />
+            <Label text="Discussions" styleClass="sidebar-label" />
+        </HBox>
+        <HBox fx:id="navGroups" styleClass="sidebar-item" alignment="CENTER_LEFT" spacing="10" onMouseClicked="#handleGroups">
+            <Label text="👥" styleClass="sidebar-icon" />
+            <Label text="My Groups" styleClass="sidebar-label" />
+        </HBox>
+        <HBox fx:id="navQuizzes" styleClass="sidebar-item" alignment="CENTER_LEFT" spacing="10" onMouseClicked="#handleQuizzes">
+            <Label text="📄" styleClass="sidebar-icon" />
+            <Label text="My Quizzes" styleClass="sidebar-label" />
+        </HBox>
+        <HBox fx:id="navRecommendations" styleClass="sidebar-item" alignment="CENTER_LEFT" spacing="10" onMouseClicked="#handleRecommendations">
+            <Label text="⭐" styleClass="sidebar-icon" />
+            <Label text="Recommendations" styleClass="sidebar-label" />
+        </HBox>
+        <HBox fx:id="navPerformance" styleClass="sidebar-item" alignment="CENTER_LEFT" spacing="10" onMouseClicked="#handlePerformance">
+            <Label text="📊" styleClass="sidebar-icon" />
+            <Label text="Performance" styleClass="sidebar-label" />
+        </HBox>
+        <HBox fx:id="navWarnings" styleClass="sidebar-item" alignment="CENTER_LEFT" spacing="10" onMouseClicked="#handleWarnings">
+            <Label text="⚠️" styleClass="sidebar-icon" />
+            <Label text="Warnings" styleClass="sidebar-label" />
+        </HBox>
+        <HBox fx:id="navActivity" styleClass="sidebar-item" alignment="CENTER_LEFT" spacing="10" onMouseClicked="#handleActivity">
+            <Label text="📝" styleClass="sidebar-icon" />
+            <Label text="My Activity" styleClass="sidebar-label" />
+        </HBox>
+    </VBox>
+
+    <Region VBox.vgrow="ALWAYS" />
+
+    <HBox styleClass="sidebar-item" alignment="CENTER_LEFT" spacing="10" onMouseClicked="#handleLogout">
+        <Label text="🚪" styleClass="sidebar-icon" />
+        <Label text="Logout" styleClass="sidebar-label" />
+    </HBox>
+
+</VBox>

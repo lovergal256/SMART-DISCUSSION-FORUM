@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Topic;
 use App\Models\Post;
 use App\Models\Reply;
+use App\Models\Group;
 use App\Models\QuizScore;
 use App\Models\GroupMember;
 use Illuminate\Support\Facades\Auth;
@@ -24,6 +25,7 @@ class ActivityController extends Controller
         $repliesCount     = Reply::where('UserID', $userId)->count();
         $quizzesCount     = QuizScore::where('UserID', $userId)->count();
         $groupsCount      = GroupMember::where('UserID', $userId)->count();
+        $groupsCreated    = Group::where('CreatedBy', $userId)->count();
         $warningsCount    = $user->warnings()->count();
         $lastActive       = $user->LastActiveDate ? Carbon::parse($user->LastActiveDate) : null;
 
@@ -128,7 +130,7 @@ class ActivityController extends Controller
 
         return view('activity.index', compact(
             'discussionsCount', 'postsCount', 'repliesCount', 'quizzesCount',
-            'groupsCount', 'warningsCount', 'lastActive',
+            'groupsCount', 'groupsCreated', 'warningsCount', 'lastActive',
             'weeklyData', 'weeklyMax', 'activityLevel',
             'distribution', 'recentActivities', 'layout'
         ));

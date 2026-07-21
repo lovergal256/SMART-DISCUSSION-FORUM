@@ -3,17 +3,17 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Models\Attempt;
 use App\Models\Answer;
+use App\Models\Attempt;
 use App\Models\Group;
 use App\Models\Lecturer;
 use App\Models\Question;
 use App\Models\Quiz;
 use App\Models\QuizScore;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use Carbon\Carbon;
 
 class QuizApiController extends Controller
 {
@@ -53,38 +53,38 @@ class QuizApiController extends Controller
     }
 
     /**
- * List quizzes across every group the user belongs to.
- * Powers the desktop app's standalone "My Quizzes" screen.
- */
-public function indexAll()
-{
-    $user = Auth::user();
+     * List quizzes across every group the user belongs to.
+     * Powers the desktop app's standalone "My Quizzes" screen.
+     */
+    public function indexAll()
+    {
+        $user = Auth::user();
 
-    $attemptedQuizIds = Attempt::where('UserID', $user->UserID)->pluck('QuizID')->all();
+        $attemptedQuizIds = Attempt::where('UserID', $user->UserID)->pluck('QuizID')->all();
 
-    $groupIds = Group::whereHas('members', function ($query) use ($user) {
-        $query->where('group_members.UserID', $user->UserID)
-            ->where('group_members.Status', 'approved');
-    })->pluck('GroupID');
+        $groupIds = Group::whereHas('members', function ($query) use ($user) {
+            $query->where('group_members.UserID', $user->UserID)
+                ->where('group_members.Status', 'approved');
+        })->pluck('GroupID');
 
-    $quizzes = Quiz::whereIn('GroupID', $groupIds)
-        ->with('group')
-        ->latest('StartTime')
-        ->get()
-        ->map(function ($quiz) use ($attemptedQuizIds) {
-            return [
-                'id' => $quiz->QuizID,
-                'title' => $quiz->Title,
-                'duration' => $quiz->Duration,
-                'start_time' => Carbon::parse($quiz->StartTime)->toIso8601String(),
-                'attempted' => in_array($quiz->QuizID, $attemptedQuizIds, true),
-                'group_id' => $quiz->GroupID,
-                'group_name' => optional($quiz->group)->GroupName ?? 'Group',
-            ];
-        });
+        $quizzes = Quiz::whereIn('GroupID', $groupIds)
+            ->with('group')
+            ->latest('StartTime')
+            ->get()
+            ->map(function ($quiz) use ($attemptedQuizIds) {
+                return [
+                    'id' => $quiz->QuizID,
+                    'title' => $quiz->Title,
+                    'duration' => $quiz->Duration,
+                    'start_time' => Carbon::parse($quiz->StartTime)->toIso8601String(),
+                    'attempted' => in_array($quiz->QuizID, $attemptedQuizIds, true),
+                    'group_id' => $quiz->GroupID,
+                    'group_name' => optional($quiz->group)->GroupName ?? 'Group',
+                ];
+            });
 
-    return response()->json($quizzes);
-}
+        return response()->json($quizzes);
+    }
 
     /**
      * Quiz detail. Includes questions only when the student can actually
@@ -150,6 +150,57 @@ public function indexAll()
         }
 
         return response()->json($payload);
+    }
+
+    /**
+     * Per-question answer review for a completed, results-released attempt.
+     * Restores the answer-review detail the student result screen needs
+     * (correct option, what the student picked, whether it was right) —
+     * show() intentionally stays lightweight and doesn't include this.
+     */
+    public function results($quizId)
+    {
+        $user = Auth::user();
+        $quiz = Quiz::findOrFail($quizId);
+
+        $attempt = Attempt::where('UserID', $user->UserID)
+            ->where('QuizID', $quiz->QuizID)
+            ->first();
+
+        if (!$attempt) {
+            return response()->json(['message' => 'You have not attempted this quiz.'], 404);
+        }
+
+        if (!$quiz->ResultsReleased) {
+            return response()->json(['message' => 'Results have not been released yet.'], 403);
+        }
+
+        $answers = Answer::where('AttemptID', $attempt->AttemptID)->get();
+        $questions = Question::where('QuizID', $quiz->QuizID)->get();
+
+        $review = $questions->map(function ($q) use ($answers) {
+            $ans = $answers->firstWhere('QuestionID', $q->QuestionID);
+
+            return [
+                'id' => $q->QuestionID,
+                'text' => $q->QuestionText,
+                'option_a' => $q->OptionA,
+                'option_b' => $q->OptionB,
+                'option_c' => $q->OptionC,
+                'option_d' => $q->OptionD,
+                'correct_option' => $q->CorrectOption,
+                'selected_option' => optional($ans)->SelectedOption,
+                'is_correct' => (bool) optional($ans)->IsCorrect,
+                'marks' => (int) $q->Marks,
+            ];
+        });
+
+        return response()->json([
+            'id' => $quiz->QuizID,
+            'title' => $quiz->Title,
+            'score' => (float) $attempt->Score,
+            'questions' => $review,
+        ]);
     }
 
     /**
@@ -239,85 +290,86 @@ if ($now->lt($startTime) || $now->gt($acceptUntil)) {
             'score' => $scorePercentage,
         ]);
     }
-    /**
- * Full list of quizzes created by the logged-in lecturer, for the
- * desktop "All Quizzes" screen (dashboard only shows the latest 5).
- */
-public function indexForLecturer()
-{
-    $user = Auth::user();
-    $lecturer = Lecturer::where('UserID', $user->UserID)->first();
-
-    $quizzes = Quiz::where('LecturerID', optional($lecturer)->LecturerID)
-        ->with('group')
-        ->latest('StartTime')
-        ->get()
-        ->map(function ($quiz) {
-            return [
-                'id' => $quiz->QuizID,
-                'title' => $quiz->Title,
-                'group_name' => optional($quiz->group)->GroupName ?? 'Group',
-                'duration' => $quiz->Duration,
-                'due' => Carbon::parse($quiz->StartTime)->toIso8601String(),
-                'attempt_count' => Attempt::where('QuizID', $quiz->QuizID)->count(),
-                'results_released' => (bool) $quiz->ResultsReleased,
-            ];
-        });
-
-    return response()->json(['quizzes' => $quizzes]);
-}
 
     /**
- * Lecturer-only quiz review: schedule, attempt summary, release-results state.
- * Mirrors the web's quizzes.show view for lecturers.
- */
-public function showForLecturer($quizId)
-{
-    $user = Auth::user();
-    $lecturer = Lecturer::where('UserID', $user->UserID)->first();
-    $quiz = Quiz::with('group')->findOrFail($quizId);
+     * Full list of quizzes created by the logged-in lecturer, for the
+     * desktop "All Quizzes" screen (dashboard only shows the latest 5).
+     */
+    public function indexForLecturer()
+    {
+        $user = Auth::user();
+        $lecturer = Lecturer::where('UserID', $user->UserID)->first();
 
-    if (!$lecturer || $quiz->LecturerID !== $lecturer->LecturerID) {
-        return response()->json(['message' => 'You can only review quizzes you created.'], 403);
+        $quizzes = Quiz::where('LecturerID', optional($lecturer)->LecturerID)
+            ->with('group')
+            ->latest('StartTime')
+            ->get()
+            ->map(function ($quiz) {
+                return [
+                    'id' => $quiz->QuizID,
+                    'title' => $quiz->Title,
+                    'group_name' => optional($quiz->group)->GroupName ?? 'Group',
+                    'duration' => $quiz->Duration,
+                    'due' => Carbon::parse($quiz->StartTime)->toIso8601String(),
+                    'attempt_count' => Attempt::where('QuizID', $quiz->QuizID)->count(),
+                    'results_released' => (bool) $quiz->ResultsReleased,
+                ];
+            });
+
+        return response()->json(['quizzes' => $quizzes]);
     }
 
-    $startTime = Carbon::parse($quiz->StartTime);
-    $endTime = (clone $startTime)->addMinutes((int) $quiz->Duration);
+    /**
+     * Lecturer-only quiz review: schedule, attempt summary, release-results state.
+     * Mirrors the web's quizzes.show view for lecturers.
+     */
+    public function showForLecturer($quizId)
+    {
+        $user = Auth::user();
+        $lecturer = Lecturer::where('UserID', $user->UserID)->first();
+        $quiz = Quiz::with('group')->findOrFail($quizId);
 
-    $attemptCount = Attempt::where('QuizID', $quiz->QuizID)->count();
-    $averageScore = Attempt::where('QuizID', $quiz->QuizID)->avg('Score');
+        if (!$lecturer || $quiz->LecturerID !== $lecturer->LecturerID) {
+            return response()->json(['message' => 'You can only review quizzes you created.'], 403);
+        }
 
-    return response()->json([
-        'id' => $quiz->QuizID,
-        'title' => $quiz->Title,
-        'group_name' => optional($quiz->group)->GroupName ?? 'Group',
-        'group_id' => $quiz->GroupID,
-        'duration' => $quiz->Duration,
-        'start_time' => $startTime->toIso8601String(),
-        'end_time' => $endTime->toIso8601String(),
-        'attempt_count' => $attemptCount,
-        'average_score' => $averageScore !== null ? round((float) $averageScore, 2) : null,
-        'results_released' => (bool) $quiz->ResultsReleased,
-    ]);
-}
+        $startTime = Carbon::parse($quiz->StartTime);
+        $endTime = (clone $startTime)->addMinutes((int) $quiz->Duration);
 
-/**
- * Lecturer releases results for a quiz they created.
- */
-public function releaseResults($quizId)
-{
-    $user = Auth::user();
-    $lecturer = Lecturer::where('UserID', $user->UserID)->first();
-    $quiz = Quiz::findOrFail($quizId);
+        $attemptCount = Attempt::where('QuizID', $quiz->QuizID)->count();
+        $averageScore = Attempt::where('QuizID', $quiz->QuizID)->avg('Score');
 
-    if (!$lecturer || $quiz->LecturerID !== $lecturer->LecturerID) {
-        return response()->json(['message' => 'You can only release results for quizzes you created.'], 403);
+        return response()->json([
+            'id' => $quiz->QuizID,
+            'title' => $quiz->Title,
+            'group_name' => optional($quiz->group)->GroupName ?? 'Group',
+            'group_id' => $quiz->GroupID,
+            'duration' => $quiz->Duration,
+            'start_time' => $startTime->toIso8601String(),
+            'end_time' => $endTime->toIso8601String(),
+            'attempt_count' => $attemptCount,
+            'average_score' => $averageScore !== null ? round((float) $averageScore, 2) : null,
+            'results_released' => (bool) $quiz->ResultsReleased,
+        ]);
     }
 
-    $quiz->update(['ResultsReleased' => true]);
+    /**
+     * Lecturer releases results for a quiz they created.
+     */
+    public function releaseResults($quizId)
+    {
+        $user = Auth::user();
+        $lecturer = Lecturer::where('UserID', $user->UserID)->first();
+        $quiz = Quiz::findOrFail($quizId);
 
-    return response()->json(['message' => 'Results released to students.', 'results_released' => true]);
-}
+        if (!$lecturer || $quiz->LecturerID !== $lecturer->LecturerID) {
+            return response()->json(['message' => 'You can only release results for quizzes you created.'], 403);
+        }
+
+        $quiz->update(['ResultsReleased' => true]);
+
+        return response()->json(['message' => 'Results released to students.', 'results_released' => true]);
+    }
 
     public function store(Request $request, $groupId)
     {

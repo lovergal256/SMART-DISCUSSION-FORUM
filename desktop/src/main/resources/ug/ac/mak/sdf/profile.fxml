@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.PasswordField?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.control.ToggleButton?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+
+<BorderPane xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:controller="ug.ac.mak.sdf.ProfileController"
+            stylesheets="@style.css">
+
+    <top>
+        <fx:include source="topbar.fxml" />
+    </top>
+
+    <left>
+        <fx:include source="sidebar.fxml" fx:id="sidebar" />
+    </left>
+
+    <center>
+        <ScrollPane fitToWidth="true" styleClass="dashboard-scroll">
+            <VBox styleClass="main-content" spacing="20">
+                <padding><Insets top="30" right="30" bottom="30" left="30" /></padding>
+
+                <Label text="My Profile" styleClass="page-title" />
+
+                <!-- Read-only Account Info -->
+                <VBox styleClass="panel" spacing="6">
+                    <Label fx:id="infoFullNameLabel" styleClass="panel-item-title" />
+                    <Label fx:id="infoEmailLabel" styleClass="panel-item-meta" />
+                    <Label fx:id="infoRoleLabel" styleClass="panel-item-meta" />
+                    <Label fx:id="infoRoleIdLabel" styleClass="panel-item-meta" />
+                    <Label fx:id="infoDateJoinedLabel" styleClass="panel-item-meta" />
+                    <Label fx:id="infoThemeLabel" styleClass="panel-item-meta" />
+                </VBox>
+
+                <!-- Edit Profile -->
+                <VBox styleClass="panel" spacing="10">
+                    <Label text="Edit Profile" styleClass="panel-title" />
+
+                    <Label text="Full Name" styleClass="panel-item-meta" />
+                    <TextField fx:id="fullNameField" styleClass="search-field" />
+
+                    <HBox spacing="14" alignment="CENTER_LEFT">
+                        <Label text="Theme:" styleClass="panel-item-meta" />
+                        <ToggleButton fx:id="lightToggle" text="Light" onAction="#handleLightSelected" />
+                        <ToggleButton fx:id="darkToggle" text="Dark" onAction="#handleDarkSelected" />
+                    </HBox>
+
+                    <Button text="Save Changes" styleClass="new-group-button" onAction="#handleSaveProfile" />
+                    <Label fx:id="profileStatusLabel" styleClass="status-label" />
+                </VBox>
+                <!-- Change Password -->
+                <VBox styleClass="panel" spacing="10">
+                    <Label text="Change Password" styleClass="panel-title" />
+
+                    <Label text="Current Password" styleClass="panel-item-meta" />
+                    <PasswordField fx:id="currentPasswordField" styleClass="search-field" />
+
+                    <Label text="New Password" styleClass="panel-item-meta" />
+                    <PasswordField fx:id="newPasswordField" styleClass="search-field" />
+
+                    <Label text="Confirm New Password" styleClass="panel-item-meta" />
+                    <PasswordField fx:id="confirmPasswordField" styleClass="search-field" />
+
+                    <Button text="Change Password" styleClass="new-group-button" onAction="#handleChangePassword" />
+                    <Label fx:id="passwordStatusLabel" styleClass="status-label" />
+                </VBox>
+
+                <!-- Delete Account -->
+                <VBox styleClass="panel" spacing="10">
+                    <Label text="Delete Account" styleClass="panel-title" />
+                    <Label text="This will anonymize your account. This action cannot be undone." styleClass="panel-item-meta" wrapText="true" />
+
+                    <Label text="Confirm Password" styleClass="panel-item-meta" />
+                    <PasswordField fx:id="deleteConfirmField" styleClass="search-field" />
+
+                    <Button text="Delete My Account" styleClass="blacklist-button" onAction="#handleDeleteAccount" />
+                    <Label fx:id="deleteStatusLabel" styleClass="status-label" />
+                </VBox>
+
+            </VBox>
+        </ScrollPane>
+    </center>
+
+</BorderPane>
