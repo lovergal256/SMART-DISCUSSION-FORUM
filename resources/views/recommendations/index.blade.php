@@ -39,29 +39,32 @@
             @endif
         </div>
 
-        {{-- Most Active Posts --}}
-        <div class="panel">
-            <div class="panel-head">
-                <div class="panel-title"><span class="ic">💬</span> Most Active Posts</div>
-            </div>
+       {{-- Most Active Posts --}}
+<div class="panel">
+    <div class="panel-head">
+        <div class="panel-title"><span class="ic">💬</span> Most Active Posts</div>
+    </div>
 
-            @if($activePosts->count() > 0)
-                @foreach($activePosts as $post)
-                    <div class="disc-item">
-                        <div class="disc-body">
-                            <a class="disc-title" href="{{ route('discussions.show', $post->PostID) }}">
-                                {{ Str::limit($post->content, 80) }}
-                            </a>
-                            <div class="disc-meta">📁 {{ $post->TopicTitle }}</div>
-                        </div>
-                    </div>
-                @endforeach
-            @else
-                <div class="empty-state">
-                    <p>📝 No active posts yet.</p>
+    @if($activePosts->count() > 0)
+        @foreach($activePosts as $post)
+            <div class="disc-item">
+                <div class="disc-body">
+                    <a class="disc-title" href="{{ route('discussions.show', $post->PostID) }}">
+                        {{ Str::limit($post->content, 80) }}
+                    </a>
+                    <div class="disc-meta">📁 {{ $post->TopicTitle }}</div>
                 </div>
-            @endif
+                <div class="disc-replies">
+                    <span class="live-dot"></span>{{ $post->reply_count }} replies
+                </div>
+            </div>
+        @endforeach
+    @else
+        <div class="empty-state">
+            <p>📝 No active posts yet.</p>
         </div>
+    @endif
+</div>
 
         {{-- Upcoming Quizzes --}}
         <div class="panel">

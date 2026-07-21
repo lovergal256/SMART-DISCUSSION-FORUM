@@ -5,10 +5,11 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Laravel\Sanctum\HasApiTokens;
 
 class User extends Authenticatable
 {
-    use HasFactory, Notifiable;
+    use HasFactory, Notifiable, HasApiTokens;
 
     protected $table = 'users';
     protected $primaryKey = 'UserID';
@@ -67,6 +68,7 @@ public function blacklists()
 public function groups()
 {
     return $this->belongsToMany(Group::class, 'group_members', 'UserID', 'GroupID')
+                ->wherePivot('Status', 'approved')
                 ->withPivot('Role', 'Status', 'JoinedAt')
                 ->withTimestamps();
 }

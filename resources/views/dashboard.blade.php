@@ -44,23 +44,32 @@
             @endforeach
         </div>
 
-        {{-- UPCOMING QUIZZES --}}
+        {{-- RECENT QUIZZES --}}
         <div class="panel">
             <div class="panel-head">
-                <div class="panel-title"><span class="ic">🗓</span> Upcoming Quizzes</div>
+                <div class="panel-title"><span class="ic">🗓</span> Recent Quizzes</div>
                 <a class="view-all" href="{{ route('quizzes.index') }}">View all →</a>
             </div>
 
-            @foreach($quizzes as $quiz)
-                <div class="quiz-card">
-                    <div class="quiz-title">{{ $quiz['title'] }}</div>
-                    <div class="quiz-sub">{{ $quiz['subtitle'] }}</div>
-                    <div class="quiz-foot">
-                        <div class="quiz-due">📅 Due {{ $quiz['due'] }}</div>
-                        <a class="take-quiz-link" href="{{ route('quizzes.show', $quiz['id']) }}">Take Quiz</a>
+            @if(count($quizzes) > 0)
+                @foreach($quizzes as $quiz)
+                    <div class="disc-item">
+                        <div class="disc-body">
+                            <a class="disc-title" href="{{ route('quizzes.show', $quiz['id']) }}">{{ $quiz['title'] }}</a>
+                            <div class="disc-meta">{{ $quiz['subtitle'] }} · Due {{ $quiz['due'] }}</div>
+                        </div>
+                        @if($quiz['attempted'])
+                            <span class="disc-replies">Attempted</span>
+                        @else
+                            <a class="view-all" href="{{ route('quizzes.show', $quiz['id']) }}">Attempt →</a>
+                        @endif
                     </div>
+                @endforeach
+            @else
+                <div class="empty-state">
+                    <p>🗓 No upcoming quizzes.</p>
                 </div>
-            @endforeach
+            @endif
         </div>
 
         {{-- RECOMMENDED --}}
@@ -133,8 +142,10 @@
                     <polygon points="{{ $activityChartPoints }} 280,105 10,105" fill="url(#areaFill)"/>
                 </svg>
                 <div class="chart-labels">
-                    <span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span><span>Sun</span>
-                </div>
+    @foreach($chartDayLabels as $label)
+        <span>{{ $label }}</span>
+    @endforeach
+</div>
             </div>
         </div>
     </div>

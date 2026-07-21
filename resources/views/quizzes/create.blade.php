@@ -25,16 +25,11 @@
         </div>
 
         <div class="field">
-            <label>Group</label>
-            <select name="group_id" required>
-                <option value="">Select group</option>
-                @foreach($groups as $group)
-                    <option value="{{ $group->GroupID }}" @selected((string) old('group_id') === (string) $group->GroupID)>
-                        {{ $group->GroupName }}
-                    </option>
-                @endforeach
-            </select>
-        </div>
+    <label>Group</label>
+    <input type="text" value="{{ $group->GroupName }}" disabled
+           style="background:#f0f4f8; color:#555;">
+    <input type="hidden" name="group_id" value="{{ $group->GroupID }}">
+</div>
 
         <div class="field-grid">
             <div class="field">

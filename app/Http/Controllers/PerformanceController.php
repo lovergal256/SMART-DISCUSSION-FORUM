@@ -20,7 +20,6 @@ class PerformanceController extends Controller
         $postsCreated  = Post::where('UserID', $userId)->count();
         $repliesMade   = Reply::where('UserID', $userId)->count();
 
-        // Weighted score: topics worth most (initiative), replies worth least
         $rawParticipation = ($topicsCreated * 3) + ($postsCreated * 1) + ($repliesMade * 0.2);
         $participationScore = min(50, round($rawParticipation));
 
@@ -32,7 +31,7 @@ class PerformanceController extends Controller
         $quizMarks = round(($averageQuizScore / 100) * 50);
 
         // --- Overall ---
-        $overallMarks = $participationScore + $quizMarks; // out of 100
+        $overallMarks = $participationScore + $quizMarks;
 
         $grade = match(true) {
             $overallMarks >= 90 => 'A+',
@@ -49,17 +48,18 @@ class PerformanceController extends Controller
             default => 'Needs Improvement',
         };
 
-        // --- Recent Quiz Results ---
         $recentQuizzes = QuizScore::with('quiz')
             ->where('UserID', $userId)
             ->orderByDesc('DateRecorded')
             ->limit(5)
             ->get();
 
+        $layout = $user->RoleID == 2 ? 'layouts.lecturer_app' : 'layouts.app';
+
         return view('performance.index', compact(
             'topicsCreated', 'postsCreated', 'repliesMade', 'participationScore',
             'quizzesAttempted', 'averageQuizScore', 'highestScore', 'quizMarks',
-            'overallMarks', 'grade', 'status', 'recentQuizzes'
+            'overallMarks', 'grade', 'status', 'recentQuizzes', 'layout'
         ));
     }
 }

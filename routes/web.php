@@ -1,6 +1,8 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\StudentController;
+use App\Http\Controllers\AdminController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ExclusionController;
 use App\Http\Controllers\GroupController;
@@ -15,6 +17,7 @@ use App\Models\Topic;
 use Illuminate\Http\Request;
 use App\Http\Controllers\PerformanceController;
 use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\ActivityController;
 
 // Public routes
 Route::get('/', function () {
@@ -29,18 +32,15 @@ Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
 // Lecturer routes (role 2)
 Route::middleware(['auth'])->group(function () {
-    Route::get('/lecturer/dashboard', function () {
-        return view('lecturer.dashboard');
-    })->name('lecturer.dashboard');
+   
 });
 
 // Admin routes (role 3)
-Route::middleware(['auth'])->group(function () {
-    Route::get('/admin/dashboard', function () {
-        return view('admin.dashboard');
-    })->name('admin.dashboard');
+Route::middleware(['auth', 'admin'])->group(function () {
+    Route::get('/admin/dashboard', [AdminController::class, 'dashboard'])->name('admin.dashboard');
+    Route::get('/admin/lecturers/create', [AdminController::class, 'createLecturer'])->name('admin.lecturers.create');
+    Route::post('/admin/lecturers', [AdminController::class, 'storeLecturer'])->name('admin.lecturers.store');
 });
-
 /*
 |--------------------------------------------------------------------------
 | Student routes (role 1) — dashboard + module placeholders
@@ -93,6 +93,7 @@ Route::post('/quizzes/{quiz}/release', [QuizController::class, 'releaseResults']
 
     // --- Recommendation Management Module ---
     Route::get('/recommendations', [RecommendationController::class, 'index'])->name('recommendations.index');
+    Route::get('/recommendations/training', [RecommendationController::class, 'trainingReport'])->name('recommendations.training');
 
     // --- Blacklisting and Warning Module (student-facing view) ---
     Route::get('/warnings', function () {
@@ -106,7 +107,8 @@ Route::post('/quizzes/{quiz}/release', [QuizController::class, 'releaseResults']
     })->name('warnings.index');
 
     // --- Statistics Management Module ---
-    Route::get('/activity', fn () => view('activity.index'))->name('activity.index');
+    // routes/web.php
+Route::get('/activity', [ActivityController::class, 'index'])->name('activity.index');
 
     // --- Notification Management Module ---
     Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
@@ -173,8 +175,8 @@ Route::post('/quizzes/{quiz}/release', [QuizController::class, 'releaseResults']
     })->name('profile.delete');
 
     // --- Exclusions ---
-    Route::post('/topics/{topic}/posts/{post}/exclude', [ExclusionController::class, 'store'])->name('exclusions.store');
-    Route::delete('/topics/{topic}/posts/{post}/exclude/{user}', [ExclusionController::class, 'destroy'])->name('exclusions.destroy');
+    Route::post('/topics/{topic}/posts/{post}/exclude', [ExclusionController::class, 'store'])->name('exclusions.post.store');
+    Route::delete('/topics/{topic}/posts/{post}/exclude/{user}', [ExclusionController::class, 'destroy'])->name('exclusions.post.destroy');
     Route::get('/topics/{topic}/exclusions', [ExclusionController::class, 'index'])->name('exclusions.index');
 });
 Route::get('/student/notifications', [NotificationController::class, 'index'])->name('student.notifications.index');

@@ -8,24 +8,21 @@
         <a class="nav-link {{ request()->routeIs('lecturer.dashboard') ? 'active' : '' }}" href="{{ route('lecturer.dashboard') }}">
            <span class="nav-icon">🏠</span> Dashboard
         </a>
-        <a class="nav-link {{ request()->routeIs('discussions.*') ? 'active' : '' }}" href="{{ route('discussions.create') }}">
+        <!-- <a class="nav-link {{ request()->routeIs('discussions.*') ? 'active' : '' }}" href="{{ route('discussions.create') }}">
             <span class="nav-icon">➕</span> Create Discussion
-        </a>
-        <a class="nav-link {{ request()->routeIs('groups.*') ? 'active' : '' }}" href="{{ route('groups.create') }}">
-            <span class="nav-icon">👥</span> Create Groups
-        </a>
-        <a class="nav-link {{ request()->routeIs('quizzes.*') ? 'active' : '' }}" href="{{ route('quizzes.create') }}">
-            <span class="nav-icon">📝</span> Create Quizzes
+        </a> -->
+        <a class="nav-link {{ request()->routeIs('groups.*') ? 'active' : '' }}" href="{{ route('groups.index') }}">
+            <span class="nav-icon">👥</span> My Groups
         </a>
         <a class="nav-link {{ request()->routeIs('performance.*') ? 'active' : '' }}" href="{{ route('performance.index') }}">
             <span class="nav-icon">📊</span> Performance
         </a>
-        <a class="nav-link {{ request()->routeIs('recommendations.*') ? 'active' : '' }}" href="{{ route('recommendations.index') }}">
+        <!-- <a class="nav-link {{ request()->routeIs('recommendations.*') ? 'active' : '' }}" href="{{ route('recommendations.index') }}">
             <span class="nav-icon">⭐</span> Recommendations
-        </a>
-        <a class="nav-link {{ request()->routeIs('warnings.*') ? 'active' : '' }}" href="{{ route('warnings.index') }}">
+        </a> -->
+        <!-- <a class="nav-link {{ request()->routeIs('warnings.*') ? 'active' : '' }}" href="{{ route('warnings.index') }}">
             <span class="nav-icon">⚠</span> Warnings
-        </a>
+        </a> -->
         <a class="nav-link {{ request()->routeIs('activity.*') ? 'active' : '' }}" href="{{ route('activity.index') }}">
             <span class="nav-icon">📈</span> My Activity
         </a>

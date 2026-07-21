@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+
+<BorderPane xmlns:fx="http://javafx.com/fxml"
+            fx:controller="com.discussforum.controllers.AdminDiscussionsController"
+            style="-fx-background-color: #f0f4f8;">
+
+    <top>
+        <HBox style="-fx-background-color: #0077b6; -fx-padding: 15 20;"
+              alignment="CENTER_LEFT" spacing="20">
+            <Label text="Smart Discussion Forum"
+                   style="-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: white;"/>
+            <Region HBox.hgrow="ALWAYS"/>
+            <Button text="← Back to Dashboard" onAction="#backToDashboard"
+                    style="-fx-background-color: transparent; -fx-text-fill: white;
+                           -fx-border-color: white; -fx-border-radius: 4; -fx-cursor: hand;"/>
+        </HBox>
+    </top>
+
+    <center>
+        <ScrollPane fitToWidth="true"
+                    style="-fx-background: transparent; -fx-background-color: transparent;">
+            <VBox style="-fx-padding: 20;" spacing="15">
+                <Label text="All Discussions"
+                       style="-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: #0077b6;"/>
+                <Label fx:id="statusLabel"
+                       style="-fx-text-fill: #888; -fx-font-size: 13px;" text="Loading..."/>
+                <VBox fx:id="discussionsList" spacing="10"/>
+            </VBox>
+        </ScrollPane>
+    </center>
+
+</BorderPane>

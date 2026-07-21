@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+
+<BorderPane xmlns:fx="http://javafx.com/fxml"
+            fx:controller="com.discussforum.controllers.GroupDetailController"
+            style="-fx-background-color: #f0f4f8;">
+
+    <top>
+        <HBox style="-fx-background-color: #0077b6; -fx-padding: 15 20;"
+              alignment="CENTER_LEFT" spacing="15">
+            <Button text="← Back" onAction="#handleBack"
+                    style="-fx-background-color: transparent; -fx-text-fill: white;
+                           -fx-border-color: white; -fx-border-radius: 4; -fx-cursor: hand;"/>
+            <Label fx:id="groupNameLabel"
+                   style="-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: white;"/>
+            <Region HBox.hgrow="ALWAYS"/>
+            <Button fx:id="createQuizButton" text="+ Create Quiz" onAction="#handleCreateQuiz"
+                    visible="false" managed="false"
+                    style="-fx-background-color: white; -fx-text-fill: #0077b6;
+                           -fx-font-weight: bold; -fx-padding: 8 14; -fx-background-radius: 4;
+                           -fx-cursor: hand;"/>
+        </HBox>
+    </top>
+
+    <center>
+        <ScrollPane fitToWidth="true" style="-fx-background-color: transparent;">
+            <VBox style="-fx-padding: 20;" spacing="15">
+
+                <Label fx:id="statusLabel"
+                       style="-fx-text-fill: #888; -fx-font-size: 13px;" text="Loading..."/>
+
+                <!-- Members section -->
+                <VBox style="-fx-background-color: white; -fx-padding: 20; -fx-background-radius: 6;
+                             -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.08), 6, 0, 0, 2);" spacing="10">
+                    <Label text="Members"
+                           style="-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #0077b6;"/>
+                    <VBox fx:id="membersList" spacing="8"/>
+                </VBox>
+
+            </VBox>
+        </ScrollPane>
+    </center>
+
+</BorderPane>

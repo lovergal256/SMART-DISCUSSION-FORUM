@@ -18,7 +18,7 @@
                     <br>
                     <small style="color:#888;">Excluded on: {{ $exclusion->ExclusionDate }}</small>
                 </div>
-                <form action="{{ route('exclusions.destroy', [$topic, $exclusion->ContentID, $exclusion->ExcludedUserID]) }}" method="POST">
+                <form action="{{ route('exclusions.post.destroy', [$topic, $exclusion->ContentID, $exclusion->ExcludedUserID]) }}" method="POST">
                     @csrf
                     @method('DELETE')
                     <button type="submit" class="btn btn-red" onclick="return confirm('Remove this exclusion?')">Remove</button>
