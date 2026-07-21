@@ -57,7 +57,7 @@
                     <div class="quiz-sub">{{ $quiz['subtitle'] }}</div>
                     <div class="quiz-foot">
                         <div class="quiz-due">📅 Due {{ $quiz['due'] }}</div>
-                        <a class="take-quiz-link" href="{{ route('quizzes.show', $quiz['id']) }}">View Quiz</a>
+<a class="take-quiz-link" href="{{ route('quizzes.show', $quiz['id']) }}">Review Quiz</a>
                     </div>
                 </div>
             @endforeach

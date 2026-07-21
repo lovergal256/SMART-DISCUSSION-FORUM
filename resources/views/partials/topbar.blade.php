@@ -28,7 +28,7 @@
             <div class="avatar-img">{{ $currentInitials ?: 'ST' }}</div>
             <div>
                 <div class="profile-name">{{ $currentUser->FullName ?? 'Student Name' }}</div>
-                <div class="profile-role">Student</div>
+                <div class="profile-role">{{ ucfirst($currentUser->role_name ?? 'Student') }}</div>
             </div>
             <span class="chevron">▾</span>
         </a>

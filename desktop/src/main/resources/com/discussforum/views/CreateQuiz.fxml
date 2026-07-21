@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.control.ScrollPane?>
+
+<BorderPane xmlns:fx="http://javafx.com/fxml"
+            fx:controller="com.discussforum.controllers.CreateQuizController"
+            style="-fx-background-color: #f0f4f8;">
+
+    <top>
+        <HBox style="-fx-background-color: #0077b6; -fx-padding: 15 20;"
+              alignment="CENTER_LEFT" spacing="15">
+            <Button text="← Back" onAction="#handleBack"
+                    style="-fx-background-color: transparent; -fx-text-fill: white;
+                           -fx-border-color: white; -fx-border-radius: 4; -fx-cursor: hand;"/>
+            <Label text="Create Quiz"
+                   style="-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: white;"/>
+            <Label fx:id="groupNameLabel" text="Group:"
+                   style="-fx-text-fill: white; -fx-opacity: 0.85;"/>
+        </HBox>
+    </top>
+
+    <center>
+        <ScrollPane fitToWidth="true" style="-fx-background-color: transparent;">
+            <VBox style="-fx-padding: 40;" spacing="0" alignment="TOP_CENTER">
+                <VBox maxWidth="600"
+                      style="-fx-background-color: white; -fx-padding: 30; -fx-background-radius: 8;
+                             -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 10, 0, 0, 2);"
+                      spacing="15">
+
+                    <Label text="Quiz Title"
+                           style="-fx-font-weight: bold; -fx-text-fill: #0077b6;"/>
+                    <TextField fx:id="titleField"
+                               promptText="Enter quiz title"
+                               style="-fx-padding: 10; -fx-border-color: #b0c4d8;
+                                      -fx-border-radius: 4; -fx-background-radius: 4;"/>
+
+                    <HBox spacing="15">
+                        <VBox spacing="5" HBox.hgrow="ALWAYS">
+                            <Label text="Start Date (yyyy-MM-dd)"
+                                   style="-fx-font-weight: bold; -fx-text-fill: #0077b6;"/>
+                            <TextField fx:id="startDateField" promptText="2026-07-25"
+                                       style="-fx-padding: 10; -fx-border-color: #b0c4d8;
+                                              -fx-border-radius: 4; -fx-background-radius: 4;"/>
+                        </VBox>
+                        <VBox spacing="5" HBox.hgrow="ALWAYS">
+                            <Label text="Start Time (HH:mm)"
+                                   style="-fx-font-weight: bold; -fx-text-fill: #0077b6;"/>
+                            <TextField fx:id="startTimeField" promptText="14:30"
+                                       style="-fx-padding: 10; -fx-border-color: #b0c4d8;
+                                              -fx-border-radius: 4; -fx-background-radius: 4;"/>
+                        </VBox>
+                    </HBox>
+
+                    <Label text="Duration (minutes)"
+                           style="-fx-font-weight: bold; -fx-text-fill: #0077b6;"/>
+                    <TextField fx:id="durationField" promptText="30"
+                               style="-fx-padding: 10; -fx-border-color: #b0c4d8;
+                                      -fx-border-radius: 4; -fx-background-radius: 4;"/>
+
+                    <Label text="Questions"
+                           style="-fx-font-weight: bold; -fx-text-fill: #0077b6; -fx-font-size: 15px;"/>
+                    <VBox fx:id="questionsContainer" spacing="12"/>
+
+                    <Button text="+ Add another question" onAction="#handleAddQuestion"
+                            style="-fx-background-color: #e6edf3; -fx-text-fill: #0077b6;
+                                   -fx-font-weight: bold; -fx-padding: 8; -fx-background-radius: 4;
+                                   -fx-cursor: hand;"/>
+
+                    <Label fx:id="feedbackLabel"
+                           style="-fx-font-size: 12px;" text="" wrapText="true"/>
+
+                    <Button fx:id="createButton"
+                            text="Create Quiz"
+                            onAction="#handleCreate"
+                            maxWidth="Infinity"
+                            style="-fx-background-color: #0077b6; -fx-text-fill: white;
+                                   -fx-font-weight: bold; -fx-padding: 10;
+                                   -fx-background-radius: 4; -fx-cursor: hand;"/>
+                </VBox>
+            </VBox>
+        </ScrollPane>
+    </center>
+
+</BorderPane>

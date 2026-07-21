@@ -9,7 +9,7 @@ use Laravel\Sanctum\HasApiTokens;
 
 class User extends Authenticatable
 {
-    use HasApiTokens, HasFactory, Notifiable;
+     use HasApiTokens, HasFactory, Notifiable;
 
     protected $table = 'users';
     protected $primaryKey = 'UserID';
@@ -68,6 +68,7 @@ public function blacklists()
 public function groups()
 {
     return $this->belongsToMany(Group::class, 'group_members', 'UserID', 'GroupID')
+                ->wherePivot('Status', 'approved')
                 ->withPivot('Role', 'Status', 'JoinedAt')
                 ->withTimestamps();
 }

@@ -4,12 +4,22 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use App\Models\Topic;
+use App\Models\Post;
+use App\Models\Reply;
+use App\Models\Quiz;
+use App\Models\QuizScore;
+use App\Services\MatrixFactorizationService;
+use Illuminate\Support\Facades\DB;
+use Carbon\Carbon;
 
 class DashboardController extends Controller
 {
     public function index(Request $request)
     {
         $user = Auth::user();
+        $userId = $user->UserID;
+
         $discussionsCount = \App\Models\Discussion::where(function ($query) use ($user) {
             $query->where('UserID', $user->UserID)
                 ->orWhereHas('topics', function ($q) use ($user) {
@@ -20,77 +30,142 @@ class DashboardController extends Controller
                 });
         })->count();
         $postsCount = \App\Models\Post::where('UserID', $user->UserID)->count();
-         $groupsJoinedCount = \App\Models\Group::whereHas('members', function ($query) use ($user) {
-        $query->where('group_members.UserID', $user->UserID)
-              ->where('group_members.Status', 'approved');
-    })->count();
-        
+        $groupsJoinedCount = \App\Models\Group::whereHas('members', function ($query) use ($user) {
+            $query->where('group_members.UserID', $user->UserID)
+                  ->where('group_members.Status', 'approved');
+        })->count();
 
-        // ---------------------------------------------------------------
-        // NOTE: everything below is placeholder data so the view renders
-        // immediately. Swap each block for a real query against your
-        // Discussion, Quiz, Group, Recommendation, and Activity models
-        // once those tables/relationships exist.
-        // ---------------------------------------------------------------
+        // --- Shared week boundaries (used by Quiz Average, My Activity, Sparkline) ---
+        $weekStart     = Carbon::now()->subDays(6)->startOfDay();
+        $prevWeekStart = Carbon::now()->subDays(13)->startOfDay();
+        $prevWeekEnd   = Carbon::now()->subDays(7)->endOfDay();
+
+        // --- Quiz Average (real) ---
+        $avgQuizScore = round(QuizScore::where('UserID', $userId)->avg('Score') ?? 0);
+        $avgThisWeek = QuizScore::where('UserID', $userId)->whereBetween('DateRecorded', [$weekStart, now()])->avg('Score');
+        $avgLastWeek = QuizScore::where('UserID', $userId)->whereBetween('DateRecorded', [$prevWeekStart, $prevWeekEnd])->avg('Score');
+        $quizAvgChange = round(($avgThisWeek ?? 0) - ($avgLastWeek ?? 0));
 
         $stats = [
             ['icon' => '💬', 'value' => (string) $discussionsCount,  'label' => 'Discussions Joined', 'change' => '3 this week',  'url' => route('discussions.index')],
             ['icon' => '👥', 'value' => (string) $groupsJoinedCount,   'label' => 'Groups Joined',      'change' => '1 this week',  'url' => route('groups.index')],
-            ['icon' => '📖', 'value' => '84%', 'label' => 'Quiz Average',       'change' => '6% this week', 'url' => route('performance.index')],
+            ['icon' => '📖', 'value' => $avgQuizScore . '%', 'label' => 'Quiz Average', 'change' => abs($quizAvgChange) . '% this week', 'url' => route('performance.index')],
             ['icon' => '📈', 'value' => (string) $postsCount,  'label' => 'Posts Created',      'change' => '5 this week',  'url' => route('activity.index')],
-            ['icon' => '⭐', 'value' => '120', 'label' => 'Points Earned',      'change' => '15 this week', 'url' => route('performance.index')],
         ];
 
         $discussions = \App\Models\Discussion::with('user')
-           ->latest()
-           ->take(5)
-           ->get()
-           ->map(function ($discussion) {
-           $repliesCount = \App\Models\Reply::whereIn('PostID',
-            \App\Models\Post::whereIn('TopicID',
-                $discussion->topics()->pluck('TopicID')
-            )->pluck('PostID')
-         )->count();
+            ->latest()
+            ->take(5)
+            ->get()
+            ->map(function ($discussion) {
+                $repliesCount = \App\Models\Reply::whereIn('PostID',
+                    \App\Models\Post::whereIn('TopicID',
+                        $discussion->topics()->pluck('TopicID')
+                    )->pluck('PostID')
+                )->count();
 
-        return [
-            'id' => $discussion->DiscussionID,
-            'category' => 'General',
-            'title' => $discussion->Title,
-            'author' => $discussion->user->FullName ?? 'Unknown',
-            'posted_at' => $discussion->created_at->diffForHumans(),
-            'replies' => $repliesCount,
-        ];
-    })
-    ->toArray();
+                return [
+                    'id' => $discussion->DiscussionID,
+                    'category' => 'General',
+                    'title' => $discussion->Title,
+                    'author' => $discussion->user->FullName ?? 'Unknown',
+                    'posted_at' => $discussion->created_at->diffForHumans(),
+                    'replies' => $repliesCount,
+                ];
+            })
+            ->toArray();
 
         $myGroupIds = \App\Models\Group::whereHas('members', function ($query) use ($user) {
             $query->where('group_members.UserID', $user->UserID)
                 ->where('group_members.Status', 'approved');
         })->pluck('GroupID');
 
-        $quizzes = \App\Models\Quiz::with('group')
+        // Which quizzes has this student already attempted, so the dashboard
+        // can show "Attempted" instead of an active "Attempt →" link.
+        $attemptedQuizIds = \App\Models\Attempt::where('UserID', $userId)->pluck('QuizID')->all();
+
+        // Recent Quizzes (matches lecturer dashboard behaviour: latest quizzes
+        // for the student's groups, regardless of whether they're upcoming,
+        // active, or already closed)
+        $quizzes = Quiz::with('group')
             ->whereIn('GroupID', $myGroupIds)
-            ->where('StartTime', '>=', now())
-            ->orderBy('StartTime')
+            ->latest('StartTime')
             ->take(5)
             ->get()
-            ->map(function ($quiz) {
-                return [
+            ->map(function ($quiz) use ($attemptedQuizIds) {
+                $start = Carbon::parse($quiz->StartTime);
+                $due = $start->isToday()
+                    ? 'Today, ' . $start->format('g:i A')
+                    : ($start->isTomorrow()
+                        ? 'Tomorrow, ' . $start->format('g:i A')
+                        : $start->format('d F Y, g:i A'));
+
+               return [
                     'id' => $quiz->QuizID,
                     'title' => $quiz->Title,
                     'subtitle' => optional($quiz->group)->GroupName ?? 'Group',
-                    'due' => \Carbon\Carbon::parse($quiz->StartTime)->format('d M Y, h:i A'),
+'due' => $due,
+                    'attempted' => in_array($quiz->QuizID, $attemptedQuizIds, true),
                 ];
             })
             ->toArray();
 
-        $recommendations = [
-            ['icon' => '👥', 'title' => 'Join the Machine Learning Group',            'subtitle' => 'Connect with students interested in ML',    'url' => route('groups.index')],
-            ['icon' => '📄', 'title' => 'Read: Database Indexing Techniques',         'subtitle' => 'Popular article in Database category',      'url' => route('discussions.index')],
-            ['icon' => '🗂', 'title' => 'Participate in Cloud Computing discussion',  'subtitle' => 'Trending discussion in your groups',         'url' => route('discussions.index')],
-            ['icon' => '🎯', 'title' => 'Take the Laravel Quiz Challenge',            'subtitle' => 'Improve your quiz performance',              'url' => route('quizzes.index')],
-        ];
+        // --- Recommended For You (real, mirrors Recommendations page logic) ---
+        $recommendations = [];
 
+        $cf = new MatrixFactorizationService();
+        $recommendedGroupIds = $cf->recommendGroups($userId, 1);
+
+        if (!empty($recommendedGroupIds)) {
+            $group = DB::table('groups')->where('GroupID', $recommendedGroupIds[0])->first();
+        } else {
+            $group = DB::table('groups')
+                ->leftJoin('group_members', function ($join) use ($userId) {
+                    $join->on('groups.GroupID', '=', 'group_members.GroupID')
+                         ->where('group_members.UserID', '=', $userId);
+                })
+                ->select('groups.GroupID', 'groups.GroupName')
+                ->whereNull('group_members.UserID')
+                ->first();
+        }
+
+        if ($group) {
+            $recommendations[] = [
+                'icon' => '👥',
+                'title' => 'Join the ' . $group->GroupName . ' Group',
+                'subtitle' => 'Suggested based on your group activity',
+                'url' => route('groups.show', $group->GroupID),
+            ];
+        }
+
+        $trendingTopic = DB::table('topics')
+            ->leftJoin('posts', 'topics.TopicID', '=', 'posts.TopicID')
+            ->select('topics.TopicID', 'topics.Title', DB::raw('COUNT(posts.PostID) as post_count'))
+            ->where('topics.Status', 'open')
+            ->groupBy('topics.TopicID', 'topics.Title')
+            ->orderByDesc('post_count')
+            ->first();
+
+        if ($trendingTopic) {
+            $recommendations[] = [
+                'icon' => '🗂',
+                'title' => 'Participate in: ' . $trendingTopic->Title,
+                'subtitle' => 'Trending discussion on the forum',
+                'url' => route('discussions.show', $trendingTopic->TopicID),
+            ];
+        }
+
+        if (!empty($quizzes)) {
+            $nextQuiz = $quizzes[0];
+            $recommendations[] = [
+                'icon' => '🎯',
+                'title' => 'Take: ' . $nextQuiz['title'],
+                'subtitle' => 'Quiz due ' . $nextQuiz['due'],
+                'url' => route('quizzes.show', $nextQuiz['id']),
+            ];
+        }
+
+        // --- My Groups ---
         $groups = \App\Models\Group::whereHas('members', function ($query) use ($user) {
                 $query->where('group_members.UserID', $user->UserID)
                       ->where('group_members.Status', 'approved');
@@ -113,22 +188,67 @@ class DashboardController extends Controller
                 ];
             })
             ->toArray();
-        $repliesCount = \App\Models\Reply::where('UserID', $user->UserID)->count();
+
+        // --- My Activity (This Week) - real weekly stats ---
+        $postsThisWeek  = Post::where('UserID', $userId)->whereBetween('DatePosted', [$weekStart, now()])->count();
+        $postsLastWeek  = Post::where('UserID', $userId)->whereBetween('DatePosted', [$prevWeekStart, $prevWeekEnd])->count();
+
+        $repliesThisWeek = Reply::where('UserID', $userId)->whereBetween('created_at', [$weekStart, now()])->count();
+        $repliesLastWeek = Reply::where('UserID', $userId)->whereBetween('created_at', [$prevWeekStart, $prevWeekEnd])->count();
+
+        $topicsThisWeek = \App\Models\Discussion::where('UserID', $userId)->whereBetween('created_at', [$weekStart, now()])->count();
+        $topicsLastWeek = \App\Models\Discussion::where('UserID', $userId)->whereBetween('created_at', [$prevWeekStart, $prevWeekEnd])->count();
+
+        $quizzesThisWeek = QuizScore::where('UserID', $userId)->whereBetween('DateRecorded', [$weekStart, now()])->count();
+        $quizzesLastWeek = QuizScore::where('UserID', $userId)->whereBetween('DateRecorded', [$prevWeekStart, $prevWeekEnd])->count();
+
+        $pctChange = function ($current, $previous) {
+            if ($previous == 0) return $current > 0 ? 100 : 0;
+            return abs(round((($current - $previous) / $previous) * 100));
+        };
 
         $activity = [
-         ['icon' => '📝', 'label' => 'Posts Created',       'value' => (string) $postsCount,   'change' => '40%'],
-         ['icon' => '💬', 'label' => 'Replies Posted',      'value' => (string) $repliesCount, 'change' => '25%'],
-         ['icon' => '👥', 'label' => 'Discussions Joined',  'value' => (string) $discussionsCount, 'change' => '50%'],
-         ['icon' => '📋', 'label' => 'Quizzes Taken',       'value' => '2',      'change' => '100%'],
-         ['icon' => '🕒', 'label' => 'Time Spent',          'value' => '8h 45m', 'change' => '15%'],
-];
+            ['icon' => '📝', 'label' => 'Posts Created',      'value' => (string) $postsThisWeek,   'change' => $pctChange($postsThisWeek, $postsLastWeek) . '%'],
+            ['icon' => '💬', 'label' => 'Replies Posted',     'value' => (string) $repliesThisWeek, 'change' => $pctChange($repliesThisWeek, $repliesLastWeek) . '%'],
+            ['icon' => '👥', 'label' => 'Discussions Joined', 'value' => (string) $topicsThisWeek,  'change' => $pctChange($topicsThisWeek, $topicsLastWeek) . '%'],
+            ['icon' => '📋', 'label' => 'Quizzes Taken',      'value' => (string) $quizzesThisWeek, 'change' => $pctChange($quizzesThisWeek, $quizzesLastWeek) . '%'],
+        ];
 
-        // Mon..Sun points for the sparkline, pre-plotted onto a 0-300 x 0-110 viewBox.
-        $activityChartPoints = '10,80 55,55 100,65 145,15 190,50 235,68 280,25';
+        // --- Sparkline chart points (7-day rolling total, matches viewBox 0 0 300 110) ---
+        $dailyTotals = [];
+        for ($i = 6; $i >= 0; $i--) {
+            $day = Carbon::now()->subDays($i)->startOfDay();
+            $dayEnd = (clone $day)->endOfDay();
+
+            $t = \App\Models\Discussion::where('UserID', $userId)->whereBetween('created_at', [$day, $dayEnd])->count();
+            $p = Post::where('UserID', $userId)->whereBetween('DatePosted', [$day, $dayEnd])->count();
+            $r = Reply::where('UserID', $userId)->whereBetween('created_at', [$day, $dayEnd])->count();
+            $q = QuizScore::where('UserID', $userId)->whereBetween('DateRecorded', [$day, $dayEnd])->count();
+            $g = \App\Models\GroupMember::where('UserID', $userId)->whereBetween('JoinedAt', [$day, $dayEnd])->count();
+
+            $dailyTotals[] = $t + $p + $r + $q + $g;
+        }
+
+        $maxTotal = max(1, max($dailyTotals));
+        $yTop = 15; $yBase = 105; $xStart = 10; $xEnd = 280;
+        $stepX = (count($dailyTotals) > 1) ? ($xEnd - $xStart) / (count($dailyTotals) - 1) : 0;
+
+        $points = [];
+        foreach ($dailyTotals as $i => $total) {
+            $x = round($xStart + ($i * $stepX), 1);
+            $y = round($yBase - (($total / $maxTotal) * ($yBase - $yTop)), 1);
+            $points[] = "{$x},{$y}";
+        }
+        $chartDayLabels = [];
+        for ($i = 6; $i >= 0; $i--) {
+            $chartDayLabels[] = Carbon::now()->subDays($i)->format('D');
+        }
+
+        $activityChartPoints = implode(' ', $points);
 
         $unreadNotifications = \App\Models\Notification::where('UserID', $user->UserID)
-         ->where('Status', 'Unread')
-         ->count();
+            ->where('Status', 'Unread')
+            ->count();
         $initials = $user->FullName ? collect(explode(' ', $user->FullName))->map(fn ($w) => $w[0])->take(2)->implode('') : 'ST';
 
         return view('dashboard', compact(
@@ -140,6 +260,7 @@ class DashboardController extends Controller
             'groups',
             'activity',
             'activityChartPoints',
+            'chartDayLabels',
             'unreadNotifications',
             'initials'
         ));
