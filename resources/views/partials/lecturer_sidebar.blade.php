@@ -23,9 +23,7 @@
         <a class="nav-link {{ request()->routeIs('recommendations.*') ? 'active' : '' }}" href="{{ route('recommendations.index') }}">
             <span class="nav-icon">⭐</span> Recommendations
         </a>
-        <a class="nav-link {{ request()->routeIs('warnings.*') ? 'active' : '' }}" href="{{ route('warnings.index') }}">
-            <span class="nav-icon">⚠</span> Warnings
-        </a>
+        
         <a class="nav-link {{ request()->routeIs('activity.*') ? 'active' : '' }}" href="{{ route('activity.index') }}">
             <span class="nav-icon">📈</span> My Activity
         </a>

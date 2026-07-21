@@ -1,4 +1,4 @@
-@extends('layouts.app')
+@extends(auth()->user()->RoleID === 2 ? 'layouts.lecturer_app' : 'layouts.app')
 
 @section('content')
 <div class="container">

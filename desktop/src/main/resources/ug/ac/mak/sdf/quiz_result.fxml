@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.control.Button?>
+
+
+<BorderPane xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:controller="ug.ac.mak.sdf.QuizResultController"
+            stylesheets="@style.css">
+
+    <top>
+        <fx:include source="topbar.fxml" />
+    </top>
+
+    <left>
+        <fx:include source="sidebar.fxml" fx:id="sidebar" />
+    </left>
+
+    <center>
+        <VBox styleClass="main-content" spacing="18">
+            <padding><Insets top="30" right="30" bottom="30" left="30" /></padding>
+            
+            <Button text="← Back to Quizzes" styleClass="back-button" onAction="#handleBack" />
+            <Label fx:id="titleLabel" styleClass="page-title" />
+            <Label fx:id="scoreLabel" styleClass="quiz-score" />
+            <Label fx:id="noticeLabel" styleClass="topic-meta" />
+
+            <ScrollPane fitToWidth="true" styleClass="groups-scroll">
+                <VBox fx:id="breakdownContainer" spacing="14" />
+            </ScrollPane>
+
+            <Label fx:id="statusLabel" styleClass="status-label" />
+        </VBox>
+    </center>
+
+</BorderPane>

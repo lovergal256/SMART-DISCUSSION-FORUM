@@ -40,9 +40,14 @@ class QuizController extends Controller
         ]);
     }
 
-    public function create()
+   public function create()
     {
-        $groups = Group::all();
+        $user = Auth::user();
+
+        $groups = Group::whereHas('members', function ($query) use ($user) {
+            $query->where('group_members.UserID', $user->UserID)
+                  ->where('group_members.Status', 'approved');
+        })->get();
 
         return view('quizzes.create', [
             'groups' => $groups,
@@ -68,6 +73,16 @@ class QuizController extends Controller
 
         $user = Auth::user();
 
+        $isMemberOfGroup = Group::where('GroupID', $validated['group_id'])
+            ->whereHas('members', function ($query) use ($user) {
+                $query->where('group_members.UserID', $user->UserID)
+                      ->where('group_members.Status', 'approved');
+            })->exists();
+
+        if (! $isMemberOfGroup) {
+            return back()->withErrors(['group_id' => 'You can only create quizzes for groups you belong to.']);
+        }
+
         DB::transaction(function () use ($validated, $user): void {
             $lecturer = Lecturer::firstOrCreate(
                 ['UserID' => $user->UserID],
@@ -92,6 +107,22 @@ class QuizController extends Controller
                     'OptionD' => $questionData['option_d'] ?? null,
                     'CorrectOption' => $questionData['correct_option'],
                     'Marks' => (int) $questionData['marks'],
+                ]);
+            }
+
+            $group = Group::find($validated['group_id']);
+
+            $memberIds = $group->members()
+                ->wherePivot('Status', 'approved')
+                ->pluck('users.UserID');
+
+            foreach ($memberIds as $memberId) {
+                \App\Models\Notification::create([
+                    'NotificationID' => uniqid(),
+                    'UserID' => $memberId,
+                    'Message' => "A new quiz \"{$quiz->Title}\" has been posted in {$group->GroupName}.",
+                    'Type' => 'quiz_created',
+                    'Status' => 'Unread',
                 ]);
             }
         });

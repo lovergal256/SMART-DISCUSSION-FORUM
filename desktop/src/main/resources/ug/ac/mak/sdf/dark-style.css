@@ -1,0 +1,136 @@
+.main-content, .dashboard-scroll, .groups-scroll {
+    -fx-background-color: #12181f;
+}
+
+.page-title {
+    -fx-text-fill: #f3f4f6;
+}
+
+.page-subtitle {
+    -fx-text-fill: #9ca3af;
+}
+
+.stat-card, .panel, .group-card {
+    -fx-background-color: #1c242e;
+    -fx-border-color: #2d3748;
+}
+
+.stat-card-value, .panel-item-title, .group-card-title,
+.perf-stat-heading, .perf-stat-label {
+    -fx-text-fill: #f3f4f6;
+}
+
+.stat-card-label, .panel-item-meta, .group-card-desc,
+.perf-stat-big-value, .perf-stat-value, .topic-meta {
+    -fx-text-fill: #9ca3af;
+}
+
+.panel-title {
+    -fx-text-fill: #f3f4f6;
+}
+
+.panel-item, .perf-stat-row {
+    -fx-border-color: transparent transparent #2d3748 transparent;
+}
+
+.panel-empty-state {
+    -fx-text-fill: #6b7280;
+}
+
+.status-label {
+    -fx-text-fill: #9ca3af;
+}
+.search-field,
+.text-field,
+.password-field {
+    -fx-background-color: #232d38;
+    -fx-text-fill: #f3f4f6;
+    -fx-prompt-text-fill: #6b7280;
+    -fx-border-color: #3a4552;
+    -fx-border-radius: 6;
+    -fx-background-radius: 6;
+    -fx-highlight-fill: #2563eb;
+    -fx-highlight-text-fill: white;
+}
+
+.search-field:focused,
+.text-field:focused,
+.password-field:focused {
+    -fx-border-color: #2563eb;
+}
+.toggle-button {
+    -fx-background-color: #232d38;
+    -fx-text-fill: #d1d5db;
+    -fx-border-color: #3a4552;
+}
+
+.toggle-button:selected {
+    -fx-background-color: #2563eb;
+    -fx-text-fill: white;
+}
+.category-badge {
+    -fx-background-color: #2d3748;
+    -fx-text-fill: #93c5fd;
+    -fx-background-radius: 4;
+    -fx-padding: 2 8;
+    -fx-font-size: 11px;
+}
+
+.panel-item-replies {
+    -fx-text-fill: #9ca3af;
+    -fx-font-size: 12px;
+}
+
+.panel-view-all {
+    -fx-text-fill: #60a5fa;
+    -fx-font-size: 12px;
+}
+
+.status-badge {
+    -fx-background-color: #14532d;
+    -fx-text-fill: #86efac;
+    -fx-background-radius: 4;
+    -fx-padding: 2 8;
+    -fx-font-size: 11px;
+}
+
+.group-avatar {
+    -fx-background-color: #2d3748;
+    -fx-background-radius: 6;
+    -fx-padding: 6;
+}
+
+.activity-label {
+    -fx-text-fill: #d1d5db;
+    -fx-font-size: 13px;
+}
+
+.activity-value {
+    -fx-text-fill: #f3f4f6;
+    -fx-font-weight: bold;
+    -fx-font-size: 13px;
+}
+
+.activity-change {
+    -fx-text-fill: #4ade80;
+    -fx-font-size: 12px;
+}
+
+.activity-row {
+    -fx-border-color: transparent transparent #2d3748 transparent;
+    -fx-padding: 6 0;
+}
+
+.chart-day-label {
+    -fx-text-fill: #6b7280;
+    -fx-font-size: 11px;
+}
+
+.stat-card-icon {
+    -fx-text-fill: #f3f4f6;
+}
+
+.stat-card-change {
+    -fx-text-fill: #4ade80;
+    -fx-font-size: 12px;
+}

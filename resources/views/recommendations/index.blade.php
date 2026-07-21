@@ -1,4 +1,4 @@
-@extends('layouts.app')
+@extends(auth()->user()->RoleID === 2 ? 'layouts.lecturer_app' : 'layouts.app')
 
 @section('title', 'Recommendations — Smart Discussion Forum')
 
@@ -63,33 +63,7 @@
             @endif
         </div>
 
-        {{-- Upcoming Quizzes --}}
-        <div class="panel">
-            <div class="panel-head">
-                <div class="panel-title"><span class="ic">🎯</span> Upcoming Quizzes</div>
-            </div>
-
-            @if($upcomingQuizzes->count() > 0)
-                @foreach($upcomingQuizzes as $quiz)
-                    <div class="quiz-card">
-                        <div class="quiz-title">{{ $quiz->Title }}</div>
-                        <div class="quiz-foot">
-                            <div class="quiz-due">
-                                📅 {{ \Carbon\Carbon::parse($quiz->StartTime)->format('M d, Y') }}
-                                · ⏱ {{ $quiz->Duration }} mins
-                            </div>
-                            <a class="take-quiz-link" href="{{ route('quizzes.show', $quiz->QuizID) }}">
-                                Take Quiz
-                            </a>
-                        </div>
-                    </div>
-                @endforeach
-            @else
-                <div class="empty-state">
-                    <p>🎯 No upcoming quizzes.</p>
-                </div>
-            @endif
-        </div>
+       
 
     </div>
 

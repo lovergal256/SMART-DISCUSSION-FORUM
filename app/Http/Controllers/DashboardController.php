@@ -79,7 +79,7 @@ class DashboardController extends Controller
                     'id' => $quiz->QuizID,
                     'title' => $quiz->Title,
                     'subtitle' => optional($quiz->group)->GroupName ?? 'Group',
-                    'due' => $quiz->StartTime->format('d M Y, h:i A'),
+                    'due' => \Carbon\Carbon::parse($quiz->StartTime)->format('d M Y, h:i A'),
                 ];
             })
             ->toArray();

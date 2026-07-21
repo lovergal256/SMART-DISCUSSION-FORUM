@@ -84,6 +84,14 @@
                         Remove
                     </button>
                 </form>
+                <form method="POST" action="{{ route('groups.members.blacklist', [$group->GroupID, $member->UserID]) }}">
+                    @csrf
+                    <button type="submit"
+                            onclick="return confirm('Blacklist {{ $member->FullName }} for one month? They will be unable to use the platform.')"
+                            style="font-size:0.8em; color:#b91c1c; background:#fee2e2; border:none; border-radius:4px; padding:2px 8px; cursor:pointer;">
+                        Blacklist
+                    </button>
+                </form>
             @endif
         </div>
     </div>

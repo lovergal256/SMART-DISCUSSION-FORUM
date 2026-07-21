@@ -79,6 +79,8 @@ Route::middleware('auth')->group(function () {
     Route::post('/groups/{id}/promote/{userId}', [GroupController::class, 'promote'])->name('groups.promote');
     Route::delete('/groups/{id}/members/{userId}', [GroupController::class, 'removeMember'])->name('groups.removeMember');
     Route::patch('/groups/{id}/visibility', [GroupController::class, 'toggleVisibility'])->name('groups.toggleVisibility');
+    Route::post('/groups/{id}/members/{userId}/blacklist', [GroupController::class, 'blacklistMember'])
+    ->name('groups.members.blacklist');
 
     // --- Quiz Management Module ---
     Route::get('/quizzes', [QuizController::class, 'index'])->name('quizzes.index');
@@ -106,7 +108,7 @@ Route::post('/quizzes/{quiz}/release', [QuizController::class, 'releaseResults']
     })->name('warnings.index');
 
     // --- Statistics Management Module ---
-    Route::get('/activity', fn () => view('activity.index'))->name('activity.index');
+    Route::get('/activity', [\App\Http\Controllers\ActivityController::class, 'index'])->name('activity.index');
 
     // --- Notification Management Module ---
     Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
