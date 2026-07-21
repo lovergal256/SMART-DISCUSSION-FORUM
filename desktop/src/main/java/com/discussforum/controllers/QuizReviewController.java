@@ -5,14 +5,17 @@ import com.google.gson.JsonObject;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
+import javafx.fxml.Initializable;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.stage.Stage;
 
+import java.net.URL;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ResourceBundle;
 
-public class QuizReviewController {
+public class QuizReviewController implements Initializable {
 
     @FXML private Label titleLabel;
     @FXML private Label subtitleLabel;
@@ -24,9 +27,17 @@ public class QuizReviewController {
     @FXML private Label releasedLabel;
     @FXML private Button releaseButton;
     @FXML private Label feedbackLabel;
+    @FXML private SidebarController sidebarController;
 
     private int quizId;
     private static final DateTimeFormatter FMT = DateTimeFormatter.ofPattern("MMM d, yyyy · hh:mm a");
+
+    @Override
+    public void initialize(URL location, ResourceBundle resources) {
+        // "Dashboard" stays highlighted since there's no dedicated sidebar entry
+        // for the quiz-review flow — it's reached via Dashboard or LecturerQuizzes.
+        sidebarController.setActive("dashboard");
+    }
 
     public void loadQuiz(int quizId) {
         this.quizId = quizId;

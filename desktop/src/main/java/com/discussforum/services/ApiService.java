@@ -11,7 +11,7 @@ import java.net.http.HttpResponse;
 
 public class ApiService {
 
-    private static final String BASE_URL = "http://smart-discussion-forum.test/api";
+    private static final String BASE_URL = "http://127.0.0.1:8000/api";
     private static String authToken = null;
     private static String currentUserName = null;
     private static int currentUserRole = -1;

@@ -16,6 +16,10 @@
         </HBox>
     </top>
 
+    <left>
+        <fx:include fx:id="sidebar" source="Sidebar.fxml"/>
+    </left>
+
     <center>
         <ScrollPane fitToWidth="true" style="-fx-background-color: transparent;">
             <VBox style="-fx-padding: 25;" spacing="15">
