@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+
+<BorderPane xmlns:fx="http://javafx.com/fxml"
+            fx:controller="com.discussforum.controllers.RegisterLecturerController"
+            style="-fx-background-color: #f0f4f8;">
+
+    <top>
+        <HBox style="-fx-background-color: #0077b6; -fx-padding: 15 20;"
+              alignment="CENTER_LEFT" spacing="20">
+            <Label text="Smart Discussion Forum"
+                   style="-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: white;"/>
+            <Region HBox.hgrow="ALWAYS"/>
+            <Button text="← Back to Dashboard" onAction="#backToDashboard"
+                    style="-fx-background-color: transparent; -fx-text-fill: white;
+                           -fx-border-color: white; -fx-border-radius: 4; -fx-cursor: hand;"/>
+        </HBox>
+    </top>
+
+    <center>
+        <VBox style="-fx-padding: 30;" spacing="15" maxWidth="400">
+            <Label text="Register New Lecturer"
+                   style="-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: #0077b6;"/>
+
+            <Label text="Full Name" style="-fx-font-weight: bold; -fx-text-fill: #023e8a;"/>
+            <TextField fx:id="fullNameField"/>
+
+            <Label text="Email" style="-fx-font-weight: bold; -fx-text-fill: #023e8a;"/>
+            <TextField fx:id="emailField"/>
+
+            <Label text="Password" style="-fx-font-weight: bold; -fx-text-fill: #023e8a;"/>
+            <PasswordField fx:id="passwordField"/>
+
+            <Label fx:id="statusLabel" style="-fx-text-fill: red; -fx-font-size: 12px;"/>
+
+            <Button fx:id="submitButton" text="Register Lecturer" onAction="#handleSubmit"
+                    style="-fx-background-color: #0077b6; -fx-text-fill: white;
+                           -fx-font-weight: bold; -fx-padding: 10 20; -fx-background-radius: 4; -fx-cursor: hand;"/>
+        </VBox>
+    </center>
+
+</BorderPane>

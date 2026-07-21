@@ -11,7 +11,7 @@ import java.net.http.HttpResponse;
 
 public class ApiService {
 
-    private static final String BASE_URL = "http://127.0.0.1:8000/api";
+    private static final String BASE_URL = "http://smart-discussion-forum.test/api";
     private static String authToken = null;
     private static String currentUserName = null;
     private static int currentUserRole = -1;
@@ -22,6 +22,7 @@ public class ApiService {
     public static String getCurrentUserName() { return currentUserName != null ? currentUserName : ""; }
     public static int getCurrentUserRole() { return currentUserRole; }
     public static boolean isLecturer() { return currentUserRole == 2; }
+public static boolean isAdmin() { return currentUserRole == 3; }
 
     public static void logout() {
         authToken = null;
