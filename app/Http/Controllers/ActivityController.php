@@ -2,52 +2,21 @@
 
 namespace App\Http\Controllers;
 
-<<<<<<< HEAD
-use App\Models\Post;
-use App\Models\Topic;
-use App\Models\Group;
-use App\Models\Quiz;
-use App\Models\Lecturer;
-use App\Models\GroupMember;
-use App\Models\QuizScore;
-use Illuminate\Support\Facades\Auth;
-=======
 use App\Models\Topic;
 use App\Models\Post;
 use App\Models\Reply;
+use App\Models\Group;
 use App\Models\QuizScore;
 use App\Models\GroupMember;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
->>>>>>> origin/main
 
 class ActivityController extends Controller
 {
     public function index()
     {
         $user = Auth::user();
-<<<<<<< HEAD
-
-        $postsCreated = Post::where('UserID', $user->UserID)->count();
-        $topicsCreated = Topic::where('UserID', $user->UserID)->count();
-        $groupsCreated = Group::where('CreatedBy', $user->UserID)->count();
-
-        $groupsJoined = GroupMember::where('UserID', $user->UserID)
-            ->where('Status', 'approved')
-            ->count();
-
-        $quizzesAttempted = \App\Models\QuizScore::where('UserID', $user->UserID)->count();
-
-        return view('activity.index', compact(
-            'postsCreated',
-            'topicsCreated',
-            'groupsCreated',
-            'quizzesAttempted',
-            'groupsJoined'
-        ));
-    }
-=======
         $userId = $user->UserID;
 
         // --- Top Stat Cards (all-time totals) ---
@@ -56,6 +25,7 @@ class ActivityController extends Controller
         $repliesCount     = Reply::where('UserID', $userId)->count();
         $quizzesCount     = QuizScore::where('UserID', $userId)->count();
         $groupsCount      = GroupMember::where('UserID', $userId)->count();
+        $groupsCreated    = Group::where('CreatedBy', $userId)->count();
         $warningsCount    = $user->warnings()->count();
         $lastActive       = $user->LastActiveDate ? Carbon::parse($user->LastActiveDate) : null;
 
@@ -160,7 +130,7 @@ class ActivityController extends Controller
 
         return view('activity.index', compact(
             'discussionsCount', 'postsCount', 'repliesCount', 'quizzesCount',
-            'groupsCount', 'warningsCount', 'lastActive',
+            'groupsCount', 'groupsCreated', 'warningsCount', 'lastActive',
             'weeklyData', 'weeklyMax', 'activityLevel',
             'distribution', 'recentActivities', 'layout'
         ));
@@ -176,5 +146,4 @@ class ActivityController extends Controller
         if ($days < 14) return 'Last Week';
         return $date->format('M d, Y');
     }
->>>>>>> origin/main
 }

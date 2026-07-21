@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-<<<<<<< HEAD
+use App\Models\Group;
 use Illuminate\Http\Request;
 
 class GroupApiController extends Controller
@@ -15,6 +15,7 @@ class GroupApiController extends Controller
     {
         $groups = $request->user()
             ->groups()
+            ->wherePivot('Status', 'approved')
             ->get()
             ->map(function ($group) {
                 $memberCount = $group->members()
@@ -25,87 +26,80 @@ class GroupApiController extends Controller
                     'GroupID' => $group->GroupID,
                     'GroupName' => $group->GroupName,
                     'Description' => $group->Description,
+                    'Visibility' => $group->Visibility,
                     'MemberCount' => $memberCount,
-=======
-use App\Models\Group;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
-
-class GroupApiController extends Controller
-{
-    public function index()
-    {
-        $groups = Auth::user()->groups()
-            ->wherePivot('Status', 'approved')
-            ->get()
-            ->map(function ($group) {
-                return [
-                    'id' => $group->GroupID,
-                    'name' => $group->GroupName,
-                    'description' => $group->Description,
-                    'visibility' => $group->Visibility,
-                    'members_count' => $group->members()->wherePivot('Status', 'approved')->count(),
-                    'role' => $group->pivot->Role,
->>>>>>> origin/main
+                    'Role' => $group->pivot->Role,
                 ];
             });
 
         return response()->json($groups);
     }
-<<<<<<< HEAD
+
     /**
- * Create a new group, with the creator automatically added as admin.
- */
-public function store(Request $request)
-{
-    $validated = $request->validate([
-        'GroupName' => 'required|string|max:255',
-        'Description' => 'nullable|string',
-    ]);
+     * Create a new group, with the creator automatically added as admin.
+     */
+    public function store(Request $request)
+    {
+        $validated = $request->validate([
+            'GroupName' => 'required|string|max:255|unique:groups,GroupName',
+            'Description' => 'nullable|string',
+        ]);
 
-    $group = \App\Models\Group::create([
-        'GroupName' => $validated['GroupName'],
-        'Description' => $validated['Description'] ?? null,
-        'CreatedBy' => $request->user()->UserID,
-        'Visibility' => 'private',
-    ]);
+        $group = Group::create([
+            'GroupName' => $validated['GroupName'],
+            'Description' => $validated['Description'] ?? null,
+            'CreatedBy' => $request->user()->UserID,
+            'Visibility' => 'private',
+        ]);
 
-    $group->members()->attach($request->user()->UserID, [
-        'Role' => 'admin',
-        'Status' => 'approved',
-    ]);
+        $group->members()->attach($request->user()->UserID, [
+            'Role' => 'admin',
+            'Status' => 'approved',
+        ]);
 
-    return response()->json([
-        'GroupID' => $group->GroupID,
-        'GroupName' => $group->GroupName,
-        'Description' => $group->Description,
-    ], 201);
-}
+        return response()->json([
+            'GroupID' => $group->GroupID,
+            'GroupName' => $group->GroupName,
+            'Description' => $group->Description,
+        ], 201);
+    }
+
+    /**
+     * Groups the authenticated user isn't already in, that they can discover and join.
+     */
+    public function discover(Request $request)
+    {
+        $myGroupIds = $request->user()->groups()->pluck('groups.GroupID');
+
+        $groups = Group::where('Visibility', 'public')
+            ->whereNotIn('GroupID', $myGroupIds)
+            ->get()
+            ->map(function ($group) {
+                return [
+                    'GroupID' => $group->GroupID,
+                    'GroupName' => $group->GroupName,
+                    'Description' => $group->Description,
+                    'MemberCount' => $group->members()->wherePivot('Status', 'approved')->count(),
+                ];
+            });
+
+        return response()->json($groups);
+    }
 
     /**
      * Full group detail: info, visibility, members, pending requests (if admin).
      */
     public function show(Request $request, $id)
     {
-        $group = \App\Models\Group::findOrFail($id);
+        $group = Group::findOrFail($id);
         $authId = $request->user()->UserID;
 
         $isMember = $group->members()
             ->where('group_members.UserID', $authId)
-=======
-
-    public function show($id)
-    {
-        $group = Group::findOrFail($id);
-
-        $isMember = $group->members()
-            ->where('group_members.UserID', Auth::id())
->>>>>>> origin/main
             ->wherePivot('Status', 'approved')
             ->exists();
 
         if (!$isMember) {
-<<<<<<< HEAD
             return response()->json(['message' => 'You are not a member of this group.'], 403);
         }
 
@@ -177,7 +171,7 @@ public function store(Request $request)
      */
     public function members(Request $request, $id)
     {
-        $group = \App\Models\Group::findOrFail($id);
+        $group = Group::findOrFail($id);
         $authId = $request->user()->UserID;
 
         $isMember = $group->members()
@@ -218,7 +212,7 @@ public function store(Request $request)
 
     public function toggleVisibility(Request $request, $id)
     {
-        $group = \App\Models\Group::findOrFail($id);
+        $group = Group::findOrFail($id);
         $authId = $request->user()->UserID;
 
         $isAdmin = $group->members()
@@ -242,7 +236,7 @@ public function store(Request $request)
 
     public function addMember(Request $request, $id)
     {
-        $group = \App\Models\Group::findOrFail($id);
+        $group = Group::findOrFail($id);
         $authId = $request->user()->UserID;
 
         $authUser = $group->members()
@@ -267,7 +261,7 @@ public function store(Request $request)
 
     public function promote(Request $request, $id, $userId)
     {
-        $group = \App\Models\Group::findOrFail($id);
+        $group = Group::findOrFail($id);
         $authId = $request->user()->UserID;
 
         $authRole = $group->members()->where('group_members.UserID', $authId)->first();
@@ -297,7 +291,7 @@ public function store(Request $request)
 
     public function removeMember(Request $request, $id, $userId)
     {
-        $group = \App\Models\Group::findOrFail($id);
+        $group = Group::findOrFail($id);
         $authId = $request->user()->UserID;
 
         $authUser = $group->members()->where('group_members.UserID', $authId)->first();
@@ -334,7 +328,7 @@ public function store(Request $request)
      */
     public function blacklistMember(Request $request, $id, $userId)
     {
-        $group = \App\Models\Group::findOrFail($id);
+        $group = Group::findOrFail($id);
         $authId = $request->user()->UserID;
 
         $authUser = $group->members()
@@ -386,21 +380,21 @@ public function store(Request $request)
 
     public function approveMember(Request $request, $id, $userId)
     {
-        $group = \App\Models\Group::findOrFail($id);
+        $group = Group::findOrFail($id);
         $group->members()->updateExistingPivot($userId, ['Status' => 'approved']);
         return response()->json(['message' => 'Member approved.']);
     }
 
     public function rejectMember(Request $request, $id, $userId)
     {
-        $group = \App\Models\Group::findOrFail($id);
+        $group = Group::findOrFail($id);
         $group->members()->detach($userId);
         return response()->json(['message' => 'Request rejected.']);
     }
 
     public function leave(Request $request, $id)
     {
-        $group = \App\Models\Group::findOrFail($id);
+        $group = Group::findOrFail($id);
         $authId = $request->user()->UserID;
 
         if (!$group->members()->where('group_members.UserID', $authId)->exists()) {
@@ -421,7 +415,7 @@ public function store(Request $request)
 
     public function destroy(Request $request, $id)
     {
-        $group = \App\Models\Group::findOrFail($id);
+        $group = Group::findOrFail($id);
         $authId = $request->user()->UserID;
 
         $isAdmin = $group->members()
@@ -439,74 +433,3 @@ public function store(Request $request)
         return response()->json(['message' => 'Group deleted successfully.']);
     }
 }
-=======
-            return response()->json(['message' => 'Unauthorized'], 403);
-        }
-
-        $members = $group->members()
-            ->wherePivot('Status', 'approved')
-            ->get()
-            ->map(function ($member) {
-                return [
-                    'id' => $member->UserID,
-                    'name' => $member->FullName,
-                    'email' => $member->Email,
-                    'role' => $member->pivot->Role,
-                ];
-            });
-
-        return response()->json([
-            'id' => $group->GroupID,
-            'name' => $group->GroupName,
-            'description' => $group->Description,
-            'visibility' => $group->Visibility,
-            'members' => $members,
-        ]);
-    }
-
-    public function store(Request $request)
-    {
-        $request->validate([
-            'name' => 'required|max:100|unique:groups,GroupName',
-            'description' => 'nullable',
-            'visibility' => 'in:public,private',
-        ]);
-
-        $group = Group::create([
-            'GroupName' => $request->name,
-            'Description' => $request->description,
-            'Visibility' => $request->input('visibility', 'private'),
-            'CreatedBy' => Auth::id(),
-        ]);
-
-        $group->members()->attach(Auth::id(), ['Role' => 'admin', 'Status' => 'approved']);
-
-        return response()->json([
-            'message' => 'Group created successfully',
-            'group' => [
-                'id' => $group->GroupID,
-                'name' => $group->GroupName,
-            ]
-        ], 201);
-    }
-
-    public function discover()
-    {
-        $myGroupIds = Auth::user()->groups()->pluck('groups.GroupID');
-
-        $groups = Group::where('Visibility', 'public')
-            ->whereNotIn('GroupID', $myGroupIds)
-            ->get()
-            ->map(function ($group) {
-                return [
-                    'id' => $group->GroupID,
-                    'name' => $group->GroupName,
-                    'description' => $group->Description,
-                    'members_count' => $group->members()->wherePivot('Status', 'approved')->count(),
-                ];
-            });
-
-        return response()->json($groups);
-    }
-}
->>>>>>> origin/main

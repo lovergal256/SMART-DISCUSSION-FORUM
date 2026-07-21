@@ -1,6 +1,6 @@
 <?php
 
-<<<<<<< HEAD
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\AuthApiController;
 use App\Http\Controllers\Api\GroupApiController;
@@ -10,77 +10,15 @@ use App\Http\Controllers\Api\PostApiController;
 use App\Http\Controllers\Api\ReplyApiController;
 use App\Http\Controllers\Api\DashboardApiController;
 use App\Http\Controllers\Api\ExclusionApiController;
-
-
-
-Route::post('/login', [AuthApiController::class, 'login']);
-
-Route::middleware('auth:sanctum')->group(function () {
-    Route::post('/logout', [AuthApiController::class, 'logout']);
-    Route::get('/user', [AuthApiController::class, 'user']);
-    Route::get('/groups', [GroupApiController::class, 'index']);
-    Route::get('/groups/{groupId}/discussions', [DiscussionApiController::class, 'index']);
-    Route::get('/groups/{id}/members', [\App\Http\Controllers\Api\GroupApiController::class, 'members']);
-    Route::post('/groups/{id}/members/{userId}/blacklist', [\App\Http\Controllers\Api\GroupApiController::class, 'blacklistMember']);
-    Route::get('/groups/{id}', [\App\Http\Controllers\Api\GroupApiController::class, 'show']);
-    Route::get('/groups/{id}/members', [\App\Http\Controllers\Api\GroupApiController::class, 'members']);
-    Route::patch('/groups/{id}/visibility', [\App\Http\Controllers\Api\GroupApiController::class, 'toggleVisibility']);
-    Route::post('/groups/{id}/members', [\App\Http\Controllers\Api\GroupApiController::class, 'addMember']);
-    Route::post('/groups/{id}/members/{userId}/promote', [\App\Http\Controllers\Api\GroupApiController::class, 'promote']);
-    Route::delete('/groups/{id}/members/{userId}', [\App\Http\Controllers\Api\GroupApiController::class, 'removeMember']);
-    Route::post('/groups/{id}/members/{userId}/blacklist', [\App\Http\Controllers\Api\GroupApiController::class, 'blacklistMember']);
-    Route::post('/groups/{id}/members/{userId}/approve', [\App\Http\Controllers\Api\GroupApiController::class, 'approveMember']);
-    Route::delete('/groups/{id}/members/{userId}/reject', [\App\Http\Controllers\Api\GroupApiController::class, 'rejectMember']);
-    Route::delete('/groups/{id}/leave', [\App\Http\Controllers\Api\GroupApiController::class, 'leave']);
-    Route::delete('/groups/{id}', [\App\Http\Controllers\Api\GroupApiController::class, 'destroy']);
-    Route::get('/discussions/{discussionId}/topics', [TopicApiController::class, 'index']);
-    Route::get('/topics/{topicId}/posts', [PostApiController::class, 'index']);
-    Route::get('/posts/{postId}/replies', [ReplyApiController::class, 'index']);
-    Route::post('/replies', [ReplyApiController::class, 'store']);
-    Route::get('/dashboard', [DashboardApiController::class, 'index']);
-    Route::get('/discussions/{discussionId}', [DiscussionApiController::class, 'show']);
-    Route::get('/discussions', [DiscussionApiController::class, 'all']);
-    Route::get('/quizzes', [\App\Http\Controllers\Api\QuizApiController::class, 'index']);
-    Route::get('/quizzes/{quiz}', [\App\Http\Controllers\Api\QuizApiController::class, 'show']);
-    Route::post('/quizzes/{quiz}/attempt', [\App\Http\Controllers\Api\QuizApiController::class, 'storeAttempt']);
-    Route::get('/recommendations', [\App\Http\Controllers\Api\RecommendationApiController::class, 'index']);
-    Route::get('/performance', [\App\Http\Controllers\Api\PerformanceApiController::class, 'index']);
-    Route::get('/warnings', [\App\Http\Controllers\Api\WarningApiController::class, 'index']);
-    Route::get('/activity', [\App\Http\Controllers\Api\ActivityApiController::class, 'index']);
-    Route::get('/notifications', [\App\Http\Controllers\Api\NotificationApiController::class, 'index']);
-    Route::post('/notifications/{id}/read', [\App\Http\Controllers\Api\NotificationApiController::class, 'markAsRead']);
-    Route::get('/profile', [\App\Http\Controllers\Api\ProfileApiController::class, 'show']);
-    Route::post('/profile/update', [\App\Http\Controllers\Api\ProfileApiController::class, 'update']);
-    Route::post('/profile/change-password', [\App\Http\Controllers\Api\ProfileApiController::class, 'changePassword']);
-    Route::delete('/profile/delete', [\App\Http\Controllers\Api\ProfileApiController::class, 'destroy']);
-    Route::post('/groups', [GroupApiController::class, 'store']);
-    Route::post('/groups/{id}/members', [GroupApiController::class, 'addMember']);
-    Route::post('/groups/{id}/members/{userId}/approve', [GroupApiController::class, 'approveMember']);
-    Route::post('/groups/{id}/members/{userId}/reject', [GroupApiController::class, 'rejectMember']);
-    Route::post('/groups/{id}/leave', [GroupApiController::class, 'leave']);
-    Route::delete('/groups/{id}', [GroupApiController::class, 'destroy']);
-    Route::get('/groups/{groupId}/exclusions', [ExclusionApiController::class, 'index']);
-    Route::post('/groups/{groupId}/exclusions', [ExclusionApiController::class, 'store']);
-    Route::delete('/groups/{groupId}/exclusions/{exclusionId}', [ExclusionApiController::class, 'destroy']);
-    Route::post('/discussions/{discussionId}/topics', [TopicApiController::class, 'store']);
-    Route::put('/topics/{topicId}', [TopicApiController::class, 'update']);
-    Route::delete('/topics/{topicId}', [TopicApiController::class, 'destroy']);
-    Route::post('/topics/{topicId}/posts', [PostApiController::class, 'store']);
-    Route::put('/replies/{replyId}', [ReplyApiController::class, 'update']);
-
-
-
-=======
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Api\AuthApiController;
-use App\Http\Controllers\Api\GroupApiController;
 use App\Http\Controllers\Api\QuizApiController;
 use App\Http\Controllers\Api\LecturerDashboardApiController;
-
-Route::get('/user', function (Request $request) {
-    return $request->user();
-})->middleware('auth:sanctum');
+use App\Http\Controllers\Api\AdminApiController;
+use App\Http\Controllers\Api\RecommendationApiController;
+use App\Http\Controllers\Api\PerformanceApiController;
+use App\Http\Controllers\Api\WarningApiController;
+use App\Http\Controllers\Api\ActivityApiController;
+use App\Http\Controllers\Api\NotificationApiController;
+use App\Http\Controllers\Api\ProfileApiController;
 
 Route::post('/login', [AuthApiController::class, 'login']);
 
@@ -90,24 +28,73 @@ Route::post('/quizzes/{quizId}/release-results', [QuizApiController::class, 'rel
 
 // Protected routes
 Route::middleware('auth:sanctum')->group(function () {
-    Route::get('/user', function (Request $request) {
-        return $request->user();
-    });
 
+    Route::get('/user', [AuthApiController::class, 'user']);
     Route::post('/logout', [AuthApiController::class, 'logout']);
 
-    // Group endpoints
+    // Admin
+    Route::post('/admin/register-lecturer', [AdminApiController::class, 'registerLecturer']);
+    Route::get('/admin/groups', [AdminApiController::class, 'groups']);
+    Route::get('/admin/discussions', [AdminApiController::class, 'discussions']);
+    Route::get('/admin/dashboard', [AdminApiController::class, 'dashboard']);
+
+    // Groups
     Route::get('/groups', [GroupApiController::class, 'index']);
     Route::post('/groups', [GroupApiController::class, 'store']);
     Route::get('/groups/discover', [GroupApiController::class, 'discover']);
     Route::get('/groups/{id}', [GroupApiController::class, 'show']);
-    
-    // Quiz endpoints
+    Route::get('/groups/{id}/members', [GroupApiController::class, 'members']);
+    Route::patch('/groups/{id}/visibility', [GroupApiController::class, 'toggleVisibility']);
+    Route::post('/groups/{id}/members', [GroupApiController::class, 'addMember']);
+    Route::post('/groups/{id}/members/{userId}/promote', [GroupApiController::class, 'promote']);
+    Route::delete('/groups/{id}/members/{userId}', [GroupApiController::class, 'removeMember']);
+    Route::post('/groups/{id}/members/{userId}/blacklist', [GroupApiController::class, 'blacklistMember']);
+    Route::post('/groups/{id}/members/{userId}/approve', [GroupApiController::class, 'approveMember']);
+    Route::delete('/groups/{id}/members/{userId}/reject', [GroupApiController::class, 'rejectMember']);
+    Route::delete('/groups/{id}/leave', [GroupApiController::class, 'leave']);
+    Route::delete('/groups/{id}', [GroupApiController::class, 'destroy']);
+
+    // Discussions / Topics / Posts / Replies
+    Route::get('/groups/{groupId}/discussions', [DiscussionApiController::class, 'index']);
+    Route::get('/discussions/{discussionId}/topics', [TopicApiController::class, 'index']);
+    Route::post('/discussions/{discussionId}/topics', [TopicApiController::class, 'store']);
+    Route::put('/topics/{topicId}', [TopicApiController::class, 'update']);
+    Route::delete('/topics/{topicId}', [TopicApiController::class, 'destroy']);
+    Route::get('/topics/{topicId}/posts', [PostApiController::class, 'index']);
+    Route::post('/topics/{topicId}/posts', [PostApiController::class, 'store']);
+    Route::get('/posts/{postId}/replies', [ReplyApiController::class, 'index']);
+    Route::post('/replies', [ReplyApiController::class, 'store']);
+    Route::put('/replies/{replyId}', [ReplyApiController::class, 'update']);
+    Route::get('/discussions/{discussionId}', [DiscussionApiController::class, 'show']);
+    Route::get('/discussions', [DiscussionApiController::class, 'all']);
+
+    // Quizzes
     Route::post('/groups/{groupId}/quizzes', [QuizApiController::class, 'store']);
     Route::get('/groups/{groupId}/quizzes', [QuizApiController::class, 'index']);
-Route::get('/quizzes/{quizId}', [QuizApiController::class, 'show']);
-Route::get('/quizzes', [QuizApiController::class, 'indexAll']);
-Route::post('/quizzes/{quizId}/attempts', [QuizApiController::class, 'storeAttempt']);
-Route::get('/lecturer/quizzes', [QuizApiController::class, 'indexForLecturer']);
->>>>>>> origin/main
+    Route::get('/quizzes/{quizId}', [QuizApiController::class, 'show']);
+    Route::get('/quizzes', [QuizApiController::class, 'indexAll']);
+    // Kept both attempt URLs (singular/plural) until confirmed which the client uses
+    Route::post('/quizzes/{quizId}/attempt', [QuizApiController::class, 'storeAttempt']);
+    Route::post('/quizzes/{quizId}/attempts', [QuizApiController::class, 'storeAttempt']);
+    Route::get('/lecturer/quizzes', [QuizApiController::class, 'indexForLecturer']);
+
+    // Dashboard & insights
+    Route::get('/dashboard', [DashboardApiController::class, 'index']);
+    Route::get('/recommendations', [RecommendationApiController::class, 'index']);
+    Route::get('/performance', [PerformanceApiController::class, 'index']);
+    Route::get('/warnings', [WarningApiController::class, 'index']);
+    Route::get('/activity', [ActivityApiController::class, 'index']);
+    Route::get('/notifications', [NotificationApiController::class, 'index']);
+    Route::post('/notifications/{id}/read', [NotificationApiController::class, 'markAsRead']);
+
+    // Profile
+    Route::get('/profile', [ProfileApiController::class, 'show']);
+    Route::post('/profile/update', [ProfileApiController::class, 'update']);
+    Route::post('/profile/change-password', [ProfileApiController::class, 'changePassword']);
+    Route::delete('/profile/delete', [ProfileApiController::class, 'destroy']);
+
+    // Exclusions
+    Route::get('/groups/{groupId}/exclusions', [ExclusionApiController::class, 'index']);
+    Route::post('/groups/{groupId}/exclusions', [ExclusionApiController::class, 'store']);
+    Route::delete('/groups/{groupId}/exclusions/{exclusionId}', [ExclusionApiController::class, 'destroy']);
 });
