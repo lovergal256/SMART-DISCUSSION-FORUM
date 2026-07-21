@@ -12,13 +12,15 @@ use App\Models\Notification;
 
 class LecturerDashboardController extends Controller
 {
-    public function index()
+   public function index()
     {
         $user = Auth::user();
 
+       
+
         // Get lecturer profile
         $lecturer = Lecturer::where('UserID', $user->UserID)->first();
-
+       
         // Statistics
         $quizzesCount = Quiz::where('LecturerID', $lecturer->LecturerID)->count();
 
