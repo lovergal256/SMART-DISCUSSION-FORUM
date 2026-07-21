@@ -176,7 +176,7 @@ Route::get('/activity', [ActivityController::class, 'index'])->name('activity.in
 
     // --- Exclusions ---
     Route::post('/topics/{topic}/posts/{post}/exclude', [ExclusionController::class, 'store'])->name('exclusions.post.store');
-    Route::delete('/topics/{topic}/posts/{post}/exclude/{user}', [ExclusionController::class, 'destroy'])->name('exclusions.destroy');
+    Route::delete('/topics/{topic}/posts/{post}/exclude/{user}', [ExclusionController::class, 'destroy'])->name('exclusions.post.destroy');
     Route::get('/topics/{topic}/exclusions', [ExclusionController::class, 'index'])->name('exclusions.index');
 });
 Route::get('/student/notifications', [NotificationController::class, 'index'])->name('student.notifications.index');
