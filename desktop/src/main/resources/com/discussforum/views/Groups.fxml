@@ -25,23 +25,26 @@
     </top>
 
     <left>
-        <VBox style="-fx-background-color: #023e8a; -fx-padding: 20 0;"
-              minWidth="180" spacing="5">
-            <Label text="MENU"
-                   style="-fx-text-fill: #90c8e0; -fx-font-size: 11px; -fx-padding: 0 15 5 15;"/>
-            <Button text="My Groups" onAction="#loadMyGroups"
-                    maxWidth="Infinity"
-                    style="-fx-background-color: #0077b6; -fx-text-fill: white;
-                           -fx-padding: 10 15; -fx-cursor: hand;"/>
-            <Button text="Discover Groups" onAction="#loadDiscoverGroups"
-                    maxWidth="Infinity"
-                    style="-fx-background-color: transparent; -fx-text-fill: white;
-                           -fx-padding: 10 15; -fx-cursor: hand;"/>
-        </VBox>
+        <fx:include fx:id="sidebar" source="Sidebar.fxml"/>
     </left>
 
     <center>
         <VBox style="-fx-padding: 20;" spacing="15">
+
+            <!-- Page-local sub-nav for this screen only: My Groups / Discover / My Quizzes.
+                 This is NOT part of the shared global sidebar. -->
+            <HBox spacing="8">
+                <Button text="My Groups" onAction="#loadMyGroups"
+                        style="-fx-background-color: #0077b6; -fx-text-fill: white;
+                               -fx-padding: 6 14; -fx-background-radius: 4; -fx-cursor: hand;"/>
+                <Button text="Discover Groups" onAction="#loadDiscoverGroups"
+                        style="-fx-background-color: #e0ecf7; -fx-text-fill: #0077b6;
+                               -fx-padding: 6 14; -fx-background-radius: 4; -fx-cursor: hand;"/>
+                <Button fx:id="myQuizzesButton" text="My Quizzes" onAction="#openMyQuizzes"
+                        style="-fx-background-color: #e0ecf7; -fx-text-fill: #0077b6;
+                               -fx-padding: 6 14; -fx-background-radius: 4; -fx-cursor: hand;"/>
+            </HBox>
+
             <Label fx:id="sectionTitle"
                    text="My Groups"
                    style="-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: #0077b6;"/>

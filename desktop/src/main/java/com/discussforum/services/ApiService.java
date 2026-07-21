@@ -14,15 +14,19 @@ public class ApiService {
     private static final String BASE_URL = "http://127.0.0.1:8000/api";
     private static String authToken = null;
     private static String currentUserName = null;
+    private static int currentUserRole = -1;
     private static final HttpClient client = HttpClient.newHttpClient();
     private static final Gson gson = new Gson();
 
     public static String getToken() { return authToken; }
     public static String getCurrentUserName() { return currentUserName != null ? currentUserName : ""; }
+    public static int getCurrentUserRole() { return currentUserRole; }
+    public static boolean isLecturer() { return currentUserRole == 2; }
 
     public static void logout() {
         authToken = null;
         currentUserName = null;
+        currentUserRole = -1;
     }
 
     public static JsonObject login(String email, String password) throws Exception {
@@ -44,7 +48,11 @@ public class ApiService {
 
         if (response.statusCode() == 200) {
             authToken = result.get("token").getAsString();
-            currentUserName = result.getAsJsonObject("user").get("name").getAsString();
+            JsonObject user = result.getAsJsonObject("user");
+            currentUserName = user.get("name").getAsString();
+            if (user.has("role") && !user.get("role").isJsonNull()) {
+                currentUserRole = user.get("role").getAsInt();
+            }
         }
 
         return result;

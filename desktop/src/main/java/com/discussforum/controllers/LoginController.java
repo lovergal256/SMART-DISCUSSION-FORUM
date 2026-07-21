@@ -36,14 +36,16 @@ public class LoginController {
                 javafx.application.Platform.runLater(() -> {
                     if (response.has("token")) {
                         try {
-                            FXMLLoader loader = new FXMLLoader(
-                                getClass().getResource("/com/discussforum/views/Groups.fxml"));
+                            String view = ApiService.isLecturer()
+                                ? "/com/discussforum/views/Dashboard.fxml"
+                                : "/com/discussforum/views/Groups.fxml";
+                            FXMLLoader loader = new FXMLLoader(getClass().getResource(view));
                             Scene scene = new Scene(loader.load(), 900, 600);
                             Stage stage = (Stage) loginButton.getScene().getWindow();
                             stage.setScene(scene);
                         } catch (Exception e) {
                             errorLabel.setStyle("-fx-text-fill: red;");
-                            errorLabel.setText("Error loading groups screen: " + e.getMessage());
+                            errorLabel.setText("Error loading home screen: " + e.getMessage());
                             loginButton.setDisable(false);
                             loginButton.setText("Login");
                         }
