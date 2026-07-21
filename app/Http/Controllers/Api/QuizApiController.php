@@ -220,9 +220,14 @@ class QuizApiController extends Controller
         $startTime = Carbon::parse($quiz->StartTime);
         $endTime = (clone $startTime)->addMinutes((int) $quiz->Duration);
 
-        if (!$now->between($startTime, $endTime)) {
-            return response()->json(['message' => 'This quiz is not currently active.'], 422);
-        }
+        // Small grace period so a submission fired at the exact deadline (client-side)
+// isn't rejected purely due to network/processing latency in transit.
+$graceSeconds = 10;
+$acceptUntil = $endTime->copy()->addSeconds($graceSeconds);
+
+if ($now->lt($startTime) || $now->gt($acceptUntil)) {
+    return response()->json(['message' => 'This quiz is not currently active.'], 422);
+}
 
         $alreadyAttempted = Attempt::where('UserID', $user->UserID)
             ->where('QuizID', $quiz->QuizID)

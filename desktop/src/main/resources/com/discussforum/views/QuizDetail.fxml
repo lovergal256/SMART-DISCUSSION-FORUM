@@ -22,7 +22,7 @@
             <Region HBox.hgrow="ALWAYS"/>
             <VBox alignment="CENTER" style="-fx-background-color: white; -fx-padding: 6 16;
                                             -fx-background-radius: 8;">
-                <Label text="Time remaining" style="-fx-font-size: 10px; -fx-text-fill: #888;"/>
+                <Label fx:id="countdownCaptionLabel" text="Time remaining" style="-fx-font-size: 10px; -fx-text-fill: #888;"/>
                 <Label fx:id="countdownLabel" text="--:--"
                        style="-fx-font-size: 22px; -fx-font-weight: bold; -fx-text-fill: #1a7a45;"/>
             </VBox>
