@@ -7,6 +7,7 @@ use App\Models\Answer;
 use App\Models\Attempt;
 use App\Models\Group;
 use App\Models\Lecturer;
+use App\Models\Notification;
 use App\Models\Question;
 use App\Models\Quiz;
 use App\Models\QuizScore;
@@ -30,22 +31,34 @@ class QuizApiController extends Controller
                 ->where('group_members.Status', 'approved');
         })->find($groupId);
 
-        if (!$group) {
+        if (! $group) {
             return response()->json(['message' => 'You are not a member of that group.'], 403);
         }
 
         $attemptedQuizIds = Attempt::where('UserID', $user->UserID)->pluck('QuizID')->all();
 
+        $now = Carbon::now();
+
         $quizzes = Quiz::where('GroupID', $group->GroupID)
+            ->withCount('questions')
             ->latest('StartTime')
             ->get()
-            ->map(function ($quiz) use ($attemptedQuizIds) {
+            ->map(function ($quiz) use ($attemptedQuizIds, $now) {
+                $startTime = Carbon::parse($quiz->StartTime);
+                $endTime = (clone $startTime)->addMinutes((int) $quiz->Duration);
+
                 return [
                     'id' => $quiz->QuizID,
                     'title' => $quiz->Title,
                     'duration' => $quiz->Duration,
-                    'start_time' => Carbon::parse($quiz->StartTime)->toIso8601String(),
+                    'start_time' => $startTime->toIso8601String(),
+                    'end_time' => $endTime->toIso8601String(),
+                    'questions_count' => (int) $quiz->questions_count,
+                    'status' => $now->lt($startTime) ? 'upcoming' : ($now->gt($endTime) ? 'ended' : 'active'),
                     'attempted' => in_array($quiz->QuizID, $attemptedQuizIds, true),
+                    'attempt_count' => 0,
+                    'average_score' => null,
+                    'results_released' => (bool) $quiz->ResultsReleased,
                 ];
             });
 
@@ -67,19 +80,31 @@ class QuizApiController extends Controller
                 ->where('group_members.Status', 'approved');
         })->pluck('GroupID');
 
+        $now = Carbon::now();
+
         $quizzes = Quiz::whereIn('GroupID', $groupIds)
             ->with('group')
+            ->withCount('questions')
             ->latest('StartTime')
             ->get()
-            ->map(function ($quiz) use ($attemptedQuizIds) {
+            ->map(function ($quiz) use ($attemptedQuizIds, $now) {
+                $startTime = Carbon::parse($quiz->StartTime);
+                $endTime = (clone $startTime)->addMinutes((int) $quiz->Duration);
+
                 return [
                     'id' => $quiz->QuizID,
                     'title' => $quiz->Title,
                     'duration' => $quiz->Duration,
-                    'start_time' => Carbon::parse($quiz->StartTime)->toIso8601String(),
+                    'start_time' => $startTime->toIso8601String(),
+                    'end_time' => $endTime->toIso8601String(),
+                    'questions_count' => (int) $quiz->questions_count,
+                    'status' => $now->lt($startTime) ? 'upcoming' : ($now->gt($endTime) ? 'ended' : 'active'),
                     'attempted' => in_array($quiz->QuizID, $attemptedQuizIds, true),
                     'group_id' => $quiz->GroupID,
                     'group_name' => optional($quiz->group)->GroupName ?? 'Group',
+                    'attempt_count' => 0,
+                    'average_score' => null,
+                    'results_released' => (bool) $quiz->ResultsReleased,
                 ];
             });
 
@@ -101,7 +126,7 @@ class QuizApiController extends Controller
                     ->where('group_members.Status', 'approved');
             })->exists();
 
-        if (!$isMember) {
+        if (! $isMember) {
             return response()->json(['message' => 'You are not a member of this quiz\'s group.'], 403);
         }
 
@@ -118,20 +143,22 @@ class QuizApiController extends Controller
         $payload = [
             'id' => $quiz->QuizID,
             'title' => $quiz->Title,
+            'group_id' => $quiz->GroupID,
             'group_name' => optional($quiz->group)->GroupName ?? 'Group',
             'duration' => $quiz->Duration,
             'start_time' => $startTime->toIso8601String(),
             'end_time' => $endTime->toIso8601String(),
             'server_time' => $now->toIso8601String(),
+            'status' => $now->lt($startTime) ? 'upcoming' : ($now->gt($endTime) ? 'ended' : 'active'),
             'is_active' => $isActive,
             'is_attempted' => $isAttempted,
             'results_released' => (bool) $quiz->ResultsReleased,
-            'score' => ($isAttempted && $quiz->ResultsReleased) ? (float) $attempt->Score : null,
+            'score' => $isAttempted ? (float) $attempt->Score : 0.0,
         ];
 
         // Only send questions when the student can actually attempt right now —
         // mirrors the web view's @elseif(! $isActive) / @if($isAttempted) gating.
-        if (!$isAttempted && $isActive) {
+        if (! $isAttempted && $isActive && (int) $user->RoleID !== 2) {
             $payload['questions'] = Question::where('QuizID', $quiz->QuizID)
                 ->get()
                 ->map(function ($q) {
@@ -167,11 +194,11 @@ class QuizApiController extends Controller
             ->where('QuizID', $quiz->QuizID)
             ->first();
 
-        if (!$attempt) {
+        if (! $attempt) {
             return response()->json(['message' => 'You have not attempted this quiz.'], 404);
         }
 
-        if (!$quiz->ResultsReleased) {
+        if (! $quiz->ResultsReleased) {
             return response()->json(['message' => 'Results have not been released yet.'], 403);
         }
 
@@ -212,6 +239,20 @@ class QuizApiController extends Controller
         $user = Auth::user();
         $quiz = Quiz::findOrFail($quizId);
 
+        if ((int) $user->RoleID === 2) {
+            return response()->json(['message' => 'Lecturers cannot attempt quizzes.'], 403);
+        }
+
+        $isMember = Group::where('GroupID', $quiz->GroupID)
+            ->whereHas('members', function ($query) use ($user) {
+                $query->where('group_members.UserID', $user->UserID)
+                    ->where('group_members.Status', 'approved');
+            })->exists();
+
+        if (! $isMember) {
+            return response()->json(['message' => 'You are not a member of this quiz\'s group.'], 403);
+        }
+
         $request->validate([
             'answers' => 'nullable|array',
         ]);
@@ -221,13 +262,13 @@ class QuizApiController extends Controller
         $endTime = (clone $startTime)->addMinutes((int) $quiz->Duration);
 
         // Small grace period so a submission fired at the exact deadline (client-side)
-// isn't rejected purely due to network/processing latency in transit.
-$graceSeconds = 10;
-$acceptUntil = $endTime->copy()->addSeconds($graceSeconds);
+        // isn't rejected purely due to network/processing latency in transit.
+        $graceSeconds = 20;
+        $acceptUntil = $endTime->copy()->addSeconds($graceSeconds);
 
-if ($now->lt($startTime) || $now->gt($acceptUntil)) {
-    return response()->json(['message' => 'This quiz is not currently active.'], 422);
-}
+        if ($now->lt($startTime) || $now->gt($acceptUntil)) {
+            return response()->json(['message' => 'This quiz is not currently active.'], 422);
+        }
 
         $alreadyAttempted = Attempt::where('UserID', $user->UserID)
             ->where('QuizID', $quiz->QuizID)
@@ -300,23 +341,40 @@ if ($now->lt($startTime) || $now->gt($acceptUntil)) {
         $user = Auth::user();
         $lecturer = Lecturer::where('UserID', $user->UserID)->first();
 
-        $quizzes = Quiz::where('LecturerID', optional($lecturer)->LecturerID)
+        if (! $lecturer) {
+            return response()->json([]);
+        }
+
+        $now = Carbon::now();
+
+        $quizzes = Quiz::where('LecturerID', $lecturer->LecturerID)
             ->with('group')
+            ->withCount(['questions', 'attempts'])
+            ->withAvg('attempts', 'Score')
             ->latest('StartTime')
             ->get()
-            ->map(function ($quiz) {
+            ->map(function ($quiz) use ($now) {
+                $startTime = Carbon::parse($quiz->StartTime);
+                $endTime = (clone $startTime)->addMinutes((int) $quiz->Duration);
+
                 return [
                     'id' => $quiz->QuizID,
                     'title' => $quiz->Title,
                     'group_name' => optional($quiz->group)->GroupName ?? 'Group',
                     'duration' => $quiz->Duration,
-                    'due' => Carbon::parse($quiz->StartTime)->toIso8601String(),
-                    'attempt_count' => Attempt::where('QuizID', $quiz->QuizID)->count(),
+                    'start_time' => $startTime->toIso8601String(),
+                    'end_time' => $endTime->toIso8601String(),
+                    'questions_count' => (int) $quiz->questions_count,
+                    'status' => $now->lt($startTime) ? 'upcoming' : ($now->gt($endTime) ? 'ended' : 'active'),
+                    'attempted' => false,
+                    'attempt_count' => (int) $quiz->attempts_count,
+                    'average_score' => $quiz->attempts_avg_score !== null ? round((float) $quiz->attempts_avg_score, 2) : null,
                     'results_released' => (bool) $quiz->ResultsReleased,
+                    'group_id' => $quiz->GroupID,
                 ];
             });
 
-        return response()->json(['quizzes' => $quizzes]);
+        return response()->json($quizzes);
     }
 
     /**
@@ -329,15 +387,19 @@ if ($now->lt($startTime) || $now->gt($acceptUntil)) {
         $lecturer = Lecturer::where('UserID', $user->UserID)->first();
         $quiz = Quiz::with('group')->findOrFail($quizId);
 
-        if (!$lecturer || $quiz->LecturerID !== $lecturer->LecturerID) {
+        if (! $lecturer || $quiz->LecturerID !== $lecturer->LecturerID) {
             return response()->json(['message' => 'You can only review quizzes you created.'], 403);
         }
 
         $startTime = Carbon::parse($quiz->StartTime);
         $endTime = (clone $startTime)->addMinutes((int) $quiz->Duration);
 
-        $attemptCount = Attempt::where('QuizID', $quiz->QuizID)->count();
-        $averageScore = Attempt::where('QuizID', $quiz->QuizID)->avg('Score');
+        $attemptQuery = Attempt::where('QuizID', $quiz->QuizID);
+        $attemptCount = (clone $attemptQuery)->count();
+        $averageScore = (clone $attemptQuery)->avg('Score');
+        $highestScore = (clone $attemptQuery)->max('Score');
+        $lowestScore = (clone $attemptQuery)->min('Score');
+        $questionsCount = Question::where('QuizID', $quiz->QuizID)->count();
 
         return response()->json([
             'id' => $quiz->QuizID,
@@ -347,8 +409,12 @@ if ($now->lt($startTime) || $now->gt($acceptUntil)) {
             'duration' => $quiz->Duration,
             'start_time' => $startTime->toIso8601String(),
             'end_time' => $endTime->toIso8601String(),
+            'questions_count' => $questionsCount,
+            'status' => Carbon::now()->lt($startTime) ? 'upcoming' : (Carbon::now()->gt($endTime) ? 'ended' : 'active'),
             'attempt_count' => $attemptCount,
             'average_score' => $averageScore !== null ? round((float) $averageScore, 2) : null,
+            'highest_score' => $highestScore !== null ? round((float) $highestScore, 2) : null,
+            'lowest_score' => $lowestScore !== null ? round((float) $lowestScore, 2) : null,
             'results_released' => (bool) $quiz->ResultsReleased,
         ]);
     }
@@ -362,7 +428,7 @@ if ($now->lt($startTime) || $now->gt($acceptUntil)) {
         $lecturer = Lecturer::where('UserID', $user->UserID)->first();
         $quiz = Quiz::findOrFail($quizId);
 
-        if (!$lecturer || $quiz->LecturerID !== $lecturer->LecturerID) {
+        if (! $lecturer || $quiz->LecturerID !== $lecturer->LecturerID) {
             return response()->json(['message' => 'You can only release results for quizzes you created.'], 403);
         }
 
@@ -384,7 +450,7 @@ if ($now->lt($startTime) || $now->gt($acceptUntil)) {
                 ->where('group_members.Status', 'approved');
         })->find($groupId);
 
-        if (!$group) {
+        if (! $group) {
             return response()->json(['message' => 'You are not a member of that group.'], 403);
         }
 
@@ -429,14 +495,35 @@ if ($now->lt($startTime) || $now->gt($acceptUntil)) {
                 ]);
             }
 
+            $memberIds = $group->members()
+                ->wherePivot('Status', 'approved')
+                ->pluck('users.UserID');
+
+            foreach ($memberIds as $memberId) {
+                Notification::create([
+                    'NotificationID' => uniqid(),
+                    'UserID' => $memberId,
+                    'Message' => "A new quiz \"{$quiz->Title}\" has been posted in {$group->GroupName}.",
+                    'Type' => 'quiz_created',
+                    'Status' => 'Unread',
+                ]);
+            }
+
             return $quiz;
         });
+
+        $startTime = Carbon::parse($quiz->StartTime);
+        $endTime = (clone $startTime)->addMinutes((int) $quiz->Duration);
 
         return response()->json([
             'message' => 'Quiz created successfully',
             'quiz' => [
                 'id' => $quiz->QuizID,
                 'title' => $quiz->Title,
+                'group_id' => $quiz->GroupID,
+                'start_time' => $startTime->toIso8601String(),
+                'end_time' => $endTime->toIso8601String(),
+                'duration' => (int) $quiz->Duration,
             ],
         ], 201);
     }

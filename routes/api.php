@@ -1,24 +1,23 @@
 <?php
 
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Api\AuthApiController;
-use App\Http\Controllers\Api\GroupApiController;
-use App\Http\Controllers\Api\DiscussionApiController;
-use App\Http\Controllers\Api\TopicApiController;
-use App\Http\Controllers\Api\PostApiController;
-use App\Http\Controllers\Api\ReplyApiController;
-use App\Http\Controllers\Api\DashboardApiController;
-use App\Http\Controllers\Api\ExclusionApiController;
-use App\Http\Controllers\Api\QuizApiController;
-use App\Http\Controllers\Api\LecturerDashboardApiController;
-use App\Http\Controllers\Api\AdminApiController;
-use App\Http\Controllers\Api\RecommendationApiController;
-use App\Http\Controllers\Api\PerformanceApiController;
-use App\Http\Controllers\Api\WarningApiController;
 use App\Http\Controllers\Api\ActivityApiController;
+use App\Http\Controllers\Api\AdminApiController;
+use App\Http\Controllers\Api\AuthApiController;
+use App\Http\Controllers\Api\DashboardApiController;
+use App\Http\Controllers\Api\DiscussionApiController;
+use App\Http\Controllers\Api\ExclusionApiController;
+use App\Http\Controllers\Api\GroupApiController;
+use App\Http\Controllers\Api\LecturerDashboardApiController;
 use App\Http\Controllers\Api\NotificationApiController;
+use App\Http\Controllers\Api\PerformanceApiController;
+use App\Http\Controllers\Api\PostApiController;
 use App\Http\Controllers\Api\ProfileApiController;
+use App\Http\Controllers\Api\QuizApiController;
+use App\Http\Controllers\Api\RecommendationApiController;
+use App\Http\Controllers\Api\ReplyApiController;
+use App\Http\Controllers\Api\TopicApiController;
+use App\Http\Controllers\Api\WarningApiController;
+use Illuminate\Support\Facades\Route;
 
 Route::post('/login', [AuthApiController::class, 'login']);
 
@@ -75,10 +74,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/quizzes', [QuizApiController::class, 'indexAll']);
     Route::get('/quizzes/{quizId}/review', [QuizApiController::class, 'showForLecturer']);
     Route::post('/quizzes/{quizId}/release-results', [QuizApiController::class, 'releaseResults']);
-    // Kept both attempt URLs (singular/plural) until confirmed which the client uses
-    Route::post('/quizzes/{quizId}/attempt', [QuizApiController::class, 'storeAttempt']);
     Route::post('/quizzes/{quizId}/attempts', [QuizApiController::class, 'storeAttempt']);
     Route::get('/quizzes/{quizId}', [QuizApiController::class, 'show']);
+    Route::get('/quizzes/{quizId}/results', [QuizApiController::class, 'results']);
 
     // Dashboard & insights
     Route::get('/dashboard', [DashboardApiController::class, 'index']);

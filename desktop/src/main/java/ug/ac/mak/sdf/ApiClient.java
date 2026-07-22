@@ -14,9 +14,10 @@ import java.util.List;
 
 public class ApiClient {
 
-    private static final String BASE_URL = "http://smart-discussion-forum.test/api";
+    private static final String BASE_URL = "http://127.0.0.1:8000/api";
     private static String authToken;
     private static String currentUserId;
+    private static int currentUserRole = -1;
 
     private static final HttpClient client = HttpClient.newHttpClient();
     private static final ObjectMapper mapper = new ObjectMapper();
@@ -41,7 +42,9 @@ public class ApiClient {
 
     JsonNode root = mapper.readTree(response.body());
     authToken = root.get("token").asText();
-    currentUserId = root.get("user").get("UserID").asText();
+    JsonNode user = root.get("user");
+    currentUserId = user.get("id").asText();
+    currentUserRole = user.has("role") && !user.get("role").isNull() ? user.get("role").asInt(-1) : -1;
     return authToken;
 }
 public static String getCurrentUserId() {
@@ -51,6 +54,13 @@ public static String getCurrentUserId() {
     public static String getToken() {
         return authToken;
     }
+    public static boolean isLecturer() {
+    return currentUserRole == 2;
+}
+
+public static int getCurrentUserRole() {
+    return currentUserRole;
+}
     public static void logout() throws Exception {
     if (authToken == null) return;
 
@@ -417,20 +427,34 @@ public static Dashboard getDashboard() throws Exception {
    return new Dashboard(user, stats, discussions, quizzes, recommendations, groups, activity, chartPoints, unread);
 }
 
-public record QuizListItem(String id, String title, String groupName, String startTime,
-                            int duration, int questionsCount, String status, boolean attempted) {}
+public record QuizListItem(String id, String title, String groupName, String startTime, String endTime,
+                           int duration, int questionsCount, String status, boolean attempted,
+                           int attemptCount, Double averageScore, boolean resultsReleased) {}
 
 public record QuizQuestion(String id, String questionText, String optionA, String optionB,
-                            String optionC, String optionD, int marks,
-                            String selectedOption, boolean isCorrect, String correctOption) {}
+                           String optionC, String optionD, int marks,
+                           String selectedOption, boolean isCorrect, String correctOption) {}
 
-public record QuizDetail(String id, String title, boolean attempted, boolean active,
-                          boolean resultsReleased, double score, String endTime,
-                          List<QuizQuestion> questions) {}
+public record QuizDetail(String id, String title, String groupId, String groupName, int duration,
+                         String startTime, String endTime, String serverTime, String status,
+                         boolean active, boolean attempted, boolean resultsReleased, double score,
+                         List<QuizQuestion> questions) {}
+
+public record QuizResultDetail(String id, String title, double score, List<QuizQuestion> questions) {}
+
+public record QuizReviewDetail(String id, String title, String groupName, String startTime, String endTime,
+                               int duration, int questionsCount, String status, int attemptCount,
+                               Double averageScore, Double highestScore, Double lowestScore,
+                               boolean resultsReleased) {}
+
+public record QuizQuestionInput(String questionText, String optionA, String optionB, String optionC,
+                                String optionD, String correctOption, int marks) {}
 
 public static List<QuizListItem> getQuizzes() throws Exception {
+    String endpoint = isLecturer() ? "/lecturer/quizzes" : "/quizzes";
+
     HttpRequest request = HttpRequest.newBuilder()
-            .uri(URI.create(BASE_URL + "/quizzes"))
+            .uri(URI.create(BASE_URL + endpoint))
             .header("Accept", "application/json")
             .header("Authorization", "Bearer " + authToken)
             .GET()
@@ -442,17 +466,23 @@ public static List<QuizListItem> getQuizzes() throws Exception {
     }
 
     JsonNode root = mapper.readTree(response.body());
+    JsonNode itemsNode = root.isArray() ? root : root.path("quizzes");
+
     List<QuizListItem> items = new java.util.ArrayList<>();
-    for (JsonNode q : root) {
+    for (JsonNode q : itemsNode) {
         items.add(new QuizListItem(
-            q.get("QuizID").asText(),
-            q.get("Title").asText(),
-            q.has("GroupName") ? q.get("GroupName").asText() : "",
-            q.get("StartTime").asText(),
-            q.get("Duration").asInt(0),
-            q.get("QuestionsCount").asInt(0),
-            q.get("Status").asText(),
-            q.get("IsAttempted").asBoolean(false)
+            q.path("id").asText(""),
+            q.path("title").asText(""),
+            q.path("group_name").asText(""),
+            q.path("start_time").asText(""),
+            q.path("end_time").asText(""),
+            q.path("duration").asInt(0),
+            q.path("questions_count").asInt(0),
+            q.path("status").asText("upcoming"),
+            q.path("attempted").asBoolean(false),
+            q.path("attempt_count").asInt(0),
+            q.has("average_score") && !q.get("average_score").isNull() ? q.get("average_score").asDouble() : null,
+            q.path("results_released").asBoolean(false)
         ));
     }
     return items;
@@ -472,34 +502,37 @@ public static QuizDetail getQuiz(String quizId) throws Exception {
     }
 
     JsonNode root = mapper.readTree(response.body());
-    boolean attempted = root.has("Attempted") && root.get("Attempted").asBoolean();
-    boolean active = root.has("Active") && root.get("Active").asBoolean();
-    boolean resultsReleased = root.has("ResultsReleased") && root.get("ResultsReleased").asBoolean();
-    double score = root.has("Score") ? root.get("Score").asDouble(0) : 0;
-    String endTime = root.has("EndTime") ? root.get("EndTime").asText() : "";
-
     List<QuizQuestion> questions = new java.util.ArrayList<>();
-    if (root.has("Questions")) {
-        for (JsonNode q : root.get("Questions")) {
-            questions.add(new QuizQuestion(
-                q.get("QuestionID").asText(),
-                q.get("QuestionText").asText(),
-                q.get("OptionA").asText(),
-                q.get("OptionB").asText(),
-                q.has("OptionC") && !q.get("OptionC").isNull() ? q.get("OptionC").asText() : "",
-                q.has("OptionD") && !q.get("OptionD").isNull() ? q.get("OptionD").asText() : "",
-                q.has("Marks") ? q.get("Marks").asInt(0) : 0,
-                q.has("SelectedOption") && !q.get("SelectedOption").isNull() ? q.get("SelectedOption").asText() : "",
-                q.has("IsCorrect") && q.get("IsCorrect").asBoolean(),
-                q.has("CorrectOption") && !q.get("CorrectOption").isNull() ? q.get("CorrectOption").asText() : ""
-            ));
-        }
+    for (JsonNode q : root.path("questions")) {
+        questions.add(new QuizQuestion(
+            q.path("id").asText(""),
+            q.path("text").asText(""),
+            q.path("option_a").asText(""),
+            q.path("option_b").asText(""),
+            q.path("option_c").asText(""),
+            q.path("option_d").asText(""),
+            q.path("marks").asInt(0),
+            q.path("selected_option").asText(""),
+            q.path("is_correct").asBoolean(false),
+            q.path("correct_option").asText("")
+        ));
     }
 
     return new QuizDetail(
-        root.get("QuizID").asText(),
-        root.get("Title").asText(),
-        attempted, active, resultsReleased, score, endTime, questions
+        root.path("id").asText(""),
+        root.path("title").asText(""),
+        root.path("group_id").asText(""),
+        root.path("group_name").asText(""),
+        root.path("duration").asInt(0),
+        root.path("start_time").asText(""),
+        root.path("end_time").asText(""),
+        root.path("server_time").asText(""),
+        root.path("status").asText("upcoming"),
+        root.path("is_active").asBoolean(false),
+        root.path("is_attempted").asBoolean(false),
+        root.path("results_released").asBoolean(false),
+        root.path("score").asDouble(0),
+        questions
     );
 }
 
@@ -509,7 +542,7 @@ public static double submitQuizAttempt(String quizId, Map<String, String> answer
     String json = mapper.writeValueAsString(body);
 
     HttpRequest request = HttpRequest.newBuilder()
-            .uri(URI.create(BASE_URL + "/quizzes/" + quizId + "/attempt"))
+            .uri(URI.create(BASE_URL + "/quizzes/" + quizId + "/attempts"))
             .header("Accept", "application/json")
             .header("Content-Type", "application/json")
             .header("Authorization", "Bearer " + authToken)
@@ -522,7 +555,131 @@ public static double submitQuizAttempt(String quizId, Map<String, String> answer
     }
 
     JsonNode root = mapper.readTree(response.body());
-    return root.get("Score").asDouble(0);
+    return root.path("score").asDouble(0);
+}
+
+public static QuizResultDetail getQuizResults(String quizId) throws Exception {
+    HttpRequest request = HttpRequest.newBuilder()
+            .uri(URI.create(BASE_URL + "/quizzes/" + quizId + "/results"))
+            .header("Accept", "application/json")
+            .header("Authorization", "Bearer " + authToken)
+            .GET()
+            .build();
+
+    HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+    if (response.statusCode() != 200) {
+        throw new RuntimeException("Failed to load quiz results (" + response.statusCode() + "): " + response.body());
+    }
+
+    JsonNode root = mapper.readTree(response.body());
+    List<QuizQuestion> questions = new java.util.ArrayList<>();
+    for (JsonNode q : root.path("questions")) {
+        questions.add(new QuizQuestion(
+            q.path("id").asText(""),
+            q.path("text").asText(""),
+            q.path("option_a").asText(""),
+            q.path("option_b").asText(""),
+            q.path("option_c").asText(""),
+            q.path("option_d").asText(""),
+            q.path("marks").asInt(0),
+            q.path("selected_option").asText(""),
+            q.path("is_correct").asBoolean(false),
+            q.path("correct_option").asText("")
+        ));
+    }
+
+    return new QuizResultDetail(
+        root.path("id").asText(""),
+        root.path("title").asText(""),
+        root.path("score").asDouble(0),
+        questions
+    );
+}
+
+public static void createQuiz(String groupId, String title, String startTime, int duration,
+                              List<QuizQuestionInput> questions) throws Exception {
+    Map<String, Object> body = new java.util.HashMap<>();
+    body.put("title", title);
+    body.put("start_time", startTime);
+    body.put("duration", duration);
+
+    List<Map<String, Object>> questionPayloads = new java.util.ArrayList<>();
+    for (QuizQuestionInput question : questions) {
+        Map<String, Object> payload = new java.util.HashMap<>();
+        payload.put("question_text", question.questionText());
+        payload.put("option_a", question.optionA());
+        payload.put("option_b", question.optionB());
+        payload.put("option_c", question.optionC());
+        payload.put("option_d", question.optionD());
+        payload.put("correct_option", question.correctOption());
+        payload.put("marks", question.marks());
+        questionPayloads.add(payload);
+    }
+    body.put("questions", questionPayloads);
+
+    String json = mapper.writeValueAsString(body);
+    HttpRequest request = HttpRequest.newBuilder()
+            .uri(URI.create(BASE_URL + "/groups/" + groupId + "/quizzes"))
+            .header("Accept", "application/json")
+            .header("Content-Type", "application/json")
+            .header("Authorization", "Bearer " + authToken)
+            .POST(HttpRequest.BodyPublishers.ofString(json))
+            .build();
+
+    HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+    if (response.statusCode() != 201) {
+        throw new RuntimeException("Failed to create quiz (" + response.statusCode() + "): " + response.body());
+    }
+}
+
+public static QuizReviewDetail getQuizReview(String quizId) throws Exception {
+    HttpRequest request = HttpRequest.newBuilder()
+            .uri(URI.create(BASE_URL + "/quizzes/" + quizId + "/review"))
+            .header("Accept", "application/json")
+            .header("Authorization", "Bearer " + authToken)
+            .GET()
+            .build();
+
+    HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+    if (response.statusCode() != 200) {
+        throw new RuntimeException("Failed to load quiz review (" + response.statusCode() + "): " + response.body());
+    }
+
+    JsonNode root = mapper.readTree(response.body());
+    return new QuizReviewDetail(
+        root.path("id").asText(""),
+        root.path("title").asText(""),
+        root.path("group_name").asText(""),
+        root.path("start_time").asText(""),
+        root.path("end_time").asText(""),
+        root.path("duration").asInt(0),
+        root.path("questions_count").asInt(0),
+        root.path("status").asText("upcoming"),
+        root.path("attempt_count").asInt(0),
+        root.has("average_score") && !root.get("average_score").isNull() ? root.get("average_score").asDouble() : null,
+        root.has("highest_score") && !root.get("highest_score").isNull() ? root.get("highest_score").asDouble() : null,
+        root.has("lowest_score") && !root.get("lowest_score").isNull() ? root.get("lowest_score").asDouble() : null,
+        root.path("results_released").asBoolean(false)
+    );
+}
+
+public static String releaseQuizResults(String quizId) throws Exception {
+    HttpRequest request = HttpRequest.newBuilder()
+            .uri(URI.create(BASE_URL + "/quizzes/" + quizId + "/release-results"))
+            .header("Accept", "application/json")
+            .header("Authorization", "Bearer " + authToken)
+            .POST(HttpRequest.BodyPublishers.noBody())
+            .build();
+
+    HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+    JsonNode root = mapper.readTree(response.body());
+    String message = root.has("message") ? root.get("message").asText() : "";
+
+    if (response.statusCode() != 200) {
+        throw new RuntimeException(message.isBlank() ? ("Failed (" + response.statusCode() + ")") : message);
+    }
+
+    return message;
 }
 public record TrendingTopic(String id, String title, String status, int postCount) {}
 public record SuggestedGroup(String id, String name, String description) {}
@@ -1199,4 +1356,5 @@ public static Post createPost(String topicId, String content) throws Exception {
         p.has("UserID") ? p.get("UserID").asText() : ""
     );
 }
+
 }
