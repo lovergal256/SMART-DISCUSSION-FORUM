@@ -3,13 +3,12 @@
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.Label?>
-<?import javafx.scene.control.ScrollPane?>
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.VBox?>
 
 <BorderPane xmlns="http://javafx.com/javafx"
             xmlns:fx="http://javafx.com/fxml"
-            fx:controller="ug.ac.mak.sdf.QuizResultController"
+            fx:controller="ug.ac.mak.sdf.QuizReviewController"
             stylesheets="@style.css">
 
     <top>
@@ -21,20 +20,21 @@
     </left>
 
     <center>
-        <VBox styleClass="main-content" spacing="18">
+        <VBox styleClass="main-content" spacing="16">
             <padding><Insets top="30" right="30" bottom="30" left="30" /></padding>
 
             <Button text="← Back to Quizzes" styleClass="back-button" onAction="#handleBack" />
             <Label fx:id="titleLabel" styleClass="page-title" />
-            <Label fx:id="scoreLabel" styleClass="quiz-score" />
-            <Label fx:id="noticeLabel" styleClass="topic-meta" />
+            <Label fx:id="scheduleLabel" styleClass="topic-meta" wrapText="true" />
+            <Label fx:id="statsLabel" styleClass="topic-meta" wrapText="true" />
+            <Label fx:id="releaseStatusLabel" styleClass="topic-meta" wrapText="true" />
 
-            <ScrollPane fitToWidth="true" styleClass="groups-scroll">
-                <VBox fx:id="breakdownContainer" spacing="14" />
-            </ScrollPane>
+            <Button fx:id="releaseResultsButton"
+                    text="Release Results to Students"
+                    styleClass="new-group-button"
+                    onAction="#handleReleaseResults" />
 
-            <Label fx:id="statusLabel" styleClass="status-label" />
+            <Label fx:id="statusLabel" styleClass="status-label" wrapText="true" />
         </VBox>
     </center>
-
 </BorderPane>

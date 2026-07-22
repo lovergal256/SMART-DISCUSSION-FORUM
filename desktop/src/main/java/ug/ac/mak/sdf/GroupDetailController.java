@@ -1,5 +1,7 @@
 package ug.ac.mak.sdf;
 
+
+
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.geometry.Insets;
@@ -32,6 +34,7 @@ public class GroupDetailController {
     @FXML private TextField excludeUserField;
     @FXML private Button deleteGroupButton;
     @FXML private Label statusLabel;
+    @FXML private Button createQuizButton;
     @FXML private SideBarController sidebarController;
 
     private String groupId;
@@ -87,6 +90,8 @@ public class GroupDetailController {
                     addMemberSection.setManaged(isAdmin);
                     deleteGroupButton.setVisible(isAdmin);
                     deleteGroupButton.setManaged(isAdmin);
+                    createQuizButton.setVisible(ApiClient.isLecturer());
+                    createQuizButton.setManaged(ApiClient.isLecturer());
 
                     pendingSection.setVisible(isAdmin);
                     pendingSection.setManaged(isAdmin);
@@ -347,6 +352,21 @@ public class GroupDetailController {
             statusLabel.setText("Failed to open discussions: " + e.getMessage());
         }
     }
+    @FXML
+    private void handleCreateQuiz() {
+    try {
+        var loader = new javafx.fxml.FXMLLoader(getClass().getResource("/ug/ac/mak/sdf/createquiz.fxml"));
+        javafx.scene.Parent root = loader.load();
+        CreateQuizController controller = loader.getController();
+        controller.setGroup(groupId, groupName);
+        javafx.stage.Stage stage = (javafx.stage.Stage) statusLabel.getScene().getWindow();
+        javafx.scene.Scene scene = new javafx.scene.Scene(root, 900, 600);
+        ThemeManager.applyTheme(scene);
+        stage.setScene(scene);
+    } catch (Exception e) {
+        statusLabel.setText("Failed to open create quiz screen: " + e.getMessage());
+    }
+}
 
     @FXML
     private void handleToggleVisibility() {

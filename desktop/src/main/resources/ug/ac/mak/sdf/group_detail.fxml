@@ -41,11 +41,13 @@
                     </HBox>
                 </VBox>
 
-                <HBox alignment="CENTER_LEFT">
-                    <Label fx:id="membersHeaderLabel" styleClass="section-label" />
-                    <HBox HBox.hgrow="ALWAYS" />
-                    <Button text="+ Start a Discussion" styleClass="new-group-button" onAction="#handleStartDiscussion" />
-                </HBox>
+                <HBox alignment="CENTER_LEFT" spacing="10">
+    <Label fx:id="membersHeaderLabel" styleClass="section-label" />
+    <HBox HBox.hgrow="ALWAYS" />
+    <Button fx:id="createQuizButton" text="+ Create Quiz" styleClass="new-group-button"
+            onAction="#handleCreateQuiz" visible="false" managed="false" />
+    <Button text="+ Start a Discussion" styleClass="new-group-button" onAction="#handleStartDiscussion" />
+</HBox>
 
                 <VBox fx:id="membersContainer" styleClass="discussion-card" spacing="0" />
 
