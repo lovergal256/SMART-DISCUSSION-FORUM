@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.VBox?>
+
+<BorderPane xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:controller="ug.ac.mak.sdf.NotificationsController"
+            stylesheets="@style.css">
+
+    <top>
+        <fx:include source="topbar.fxml" />
+    </top>
+
+    <left>
+        <fx:include source="sidebar.fxml" fx:id="sidebar" />
+    </left>
+
+    <center>
+        <ScrollPane fitToWidth="true" styleClass="dashboard-scroll">
+            <VBox styleClass="main-content" spacing="18">
+                <padding><Insets top="30" right="30" bottom="30" left="30" /></padding>
+
+                <Label text="Notifications" styleClass="page-title" />
+
+                <VBox fx:id="notificationsContainer" spacing="8" />
+
+                <Label fx:id="statusLabel" styleClass="status-label" />
+            </VBox>
+        </ScrollPane>
+    </center>
+
+</BorderPane>

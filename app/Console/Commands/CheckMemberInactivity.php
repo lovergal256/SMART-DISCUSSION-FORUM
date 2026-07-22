@@ -21,8 +21,8 @@ class CheckMemberInactivity extends Command
         $now = Carbon::now();
 
        $students = User::whereHas('roleRelation', function ($q) {
-    $q->where('RoleName', 'student');
-})->get();
+         $q->where('RoleName', 'student');
+        })->get();
 
         foreach ($students as $user) {
             // Skip anyone currently blacklisted (block is still active)

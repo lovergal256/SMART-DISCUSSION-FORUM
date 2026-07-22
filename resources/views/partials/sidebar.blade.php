@@ -17,11 +17,12 @@
         <a class="nav-link {{ request()->routeIs('quizzes.*') ? 'active' : '' }}" href="{{ route('quizzes.index') }}">
             <span class="nav-icon">📝</span> My Quizzes
         </a>
-        <a class="nav-link {{ request()->routeIs('performance.*') ? 'active' : '' }}" href="{{ route('performance.index') }}">
-            <span class="nav-icon">📊</span> Performance
-        </a>
+        
         <a class="nav-link {{ request()->routeIs('recommendations.*') ? 'active' : '' }}" href="{{ route('recommendations.index') }}">
             <span class="nav-icon">⭐</span> Recommendations
+        </a>
+        <a class="nav-link {{ request()->routeIs('performance.*') ? 'active' : '' }}" href="{{ route('performance.index') }}">
+            <span class="nav-icon">📊</span> Performance
         </a>
         <a class="nav-link {{ request()->routeIs('warnings.*') ? 'active' : '' }}" href="{{ route('warnings.index') }}">
             <span class="nav-icon">⚠</span> Warnings

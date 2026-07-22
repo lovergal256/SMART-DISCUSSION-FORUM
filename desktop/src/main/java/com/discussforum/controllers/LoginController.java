@@ -36,9 +36,14 @@ public class LoginController {
                 javafx.application.Platform.runLater(() -> {
                     if (response.has("token")) {
                         try {
-                            String view = ApiService.isLecturer()
-                                ? "/com/discussforum/views/Dashboard.fxml"
-                                : "/com/discussforum/views/Groups.fxml";
+                           String view;
+if (ApiService.isAdmin()) {
+    view = "/com/discussforum/views/AdminDashboard.fxml";
+} else if (ApiService.isLecturer()) {
+    view = "/com/discussforum/views/Dashboard.fxml";
+} else {
+    view = "/com/discussforum/views/Groups.fxml";
+}
                             FXMLLoader loader = new FXMLLoader(getClass().getResource(view));
                             Scene scene = new Scene(loader.load(), 900, 600);
                             Stage stage = (Stage) loginButton.getScene().getWindow();

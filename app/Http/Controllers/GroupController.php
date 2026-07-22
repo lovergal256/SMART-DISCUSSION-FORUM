@@ -263,6 +263,60 @@ class GroupController extends Controller
 
     return back()->with('success', $member->FullName . ' has been removed from the group.');
 }
+public function blacklistMember(Request $request, $id, $userId)
+{
+    $group = Group::findOrFail($id);
+
+    // Only admins can blacklist members
+    $authUser = $group->members()
+                      ->where('group_members.UserID', Auth::id())
+                      ->first();
+
+    if (!$authUser || $authUser->pivot->Role !== 'admin') {
+        return back()->with('error', 'Only admins can blacklist members.');
+    }
+
+    // Can't blacklist yourself this way
+    if ($userId == Auth::id()) {
+        return back()->with('error', 'You cannot blacklist yourself.');
+    }
+
+    // Check target is actually a member
+    $member = $group->members()
+                    ->where('group_members.UserID', $userId)
+                    ->first();
+
+    if (!$member) {
+        return back()->with('error', 'That user is not a member of this group.');
+    }
+
+    // Skip if already actively blacklisted
+    $alreadyBlacklisted = \App\Models\Blacklist::where('UserID', $userId)
+        ->where('EndDate', '>=', now()->toDateString())
+        ->exists();
+
+    if ($alreadyBlacklisted) {
+        return back()->with('error', $member->FullName . ' is already blacklisted.');
+    }
+
+    \App\Models\Blacklist::create([
+        'BlacklistID' => uniqid(),
+        'UserID' => $userId,
+        'Reason' => 'Blacklisted by group admin in "' . $group->GroupName . '"',
+        'StartDate' => now()->toDateString(),
+        'EndDate' => now()->copy()->addMonth()->toDateString(),
+    ]);
+
+    \App\Models\Notification::create([
+        'NotificationID' => uniqid(),
+        'UserID' => $userId,
+        'Message' => "You have been blacklisted by an admin of \"{$group->GroupName}\" for one month.",
+        'Type' => 'blacklist',
+        'Status' => 'Unread',
+    ]);
+
+    return back()->with('success', $member->FullName . ' has been blacklisted for one month.');
+}
 
     public function destroy($id)
     {

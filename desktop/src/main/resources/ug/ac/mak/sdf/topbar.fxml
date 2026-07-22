@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.layout.StackPane?>
+
+<HBox xmlns="http://javafx.com/javafx"
+      xmlns:fx="http://javafx.com/fxml"
+      fx:controller="ug.ac.mak.sdf.TopBarController"
+      styleClass="topbar"
+      alignment="CENTER_LEFT"
+      spacing="16">
+
+    <padding><Insets top="14" right="24" bottom="14" left="20" /></padding>
+
+    <Label text="☰" styleClass="topbar-icon" />
+
+    <TextField promptText="🔍  Search discussions, groups, quizzes..." styleClass="topbar-search" HBox.hgrow="ALWAYS" />
+
+    <Region HBox.hgrow="NEVER" prefWidth="4" />
+
+    <StackPane alignment="TOP_RIGHT">
+        <Label fx:id="bellIcon" text="🔔" styleClass="topbar-bell" onMouseClicked="#handleBellClick" />
+        <Label fx:id="unreadBadge" styleClass="topbar-unread-badge" managed="false" visible="false" />
+    </StackPane>
+
+    <HBox fx:id="userMenuArea" spacing="10" alignment="CENTER_LEFT" onMouseClicked="#handleUserMenuClick" styleClass="topbar-user-menu">
+        <Label fx:id="topbarAvatar" text="A" styleClass="topbar-avatar" />
+
+        <VBox spacing="0" alignment="CENTER_LEFT">
+            <Label fx:id="topbarUserName" text="AdminPetrah" styleClass="topbar-username" />
+            <Label fx:id="topbarUserRole" text="Student" styleClass="topbar-role" />
+        </VBox>
+
+        <Label text="⌄" styleClass="topbar-caret" />
+    </HBox>
+</HBox>

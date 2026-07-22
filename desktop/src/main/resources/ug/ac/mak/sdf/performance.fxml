@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+
+<BorderPane xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:controller="ug.ac.mak.sdf.PerformanceController"
+            stylesheets="@style.css">
+
+    <top>
+        <fx:include source="topbar.fxml" />
+    </top>
+
+    <left>
+        <fx:include source="sidebar.fxml" fx:id="sidebar" />
+    </left>
+
+    <center>
+        <ScrollPane fitToWidth="true" styleClass="dashboard-scroll">
+            <VBox styleClass="main-content" spacing="20">
+                <padding><Insets top="30" right="30" bottom="30" left="30" /></padding>
+
+                <VBox spacing="2">
+                    <Label text="My Performance" styleClass="page-title" />
+                    <Label text="Track your discussion activity and quiz results." styleClass="page-subtitle" />
+                </VBox>
+
+                <VBox fx:id="overallPanel" styleClass="panel" spacing="10" />
+
+                <HBox spacing="16">
+                    <VBox fx:id="participationPanel" styleClass="panel" spacing="10" HBox.hgrow="ALWAYS" />
+                    <VBox fx:id="quizPerfPanel" styleClass="panel" spacing="10" HBox.hgrow="ALWAYS" />
+                    <VBox fx:id="marksPanel" styleClass="panel" spacing="10" HBox.hgrow="ALWAYS" />
+                </HBox>
+
+                <VBox fx:id="recentQuizzesPanel" styleClass="panel" spacing="10" />
+
+                <Label fx:id="statusLabel" styleClass="status-label" />
+            </VBox>
+        </ScrollPane>
+    </center>
+
+</BorderPane>

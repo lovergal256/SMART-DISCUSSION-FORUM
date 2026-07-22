@@ -15,7 +15,6 @@ import javafx.stage.Stage;
 import javafx.util.Duration;
 
 import java.time.OffsetDateTime;
-import java.time.temporal.ChronoUnit;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -24,6 +23,7 @@ public class QuizDetailController {
     @FXML private Label titleLabel;
     @FXML private Label subtitleLabel;
     @FXML private Label statusLabel;
+    @FXML private Label countdownCaptionLabel;
     @FXML private Label countdownLabel;
     @FXML private VBox questionsContainer;
     @FXML private Button submitButton;
@@ -32,10 +32,18 @@ public class QuizDetailController {
     private int quizId;
     private int groupId;
 
+    private long startTimeEpochMs;
     private long endTimeEpochMs;
-    private long clockOffsetMs; // serverNow - clientNow, same idea as the web version
+    private long clockOffsetMs; // serverNow - clientNow
     private Timeline countdownTimeline;
     private boolean submitted = false;
+
+    private enum Phase { PRE_START, ACTIVE, ENDED, ATTEMPTED }
+    private Phase phase;
+
+    // Submit a couple seconds before the client-displayed countdown hits zero,
+    // so the request lands before the server's own deadline check.
+    private static final long SUBMIT_BUFFER_MS = 2000;
 
     private final Map<Integer, ToggleGroup> answerGroups = new HashMap<>();
 
@@ -56,48 +64,94 @@ public class QuizDetailController {
     }
 
     private void render(JsonObject quiz) {
+        if (countdownTimeline != null) {
+            countdownTimeline.stop();
+        }
+        questionsContainer.getChildren().clear();
+        answerGroups.clear();
+        feedbackLabel.setText("");
+
         titleLabel.setText(quiz.get("title").getAsString());
         subtitleLabel.setText(quiz.get("group_name").getAsString() + " · "
             + quiz.get("duration").getAsInt() + " minutes");
 
         boolean isAttempted = quiz.get("is_attempted").getAsBoolean();
-        boolean isActive = quiz.get("is_active").getAsBoolean();
         boolean resultsReleased = quiz.get("results_released").getAsBoolean();
 
+        OffsetDateTime startTime = OffsetDateTime.parse(quiz.get("start_time").getAsString());
+        OffsetDateTime endTime = OffsetDateTime.parse(quiz.get("end_time").getAsString());
+        OffsetDateTime serverTime = OffsetDateTime.parse(quiz.get("server_time").getAsString());
+
+        this.startTimeEpochMs = startTime.toInstant().toEpochMilli();
+        this.endTimeEpochMs = endTime.toInstant().toEpochMilli();
+        long serverNowMs = serverTime.toInstant().toEpochMilli();
+        long clientNowMs = System.currentTimeMillis();
+        this.clockOffsetMs = serverNowMs - clientNowMs;
+
         if (isAttempted) {
+            phase = Phase.ATTEMPTED;
             if (resultsReleased && !quiz.get("score").isJsonNull()) {
                 statusLabel.setText(String.format("Attempted — Score: %.2f%%", quiz.get("score").getAsDouble()));
             } else {
                 statusLabel.setText("Attempted — results not yet released");
             }
+            hideCountdown();
             submitButton.setVisible(false);
             submitButton.setManaged(false);
             return;
         }
 
-        if (!isActive) {
-            statusLabel.setText("This quiz is not currently open for attempts.");
+        long serverNow = System.currentTimeMillis() + clockOffsetMs;
+
+        if (serverNow < startTimeEpochMs) {
+            phase = Phase.PRE_START;
+            statusLabel.setText("This quiz hasn't started yet. It will open automatically below.");
+            submitButton.setVisible(false);
+            submitButton.setManaged(false);
+            showCountdown("Starts in");
+            startCountdown();
+            return;
+        }
+
+        if (serverNow > endTimeEpochMs) {
+            phase = Phase.ENDED;
+            statusLabel.setText("This quiz window has closed.");
+            hideCountdown();
             submitButton.setVisible(false);
             submitButton.setManaged(false);
             return;
         }
 
-        // Active and unattempted: render questions and start the countdown.
+        // Active and unattempted: render questions and start the end-of-quiz countdown.
+        phase = Phase.ACTIVE;
         statusLabel.setText("Available now");
-
-        OffsetDateTime endTime = OffsetDateTime.parse(quiz.get("end_time").getAsString());
-        OffsetDateTime serverTime = OffsetDateTime.parse(quiz.get("server_time").getAsString());
-        this.endTimeEpochMs = endTime.toInstant().toEpochMilli();
-        long serverNowMs = serverTime.toInstant().toEpochMilli();
-        long clientNowMs = System.currentTimeMillis();
-        this.clockOffsetMs = serverNowMs - clientNowMs;
+        submitted = false;
+        submitButton.setVisible(true);
+        submitButton.setManaged(true);
+        submitButton.setDisable(false);
 
         JsonArray questions = quiz.getAsJsonArray("questions");
         for (JsonElement el : questions) {
             questionsContainer.getChildren().add(buildQuestionCard(el.getAsJsonObject()));
         }
 
+        showCountdown("Time remaining");
         startCountdown();
+    }
+
+    private void showCountdown(String caption) {
+        countdownCaptionLabel.setText(caption);
+        countdownCaptionLabel.setVisible(true);
+        countdownCaptionLabel.setManaged(true);
+        countdownLabel.setVisible(true);
+        countdownLabel.setManaged(true);
+    }
+
+    private void hideCountdown() {
+        countdownCaptionLabel.setVisible(false);
+        countdownCaptionLabel.setManaged(false);
+        countdownLabel.setVisible(false);
+        countdownLabel.setManaged(false);
     }
 
     private VBox buildQuestionCard(JsonObject question) {
@@ -132,19 +186,44 @@ public class QuizDetailController {
         rb.setToggleGroup(group);
         card.getChildren().add(rb);
     }
-
     private void startCountdown() {
-        countdownTimeline = new Timeline(new KeyFrame(Duration.seconds(1), e -> tickCountdown()));
+        countdownTimeline = new Timeline(new KeyFrame(Duration.seconds(1), e -> tick()));
         countdownTimeline.setCycleCount(Timeline.INDEFINITE);
         countdownTimeline.play();
-        tickCountdown(); // show immediately, don't wait a full second
+        tick(); // show immediately, don't wait a full second
     }
 
-    private void tickCountdown() {
+    private void tick() {
+        if (phase == Phase.PRE_START) {
+            tickPreStart();
+        } else if (phase == Phase.ACTIVE) {
+            tickActive();
+        }
+    }
+
+    private void tickPreStart() {
+        long serverNow = System.currentTimeMillis() + clockOffsetMs;
+        long remainingMs = startTimeEpochMs - serverNow;
+
+        if (remainingMs <= 0) {
+            // Start time reached — pop straight into the live quiz without any
+            // back-and-forth, by re-fetching authoritative state from the server.
+            if (countdownTimeline != null) countdownTimeline.stop();
+            countdownLabel.setText("00:00");
+            statusLabel.setText("Opening quiz...");
+            loadQuiz(quizId, groupId);
+            return;
+        }
+
+        countdownLabel.setText(formatDuration(remainingMs));
+        countdownLabel.setStyle("-fx-font-size: 22px; -fx-font-weight: bold; -fx-text-fill: #0077b6;");
+    }
+
+    private void tickActive() {
         long serverNow = System.currentTimeMillis() + clockOffsetMs;
         long remainingMs = endTimeEpochMs - serverNow;
 
-        if (remainingMs <= 0) {
+        if (remainingMs <= SUBMIT_BUFFER_MS) {
             countdownLabel.setText("00:00");
             countdownLabel.setStyle("-fx-font-size: 22px; -fx-font-weight: bold; -fx-text-fill: #d9302a;");
             if (countdownTimeline != null) countdownTimeline.stop();
@@ -155,16 +234,19 @@ public class QuizDetailController {
             return;
         }
 
-        long totalSeconds = remainingMs / 1000;
-        long minutes = totalSeconds / 60;
-        long seconds = totalSeconds % 60;
-        countdownLabel.setText(String.format("%02d:%02d", minutes, seconds));
-
+        countdownLabel.setText(formatDuration(remainingMs));
         if (remainingMs <= 10_000) {
             countdownLabel.setStyle("-fx-font-size: 22px; -fx-font-weight: bold; -fx-text-fill: #d9302a;");
         } else {
             countdownLabel.setStyle("-fx-font-size: 22px; -fx-font-weight: bold; -fx-text-fill: #1a7a45;");
         }
+    }
+
+    private String formatDuration(long ms) {
+        long totalSeconds = ms / 1000;
+        long minutes = totalSeconds / 60;
+        long seconds = totalSeconds % 60;
+        return String.format("%02d:%02d", minutes, seconds);
     }
 
     @FXML
@@ -213,16 +295,16 @@ public class QuizDetailController {
     }
 
     @FXML
-private void handleBack() {
-    if (countdownTimeline != null) countdownTimeline.stop();
-    try {
-        FXMLLoader loader = new FXMLLoader(
-            getClass().getResource("/com/discussforum/views/Quizzes.fxml"));
-        Scene scene = new Scene(loader.load(), 900, 600);
-        Stage stage = (Stage) titleLabel.getScene().getWindow();
-        stage.setScene(scene);
-    } catch (Exception e) {
-        e.printStackTrace();
+    private void handleBack() {
+        if (countdownTimeline != null) countdownTimeline.stop();
+        try {
+            FXMLLoader loader = new FXMLLoader(
+                getClass().getResource("/com/discussforum/views/Quizzes.fxml"));
+            Scene scene = new Scene(loader.load(), 900, 600);
+            Stage stage = (Stage) titleLabel.getScene().getWindow();
+            stage.setScene(scene);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
-}
 }

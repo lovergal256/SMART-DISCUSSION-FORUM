@@ -22,6 +22,7 @@ public class ApiService {
     public static String getCurrentUserName() { return currentUserName != null ? currentUserName : ""; }
     public static int getCurrentUserRole() { return currentUserRole; }
     public static boolean isLecturer() { return currentUserRole == 2; }
+public static boolean isAdmin() { return currentUserRole == 3; }
 
     public static void logout() {
         authToken = null;

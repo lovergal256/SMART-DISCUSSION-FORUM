@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+
+<BorderPane xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:controller="ug.ac.mak.sdf.QuizTakeController"
+            stylesheets="@style.css">
+
+    <top>
+        <fx:include source="topbar.fxml" />
+    </top>
+
+    <left>
+        <fx:include source="sidebar.fxml" fx:id="sidebar" />
+    </left>
+
+    <center>
+        <VBox styleClass="main-content" spacing="16">
+            <padding><Insets top="30" right="30" bottom="30" left="30" /></padding>
+
+            <HBox spacing="14">
+                <Button text="← Back to Quizzes" styleClass="back-button" onAction="#handleBack" />
+                <Label fx:id="titleLabel" styleClass="page-title" />
+                <Label fx:id="timerLabel" styleClass="quiz-timer" />
+            </HBox>
+
+
+            <ScrollPane fitToWidth="true" styleClass="groups-scroll">
+                <VBox fx:id="questionsContainer" spacing="18" />
+            </ScrollPane>
+
+            <HBox spacing="10">
+                <Button text="Submit Quiz" styleClass="new-group-button" onAction="#handleSubmit" />
+            </HBox>
+
+            <Label fx:id="statusLabel" styleClass="status-label" />
+        </VBox>
+    </center>
+
+</BorderPane>
