@@ -253,10 +253,19 @@ myGroupsPanel.getChildren().add(row);
 }
     private void openQuiz(String quizId) {
         try {
-            var loader = new javafx.fxml.FXMLLoader(getClass().getResource("/ug/ac/mak/sdf/quiz_take.fxml"));
+            String fxmlPath = ApiClient.isLecturer()
+                ? "/ug/ac/mak/sdf/quiz_review.fxml"
+                : "/ug/ac/mak/sdf/quiz_take.fxml";
+
+            var loader = new javafx.fxml.FXMLLoader(getClass().getResource(fxmlPath));
             javafx.scene.Parent root = loader.load();
-            QuizTakeController controller = loader.getController();
-            controller.setQuizId(quizId);
+            if (ApiClient.isLecturer()) {
+                QuizReviewController controller = loader.getController();
+                controller.setQuizId(quizId);
+            } else {
+                QuizTakeController controller = loader.getController();
+                controller.setQuizId(quizId);
+            }
             javafx.stage.Stage stage = (javafx.stage.Stage) quizzesPanel.getScene().getWindow();
             javafx.scene.Scene scene = new javafx.scene.Scene(root, 900, 600);
             ThemeManager.applyTheme(scene);

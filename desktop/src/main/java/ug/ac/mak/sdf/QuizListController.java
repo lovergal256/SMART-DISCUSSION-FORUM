@@ -9,6 +9,7 @@ import javafx.scene.layout.VBox;
 
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Locale;
 import java.util.List;
 
 public class QuizListController {
@@ -56,7 +57,16 @@ public class QuizListController {
             formattedStart = q.startTime();
         }
 
-        Label meta = new Label("🕒 " + formattedStart + "  ·  " + q.questionsCount() + " question(s)  ·  " + q.duration() + " min");
+        String metaText;
+        if (ApiClient.isLecturer()) {
+            String average = q.averageScore() == null ? "N/A" : String.format(Locale.US, "%.2f%%", q.averageScore());
+            metaText = "🕒 " + formattedStart + "  ·  " + q.questionsCount() + " question(s)  ·  "
+                + q.duration() + " min  ·  Attempts: " + q.attemptCount() + "  ·  Avg: " + average;
+        } else {
+            metaText = "🕒 " + formattedStart + "  ·  " + q.questionsCount() + " question(s)  ·  " + q.duration() + " min";
+        }
+
+        Label meta = new Label(metaText);
         meta.getStyleClass().add("topic-meta");
 
         Label badge = new Label(badgeText(q));
@@ -73,6 +83,9 @@ public class QuizListController {
     }
 
     private String badgeText(ApiClient.QuizListItem q) {
+        if (ApiClient.isLecturer()) {
+            return q.resultsReleased() ? "Results Released" : "Pending Release";
+        }
         if (q.attempted()) return "Completed";
         return switch (q.status()) {
             case "active" -> "Active";
@@ -82,6 +95,9 @@ public class QuizListController {
     }
 
     private String badgeStyleClass(ApiClient.QuizListItem q) {
+        if (ApiClient.isLecturer()) {
+            return q.resultsReleased() ? "quiz-badge-completed" : "quiz-badge-upcoming";
+        }
         if (q.attempted()) return "quiz-badge-completed";
         return switch (q.status()) {
             case "active" -> "quiz-badge-active";
@@ -92,6 +108,18 @@ public class QuizListController {
 
     private void openQuiz(ApiClient.QuizListItem q) {
         try {
+            if (ApiClient.isLecturer()) {
+                var reviewLoader = new javafx.fxml.FXMLLoader(getClass().getResource("/ug/ac/mak/sdf/quiz_review.fxml"));
+                javafx.scene.Parent reviewRoot = reviewLoader.load();
+                QuizReviewController reviewController = reviewLoader.getController();
+                reviewController.setQuizId(q.id());
+                javafx.stage.Stage reviewStage = (javafx.stage.Stage) quizzesContainer.getScene().getWindow();
+                javafx.scene.Scene reviewScene = new javafx.scene.Scene(reviewRoot, 900, 600);
+                ThemeManager.applyTheme(reviewScene);
+                reviewStage.setScene(reviewScene);
+                return;
+            }
+
             String fxml = q.attempted()
                     ? "/ug/ac/mak/sdf/quiz_result.fxml"
                     : "/ug/ac/mak/sdf/quiz_take.fxml";

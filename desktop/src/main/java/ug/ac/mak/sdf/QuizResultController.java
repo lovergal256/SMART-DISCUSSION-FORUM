@@ -6,6 +6,7 @@ import javafx.geometry.Insets;
 import javafx.scene.control.Label;
 import javafx.scene.layout.VBox;
 
+
 public class QuizResultController {
 
     @FXML private Label titleLabel;
@@ -28,42 +29,55 @@ public class QuizResultController {
         new Thread(() -> {
             try {
                 ApiClient.QuizDetail quiz = ApiClient.getQuiz(quizId);
-                Platform.runLater(() -> render(quiz));
+                Platform.runLater(() -> {
+                    titleLabel.setText(quiz.title());
+
+                    if (!quiz.resultsReleased()) {
+                        scoreLabel.setText("Score: Pending lecturer release");
+                        noticeLabel.setText("Detailed answer breakdown will appear once your lecturer releases results.");
+                        statusLabel.setText("");
+                        return;
+                    }
+
+                    noticeLabel.setText("");
+                    loadBreakdown(quizId);
+                });
             } catch (Exception e) {
                 Platform.runLater(() -> statusLabel.setText("Failed to load result: " + e.getMessage()));
             }
         }).start();
     }
+
+    private void loadBreakdown(String quizId) {
+        new Thread(() -> {
+            try {
+                ApiClient.QuizResultDetail results = ApiClient.getQuizResults(quizId);
+                Platform.runLater(() -> {
+                    breakdownContainer.getChildren().clear();
+                    scoreLabel.setText(String.format("Score: %.2f%%", results.score()));
+                    for (ApiClient.QuizQuestion q : results.questions()) {
+                        breakdownContainer.getChildren().add(buildQuestionResult(q));
+                    }
+                    statusLabel.setText("");
+                });
+            } catch (Exception e) {
+                Platform.runLater(() -> statusLabel.setText("Failed to load answer breakdown: " + e.getMessage()));
+            }
+        }).start();
+    }
+
     @FXML
-private void handleBack() {
-    try {
-        var loader = new javafx.fxml.FXMLLoader(getClass().getResource("/ug/ac/mak/sdf/quizzes_list.fxml"));
-        javafx.scene.Parent root = loader.load();
-        javafx.stage.Stage stage = (javafx.stage.Stage) breakdownContainer.getScene().getWindow();
-        javafx.scene.Scene scene = new javafx.scene.Scene(root, 900, 600);
+    private void handleBack() {
+        try {
+            var loader = new javafx.fxml.FXMLLoader(getClass().getResource("/ug/ac/mak/sdf/quizzes_list.fxml"));
+            javafx.scene.Parent root = loader.load();
+            javafx.stage.Stage stage = (javafx.stage.Stage) breakdownContainer.getScene().getWindow();
+            javafx.scene.Scene scene = new javafx.scene.Scene(root, 900, 600);
             ThemeManager.applyTheme(scene);
             stage.setScene(scene);
-    } catch (Exception e) {
-        statusLabel.setText("Failed to go back: " + e.getMessage());
-    }
-}
-
-    private void render(ApiClient.QuizDetail quiz) {
-        titleLabel.setText(quiz.title());
-        scoreLabel.setText(String.format("Score: %.2f%%", quiz.score()));
-
-        if (!quiz.resultsReleased()) {
-            noticeLabel.setText("Detailed answer breakdown will appear once your lecturer releases results.");
-            statusLabel.setText("");
-            return;
+        } catch (Exception e) {
+            statusLabel.setText("Failed to go back: " + e.getMessage());
         }
-
-        noticeLabel.setText("");
-        breakdownContainer.getChildren().clear();
-        for (ApiClient.QuizQuestion q : quiz.questions()) {
-            breakdownContainer.getChildren().add(buildQuestionResult(q));
-        }
-        statusLabel.setText("");
     }
 
     private VBox buildQuestionResult(ApiClient.QuizQuestion q) {
